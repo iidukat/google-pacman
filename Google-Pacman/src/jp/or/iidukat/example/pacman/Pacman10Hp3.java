@@ -12,7 +12,6 @@ public class Pacman10Hp3 {
 	
 	private static final boolean a = true;
 	private static final boolean e = false;
-    private static final int[] i = {1, 4, 2, 8};
     
     private static class Direction {
     	final int axis;
@@ -20,15 +19,6 @@ public class Pacman10Hp3 {
     	Direction(int axis, int increment) {
     		this.axis = axis;
     		this.increment = increment;
-    	}
-    }
-
-    private static class Position {
-    	final int x;
-    	final int y;
-    	Position(int x, int y) {
-    		this.x = x;
-    		this.y = y;
     	}
     }
 
@@ -42,41 +32,6 @@ public class Pacman10Hp3 {
     	ds.put(Integer.valueOf(8), new Direction(1, 1)); // Right
     	l = Collections.unmodifiableMap(ds);
     }
-        
-    // パスの配列.左上:(5, 1), 左下:(5, 15), 右上:(60, 1), 右下:(60, 15).
-    // 配列要素のオブジェクトのプロパティは(x, y, w) もしくは(x, y, h)
-    // 要素のオブジェクトにwプロパティがあり:横方向, 要素のオブジェクトにhプロパティがあり:縦方向
-    // x, yはパスの始点の座標
-    // h, wは各々パスの長さを表現
-    // [例外] typeプロパティを値1でもつパスはワープつき
-    private static class Path {
-    	final int x;
-    	final int y;
-    	final int w;
-    	final int h;
-    	final boolean tunnel;
-    	
-    	private Path(int x, int y, int w, int h) {
-    		this(x, y, w, h, false);
-    	}
-    	private Path(int x, int y, int w, int h, boolean tunnel) {
-    		this.x = x;
-    		this.y = y;
-    		this.w = w;
-    		this.h = h;
-    		this.tunnel = tunnel;
-    	}
-
-    	static Path createHorizontalPath(int x, int y, int w) {
-    		return new Path(x, y, w, 0);
-    	}
-    	static Path createVerticalPath(int x, int y, int h) {
-    		return new Path(x, y, 0, h);
-    	}
-    	static Path createTunnelPath(int x, int y, int w) {
-    		return new Path(x, y, w, 0, true);
-    	}
-    }
     
     private static class PathElement {
         boolean path;
@@ -84,404 +39,164 @@ public class Pacman10Hp3 {
         boolean intersection;
         boolean tunnel;
         int allowedDir;
-    }
-        
-    private static class InitPosition {
-    	final float x;
-    	final float y;
-    	final int dir;
-    	final float scatterX;
-    	final float scatterY;
-
-    	InitPosition(float x, float y, int dir) {
-    		this(x, y, dir, 0, 0);
-    	}
-    	
-    	InitPosition(float x, float y, int dir, float scatterX, float scatterY) {
-    		this.x = x;
-    		this.y = y;
-    		this.dir = dir;
-    		this.scatterX = scatterX;
-    		this.scatterY = scatterY;
-    	}
-    	
-    	static InitPosition createPlayerInitPosition(float x, float y, int dir) {
-    		return new InitPosition(x, y, dir);
-    	}
-    	
-    	static InitPosition createGhostInitPosition(float x, float y, int dir,
-    											float scatterX, float scatterY) {
-    		return new InitPosition(x, y, dir, scatterX, scatterY);
-    	}
-    }
-    // Actor初期配置
-    private static final Map<Integer, InitPosition[]> r;
-    static {
-    	Map<Integer, InitPosition[]> ps = new HashMap<Integer, InitPosition[]>();
-    	ps.put(
-    		Integer.valueOf(1),
-    		new InitPosition[] {
-    			InitPosition.createPlayerInitPosition(39.5f, 15, 4), // Pacman
-    			InitPosition.createGhostInitPosition(39.5f, 4, 4, 57, -4), // アカベエ
-    			InitPosition.createGhostInitPosition(39.5f, 7, 2, 0, -4), // ピンキー
-    			InitPosition.createGhostInitPosition(37.625f, 7, 1, 57, 20), // アオスケ
-    			InitPosition.createGhostInitPosition(41.375f, 7, 1, 0, 20), // グズタ
-    		});
-    	ps.put(
-       		Integer.valueOf(1),
-       		new InitPosition[] {
-       			InitPosition.createPlayerInitPosition(40.25f, 15, 8), // Pacman
-       			InitPosition.createPlayerInitPosition(38.75f, 15, 4), // Ms.Pacman
-       			InitPosition.createGhostInitPosition(39.5f, 4, 4, 57, -4), // アカベエ
-       			InitPosition.createGhostInitPosition(39.5f, 7, 2, 0, -4), // ピンキー
-       			InitPosition.createGhostInitPosition(37.625f, 7, 1, 57, 20), // アオスケ
-       			InitPosition.createGhostInitPosition(41.375f, 7, 1, 0, 20), // グズタ
-       		});
-    	
-    	r = Collections.unmodifiableMap(ps);
-    }
-
-    private static final int[] s = {32, 312}; // モンスターの巣の入り口の位置
-    private static final int[] v = {80, 312}; // フルーツ出現位置
-    // イベント時間管理テーブル. index 7, 8しか使わない
-    private static final float[] w = {
-	    0.16f,
-	    0.23f,
-	    1,
-	    1,
-	    2.23f,
-	    0.3f,
-	    1.9f,
-	    2.23f,
-	    1.9f,
-	    5,
-	    1.9f,
-	    1.18f,
-	    0.3f,
-	    0.5f,
-	    1.9f,
-	    9,
-	    10,
-	    0.26f
-    };
+    }    
     
     // 配列Aの要素のspeedプロパティで使用される
     private static float y = 0.8f * 0.4f;
 
-    private static class LevelConfig {
-        private final float ghostSpeed;
-        private final float ghostTunnelSpeed;
-        private final float playerSpeed;
-        private final float dotEatingSpeed;
-        private final float ghostFrightSpeed;
-        private final float playerFrightSpeed;
-        private final float dotEatingFrightSpeed;
-        private final int elroyDotsLeftPart1;
-        private final float elroySpeedPart1;
-        private final int elroyDotsLeftPart2;
-        private final float elroySpeedPart2;
-        private int frightTime;
-        private int frightTotalTime;
-        private final int frightBlinkCount;
-        private final int fruit;
-        private final int fruitScore;
-        private final float[] ghostModeSwitchTimes;
-        private final int penForceTime;
-        private final float[] penLeavingLimits;
-        private final int cutsceneId;
-    	
-    	private static class Builder {
-            private float ghostSpeed;
-            private float ghostTunnelSpeed;
-            private float playerSpeed;
-            private float dotEatingSpeed;
-            private float ghostFrightSpeed;
-            private float playerFrightSpeed;
-            private float dotEatingFrightSpeed;
-            private int elroyDotsLeftPart1;
-            private float elroySpeedPart1;
-            private int elroyDotsLeftPart2;
-            private float elroySpeedPart2;
-            private int frightTime;
-            private int frightTotalTime;
-            private int frightBlinkCount;
-            private int fruit;
-            private int fruitScore;
-            private float[] ghostModeSwitchTimes;
-            private int penForceTime;
-            private float[] penLeavingLimits;
-            private int cutsceneId;
-            
-            Builder ghostSpeed(float val) {
-            	this.ghostSpeed = val;
-            	return this;
-            }
-
-            Builder ghostTunnelSpeed(float val) {
-            	this.ghostTunnelSpeed = val;
-            	return this;
-            }
-            
-            Builder playerSpeed(float val) {
-            	this.playerSpeed = val;
-            	return this;
-            }
-            
-            Builder dotEatingSpeed(float val) {
-            	this.dotEatingSpeed = val;
-            	return this;
-            }
-            
-            Builder ghostFrightSpeed(float val) {
-            	this.ghostFrightSpeed = val;
-            	return this;
-            }
-            
-            Builder playerFrightSpeed(float val) {
-            	this.playerFrightSpeed = val;
-            	return this;
-            }
-            
-            Builder dotEatingFrightSpeed(float val) {
-            	this.dotEatingFrightSpeed = val;
-            	return this;
-            }
-            
-            Builder elroyDotsLeftPart1(int val) {
-            	this.elroyDotsLeftPart1 = val;
-            	return this;
-            }
-            
-            Builder elroySpeedPart1(float val) {
-            	this.elroySpeedPart1 = val;
-            	return this;
-            }
-            
-            Builder elroyDotsLeftPart2(int val) {
-            	this.elroyDotsLeftPart2 = val;
-            	return this;
-            }
-            
-            Builder elroySpeedPart2(float val) {
-            	this.elroySpeedPart2 = val;
-            	return this;
-            }
-            
-            Builder frightTime(int val) {
-            	this.frightTime = val;
-            	return this;
-            }
-
-            Builder frightTotalTime(int val) {
-            	this.frightTotalTime = val;
-            	return this;
-            }
-
-            Builder frightBlinkCount(int val) {
-            	this.frightBlinkCount = val;
-            	return this;
-            }
-            
-            Builder fruit(int val) {
-            	this.fruit = val;
-            	return this;
-            }
-            
-            Builder fruitScore(int val) {
-            	this.fruitScore = val;
-            	return this;
-            }
-
-            Builder ghostModeSwitchTimes(float[] val) {
-            	this.ghostModeSwitchTimes = val;
-            	return this;
-            }
-
-            Builder penForceTime(int val) {
-            	this.penForceTime = val;
-            	return this;
-            }
-            
-            Builder penLeavingLimits(float[] val) {
-            	this.penLeavingLimits = val;
-            	return this;
-            }
-
-            Builder cutsceneId(int val) {
-            	this.cutsceneId = val;
-            	return this;
-            }
-            
-            LevelConfig build() {
-            	return new LevelConfig(this);
-            }
-    	}
-    	
-    	private LevelConfig(Builder builder) {
-            this.ghostSpeed = builder.ghostSpeed;
-            this.ghostTunnelSpeed = builder.ghostTunnelSpeed;
-            this.playerSpeed = builder.playerSpeed;
-            this.dotEatingSpeed = builder.dotEatingSpeed;
-            this.ghostFrightSpeed = builder.ghostFrightSpeed;
-            this.playerFrightSpeed = builder.playerFrightSpeed;
-            this.dotEatingFrightSpeed = builder.dotEatingFrightSpeed;
-            this.elroyDotsLeftPart1 = builder.elroyDotsLeftPart1;
-            this.elroySpeedPart1 = builder.elroySpeedPart1;
-            this.elroyDotsLeftPart2 = builder.elroyDotsLeftPart2;
-            this.elroySpeedPart2 = builder.elroySpeedPart2;
-            this.frightTime = builder.frightTime;
-            this.frightTotalTime = builder.frightTotalTime;
-            this.frightBlinkCount = builder.frightBlinkCount;
-            this.fruit = builder.fruit;
-            this.fruitScore = builder.fruitScore;
-            this.ghostModeSwitchTimes = builder.ghostModeSwitchTimes;
-            this.penForceTime = builder.penForceTime;
-            this.penLeavingLimits = builder.penLeavingLimits;
-            this.cutsceneId = builder.cutsceneId;
-    	}
-    }
-
-    private static class MoveInPen {
-    	final float x;
-    	final float y;
-    	final int dir;
-    	final float dest;
-    	final float speed;
-    	MoveInPen(float x, float y, int dir, float dest, float speed) {
-    		this.x = x;
-    		this.y = y;
-    		this.dir = dir;
-    		this.dest = dest;
-    		this.speed = speed;
-    	}
-    }
-    // モンスターの巣の中での動き
-    private static final Map<Integer, MoveInPen[]> A;
-    static {
-    	Map<Integer, MoveInPen[]> mvs = new HashMap<Integer, MoveInPen[]>();
-    	mvs.put(
-    		Integer.valueOf(1),
-    		new MoveInPen[] {
-    			new MoveInPen(37.6f, 7, 1, 6.375f, 0.48f),
-    			new MoveInPen(37.6f, 6.375f, 2, 7.625f, 0.48f),
-    			new MoveInPen(37.6f, 7.625f, 1, 7, 0.48f),
-    		});
-    	mvs.put(
-    		Integer.valueOf(2),
-    		new MoveInPen[] {
-    			new MoveInPen(39.5f, 7, 2, 7.625f, 0.48f),
-    			new MoveInPen(39.5f, 7.625f, 1, 6.375f, 0.48f),
-    			new MoveInPen(39.5f, 6.375f, 2, 7, 0.48f),
-    		});
-    	mvs.put(
-    		Integer.valueOf(3),
-    		new MoveInPen[] {
-    			new MoveInPen(41.4f, 7, 1, 6.375f, 0.48f),
-    			new MoveInPen(41.4f, 6.375f, 2, 7.625f, 0.48f),
-    			new MoveInPen(41.4f, 7.625f, 1, 7, 0.48f),
-    		});
-    	mvs.put(
-    		Integer.valueOf(4),
-    		new MoveInPen[] {
-    			new MoveInPen(37.6f, 7, 8, 39.5f, 7),
-    			new MoveInPen(39.5f, 7, 1, 4, 7),
-    		});
-    	mvs.put(
-    		Integer.valueOf(5),
-    		new MoveInPen[] { new MoveInPen(39.5f, 7, 1, 4, 7) });
-    	mvs.put(
-        	Integer.valueOf(6),
-        	new MoveInPen[] {
-        		new MoveInPen(41.4f, 7, 4, 39.5f, 7),
-        		new MoveInPen(39.5f, 7, 1, 4, 7),
-        	});
-    	mvs.put(
-           	Integer.valueOf(7),
-           	new MoveInPen[] {
-           		new MoveInPen(39.5f, 4, 2, 7, 1.6f),
-           		new MoveInPen(39.5f, 7, 4, 37.625f, 1.6f),
-           	});
-    	mvs.put(
-       		Integer.valueOf(8),
-       		new MoveInPen[] { new MoveInPen(39.5f, 4, 2, 7, 1.6f) });
-    	mvs.put(
-           	Integer.valueOf(9),
-           	new MoveInPen[] {
-           		new MoveInPen(39.5f, 4, 2, 7, 1.6f),
-           		new MoveInPen(39.5f, 7, 8, 41.375f, 1.6f),
-           	});
-    	mvs.put(
-           	Integer.valueOf(10),
-           	new MoveInPen[] {
-           		new MoveInPen(37.6f, 7, 8, 39.5f, 7),
-           		new MoveInPen(39.5f, 7, 1, 4, 7),
-           	});
-    	mvs.put(
-       		Integer.valueOf(11),
-       		new MoveInPen[] { new MoveInPen(39.5f, 7, 1, 4, 7) });
-    	mvs.put(
-               	Integer.valueOf(12),
-               	new MoveInPen[] {
-               		new MoveInPen(41.4f, 7, 4, 39.5f, 7),
-               		new MoveInPen(39.5f, 7, 1, 4, 7),
-               	});
-    	A = Collections.unmodifiableMap(mvs);
-    }
-
-    // Cutscene Animation
-    private static class Cutscene {
-    	final CutsceneActor[] actors;
-    	final CutsceneSequence[] sequence;
-    	Cutscene(CutsceneActor[] actors, CutsceneSequence[] sequence) {
-    		this.actors = actors;
-    		this.sequence = sequence;
-    	}
-    }
-    private static class CutsceneActor {
-    	final boolean ghost;
-    	final float x;
-    	final float y;
-    	final int id;
-    	CutsceneActor(boolean ghost, float x, float y, int id) {
-    		this.ghost = ghost;
-    		this.x = x;
-    		this.y = y;
-    		this.id = id;
-    	}
-    }
-    private static class CutsceneSequence {
-    	final float time;
-    	final MoveInCutscene[] moves;
-    	CutsceneSequence(float time, MoveInCutscene[] moves) {
-    		this.time = time;
-    		this.moves = moves;
-    	}
-    }
-    private static class MoveInCutscene {
-    	final int dir;
-    	final float speed;
-    	final String elId;
-    	final int mode;
-    	MoveInCutscene(int dir, float speed) {
-    		this(dir, speed, null, -1);
-		}
-    	MoveInCutscene(int dir, float speed, String elId) {
-    		this(dir, speed, elId, -1);
-    	}
-    	MoveInCutscene(int dir, float speed, int mode) {
-    		this(dir, speed, null, mode);
-    	}
-    	MoveInCutscene(int dir, float speed, String elId, int mode) {
-    		this.dir = dir;
-    		this.speed = speed;
-    		this.elId = elId;
-    		this.mode = mode;
-		}
-    }
-    
-
-  // Class for Actor(Pacman, Ms.Pacman, Ghost)
+    // Class for Actor(Pacman, Ms.Pacman, Ghost)
     private static class E {
+
+        private static final int[] i = {1, 4, 2, 8};
+        
+        private static class InitPosition {
+        	final float x;
+        	final float y;
+        	final int dir;
+        	final float scatterX;
+        	final float scatterY;
+
+        	InitPosition(float x, float y, int dir) {
+        		this(x, y, dir, 0, 0);
+        	}
+        	
+        	InitPosition(float x, float y, int dir, float scatterX, float scatterY) {
+        		this.x = x;
+        		this.y = y;
+        		this.dir = dir;
+        		this.scatterX = scatterX;
+        		this.scatterY = scatterY;
+        	}
+        	
+        	static InitPosition createPlayerInitPosition(float x, float y, int dir) {
+        		return new InitPosition(x, y, dir);
+        	}
+        	
+        	static InitPosition createGhostInitPosition(float x, float y, int dir,
+        											float scatterX, float scatterY) {
+        		return new InitPosition(x, y, dir, scatterX, scatterY);
+        	}
+        }
+
+        // Actor初期配置
+        private static final Map<Integer, InitPosition[]> r;
+        static {
+        	Map<Integer, InitPosition[]> ps = new HashMap<Integer, InitPosition[]>();
+        	ps.put(
+        		Integer.valueOf(1),
+        		new InitPosition[] {
+        			InitPosition.createPlayerInitPosition(39.5f, 15, 4), // Pacman
+        			InitPosition.createGhostInitPosition(39.5f, 4, 4, 57, -4), // アカベエ
+        			InitPosition.createGhostInitPosition(39.5f, 7, 2, 0, -4), // ピンキー
+        			InitPosition.createGhostInitPosition(37.625f, 7, 1, 57, 20), // アオスケ
+        			InitPosition.createGhostInitPosition(41.375f, 7, 1, 0, 20), // グズタ
+        		});
+        	ps.put(
+           		Integer.valueOf(1),
+           		new InitPosition[] {
+           			InitPosition.createPlayerInitPosition(40.25f, 15, 8), // Pacman
+           			InitPosition.createPlayerInitPosition(38.75f, 15, 4), // Ms.Pacman
+           			InitPosition.createGhostInitPosition(39.5f, 4, 4, 57, -4), // アカベエ
+           			InitPosition.createGhostInitPosition(39.5f, 7, 2, 0, -4), // ピンキー
+           			InitPosition.createGhostInitPosition(37.625f, 7, 1, 57, 20), // アオスケ
+           			InitPosition.createGhostInitPosition(41.375f, 7, 1, 0, 20), // グズタ
+           		});
+        	
+        	r = Collections.unmodifiableMap(ps);
+        }
+
+        private static final int[] s = {32, 312}; // モンスターの巣の入り口の位置
+        private static final int[] v = {80, 312}; // フルーツ出現位置
+
+        private static class MoveInPen {
+        	final float x;
+        	final float y;
+        	final int dir;
+        	final float dest;
+        	final float speed;
+        	MoveInPen(float x, float y, int dir, float dest, float speed) {
+        		this.x = x;
+        		this.y = y;
+        		this.dir = dir;
+        		this.dest = dest;
+        		this.speed = speed;
+        	}
+        }
+
+        // モンスターの巣の中での動き
+        private static final Map<Integer, MoveInPen[]> A;
+        static {
+        	Map<Integer, MoveInPen[]> mvs = new HashMap<Integer, MoveInPen[]>();
+        	mvs.put(
+        		Integer.valueOf(1),
+        		new MoveInPen[] {
+        			new MoveInPen(37.6f, 7, 1, 6.375f, 0.48f),
+        			new MoveInPen(37.6f, 6.375f, 2, 7.625f, 0.48f),
+        			new MoveInPen(37.6f, 7.625f, 1, 7, 0.48f),
+        		});
+        	mvs.put(
+        		Integer.valueOf(2),
+        		new MoveInPen[] {
+        			new MoveInPen(39.5f, 7, 2, 7.625f, 0.48f),
+        			new MoveInPen(39.5f, 7.625f, 1, 6.375f, 0.48f),
+        			new MoveInPen(39.5f, 6.375f, 2, 7, 0.48f),
+        		});
+        	mvs.put(
+        		Integer.valueOf(3),
+        		new MoveInPen[] {
+        			new MoveInPen(41.4f, 7, 1, 6.375f, 0.48f),
+        			new MoveInPen(41.4f, 6.375f, 2, 7.625f, 0.48f),
+        			new MoveInPen(41.4f, 7.625f, 1, 7, 0.48f),
+        		});
+        	mvs.put(
+        		Integer.valueOf(4),
+        		new MoveInPen[] {
+        			new MoveInPen(37.6f, 7, 8, 39.5f, y),
+        			new MoveInPen(39.5f, 7, 1, 4, y),
+        		});
+        	mvs.put(
+        		Integer.valueOf(5),
+        		new MoveInPen[] { new MoveInPen(39.5f, 7, 1, 4, y) });
+        	mvs.put(
+            	Integer.valueOf(6),
+            	new MoveInPen[] {
+            		new MoveInPen(41.4f, 7, 4, 39.5f, y),
+            		new MoveInPen(39.5f, 7, 1, 4, y),
+            	});
+        	mvs.put(
+               	Integer.valueOf(7),
+               	new MoveInPen[] {
+               		new MoveInPen(39.5f, 4, 2, 7, 1.6f),
+               		new MoveInPen(39.5f, 7, 4, 37.625f, 1.6f),
+               	});
+        	mvs.put(
+           		Integer.valueOf(8),
+           		new MoveInPen[] { new MoveInPen(39.5f, 4, 2, 7, 1.6f) });
+        	mvs.put(
+               	Integer.valueOf(9),
+               	new MoveInPen[] {
+               		new MoveInPen(39.5f, 4, 2, 7, 1.6f),
+               		new MoveInPen(39.5f, 7, 8, 41.375f, 1.6f),
+               	});
+        	mvs.put(
+               	Integer.valueOf(10),
+               	new MoveInPen[] {
+               		new MoveInPen(37.6f, 7, 8, 39.5f, y),
+               		new MoveInPen(39.5f, 7, 1, 4, y),
+               	});
+        	mvs.put(
+           		Integer.valueOf(11),
+           		new MoveInPen[] { new MoveInPen(39.5f, 7, 1, 4, y) });
+        	mvs.put(
+                   	Integer.valueOf(12),
+                   	new MoveInPen[] {
+                   		new MoveInPen(41.4f, 7, 4, 39.5f, y),
+                   		new MoveInPen(39.5f, 7, 1, 4, y),
+                   	});
+        	A = Collections.unmodifiableMap(mvs);
+        }
+        
+
     	final int id;
     	private final Game g;
     	boolean ghost;
@@ -516,8 +231,6 @@ public class Pacman10Hp3 {
     	Boolean[] speedIntervals;
     	int dotCount;
     	Object el;
-
-
     	
     	E(int b, Game g) {
     		this.id = b;
@@ -1302,6 +1015,63 @@ public class Pacman10Hp3 {
         // そのしきい値をモンスター毎に設定
         private static final int[] m = {0, 7, 17, 32};
 
+        // イベント時間管理テーブル. index 7, 8しか使わない
+        private static final float[] w = {
+    	    0.16f,
+    	    0.23f,
+    	    1,
+    	    1,
+    	    2.23f,
+    	    0.3f,
+    	    1.9f,
+    	    2.23f,
+    	    1.9f,
+    	    5,
+    	    1.9f,
+    	    1.18f,
+    	    0.3f,
+    	    0.5f,
+    	    1.9f,
+    	    9,
+    	    10,
+    	    0.26f
+        };
+
+        // パスの配列.左上:(5, 1), 左下:(5, 15), 右上:(60, 1), 右下:(60, 15).
+        // 配列要素のオブジェクトのプロパティは(x, y, w) もしくは(x, y, h)
+        // 要素のオブジェクトにwプロパティがあり:横方向, 要素のオブジェクトにhプロパティがあり:縦方向
+        // x, yはパスの始点の座標
+        // h, wは各々パスの長さを表現
+        // [例外] typeプロパティを値1でもつパスはワープつき
+        private static class Path {
+        	final int x;
+        	final int y;
+        	final int w;
+        	final int h;
+        	final boolean tunnel;
+        	
+        	private Path(int x, int y, int w, int h) {
+        		this(x, y, w, h, false);
+        	}
+        	private Path(int x, int y, int w, int h, boolean tunnel) {
+        		this.x = x;
+        		this.y = y;
+        		this.w = w;
+        		this.h = h;
+        		this.tunnel = tunnel;
+        	}
+
+        	static Path createHorizontalPath(int x, int y, int w) {
+        		return new Path(x, y, w, 0);
+        	}
+        	static Path createVerticalPath(int x, int y, int h) {
+        		return new Path(x, y, 0, h);
+        	}
+        	static Path createTunnelPath(int x, int y, int w) {
+        		return new Path(x, y, w, 0, true);
+        	}
+        }
+
         private static final Path[] n = {
         	Path.createHorizontalPath(5, 1, 56),
         	Path.createHorizontalPath(5, 4, 5),
@@ -1354,6 +1124,15 @@ public class Pacman10Hp3 {
         	Path.createHorizontalPath(39, 15, 2),
         };
 
+        private static class Position {
+        	final int x;
+        	final int y;
+        	Position(int x, int y) {
+        		this.x = x;
+        		this.y = y;
+        	}
+        }
+
         // パワーエサ
         private static final Position[] p = {
         	new Position(5, 15),
@@ -1368,6 +1147,179 @@ public class Pacman10Hp3 {
         	new Position(2, 8),
         	new Position(63, 8),
         };
+
+        private static class LevelConfig {
+            private final float ghostSpeed;
+            private final float ghostTunnelSpeed;
+            private final float playerSpeed;
+            private final float dotEatingSpeed;
+            private final float ghostFrightSpeed;
+            private final float playerFrightSpeed;
+            private final float dotEatingFrightSpeed;
+            private final int elroyDotsLeftPart1;
+            private final float elroySpeedPart1;
+            private final int elroyDotsLeftPart2;
+            private final float elroySpeedPart2;
+            private int frightTime;
+            private int frightTotalTime;
+            private final int frightBlinkCount;
+            private final int fruit;
+            private final int fruitScore;
+            private final float[] ghostModeSwitchTimes;
+            private final int penForceTime;
+            private final float[] penLeavingLimits;
+            private final int cutsceneId;
+        	
+        	private static class Builder {
+                private float ghostSpeed;
+                private float ghostTunnelSpeed;
+                private float playerSpeed;
+                private float dotEatingSpeed;
+                private float ghostFrightSpeed;
+                private float playerFrightSpeed;
+                private float dotEatingFrightSpeed;
+                private int elroyDotsLeftPart1;
+                private float elroySpeedPart1;
+                private int elroyDotsLeftPart2;
+                private float elroySpeedPart2;
+                private int frightTime;
+                private int frightTotalTime;
+                private int frightBlinkCount;
+                private int fruit;
+                private int fruitScore;
+                private float[] ghostModeSwitchTimes;
+                private int penForceTime;
+                private float[] penLeavingLimits;
+                private int cutsceneId;
+                
+                Builder ghostSpeed(float val) {
+                	this.ghostSpeed = val;
+                	return this;
+                }
+
+                Builder ghostTunnelSpeed(float val) {
+                	this.ghostTunnelSpeed = val;
+                	return this;
+                }
+                
+                Builder playerSpeed(float val) {
+                	this.playerSpeed = val;
+                	return this;
+                }
+                
+                Builder dotEatingSpeed(float val) {
+                	this.dotEatingSpeed = val;
+                	return this;
+                }
+                
+                Builder ghostFrightSpeed(float val) {
+                	this.ghostFrightSpeed = val;
+                	return this;
+                }
+                
+                Builder playerFrightSpeed(float val) {
+                	this.playerFrightSpeed = val;
+                	return this;
+                }
+                
+                Builder dotEatingFrightSpeed(float val) {
+                	this.dotEatingFrightSpeed = val;
+                	return this;
+                }
+                
+                Builder elroyDotsLeftPart1(int val) {
+                	this.elroyDotsLeftPart1 = val;
+                	return this;
+                }
+                
+                Builder elroySpeedPart1(float val) {
+                	this.elroySpeedPart1 = val;
+                	return this;
+                }
+                
+                Builder elroyDotsLeftPart2(int val) {
+                	this.elroyDotsLeftPart2 = val;
+                	return this;
+                }
+                
+                Builder elroySpeedPart2(float val) {
+                	this.elroySpeedPart2 = val;
+                	return this;
+                }
+                
+                Builder frightTime(int val) {
+                	this.frightTime = val;
+                	return this;
+                }
+
+                Builder frightTotalTime(int val) {
+                	this.frightTotalTime = val;
+                	return this;
+                }
+
+                Builder frightBlinkCount(int val) {
+                	this.frightBlinkCount = val;
+                	return this;
+                }
+                
+                Builder fruit(int val) {
+                	this.fruit = val;
+                	return this;
+                }
+                
+                Builder fruitScore(int val) {
+                	this.fruitScore = val;
+                	return this;
+                }
+
+                Builder ghostModeSwitchTimes(float[] val) {
+                	this.ghostModeSwitchTimes = val;
+                	return this;
+                }
+
+                Builder penForceTime(int val) {
+                	this.penForceTime = val;
+                	return this;
+                }
+                
+                Builder penLeavingLimits(float[] val) {
+                	this.penLeavingLimits = val;
+                	return this;
+                }
+
+                Builder cutsceneId(int val) {
+                	this.cutsceneId = val;
+                	return this;
+                }
+                
+                LevelConfig build() {
+                	return new LevelConfig(this);
+                }
+        	}
+        	
+        	private LevelConfig(Builder builder) {
+                this.ghostSpeed = builder.ghostSpeed;
+                this.ghostTunnelSpeed = builder.ghostTunnelSpeed;
+                this.playerSpeed = builder.playerSpeed;
+                this.dotEatingSpeed = builder.dotEatingSpeed;
+                this.ghostFrightSpeed = builder.ghostFrightSpeed;
+                this.playerFrightSpeed = builder.playerFrightSpeed;
+                this.dotEatingFrightSpeed = builder.dotEatingFrightSpeed;
+                this.elroyDotsLeftPart1 = builder.elroyDotsLeftPart1;
+                this.elroySpeedPart1 = builder.elroySpeedPart1;
+                this.elroyDotsLeftPart2 = builder.elroyDotsLeftPart2;
+                this.elroySpeedPart2 = builder.elroySpeedPart2;
+                this.frightTime = builder.frightTime;
+                this.frightTotalTime = builder.frightTotalTime;
+                this.frightBlinkCount = builder.frightBlinkCount;
+                this.fruit = builder.fruit;
+                this.fruitScore = builder.fruitScore;
+                this.ghostModeSwitchTimes = builder.ghostModeSwitchTimes;
+                this.penForceTime = builder.penForceTime;
+                this.penLeavingLimits = builder.penLeavingLimits;
+                this.cutsceneId = builder.cutsceneId;
+        	}
+        }
 
         // ゲームレベル毎の設定
         private static final LevelConfig[] z = {
@@ -1798,6 +1750,57 @@ public class Pacman10Hp3 {
     				.penLeavingLimits(new float[] { 0, 0, 0, 0, })
     				.build(),
         };
+
+        // Cutscene Animation
+        private static class Cutscene {
+        	final CutsceneActor[] actors;
+        	final CutsceneSequence[] sequence;
+        	Cutscene(CutsceneActor[] actors, CutsceneSequence[] sequence) {
+        		this.actors = actors;
+        		this.sequence = sequence;
+        	}
+        }
+        private static class CutsceneActor {
+        	final boolean ghost;
+        	final float x;
+        	final float y;
+        	final int id;
+        	CutsceneActor(boolean ghost, float x, float y, int id) {
+        		this.ghost = ghost;
+        		this.x = x;
+        		this.y = y;
+        		this.id = id;
+        	}
+        }
+        private static class CutsceneSequence {
+        	final float time;
+        	final MoveInCutscene[] moves;
+        	CutsceneSequence(float time, MoveInCutscene[] moves) {
+        		this.time = time;
+        		this.moves = moves;
+        	}
+        }
+        private static class MoveInCutscene {
+        	final int dir;
+        	final float speed;
+        	final String elId;
+        	final int mode;
+        	MoveInCutscene(int dir, float speed) {
+        		this(dir, speed, null, -1);
+    		}
+        	MoveInCutscene(int dir, float speed, String elId) {
+        		this(dir, speed, elId, -1);
+        	}
+        	MoveInCutscene(int dir, float speed, int mode) {
+        		this(dir, speed, null, mode);
+        	}
+        	MoveInCutscene(int dir, float speed, String elId, int mode) {
+        		this.dir = dir;
+        		this.speed = speed;
+        		this.elId = elId;
+        		this.mode = mode;
+    		}
+        }
 
         private static final Map<Integer, Cutscene> B;
         static {
