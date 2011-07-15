@@ -41,9 +41,6 @@ public class Pacman10Hp3 {
         int allowedDir;
     }    
     
-    // 配列Aの要素のspeedプロパティで使用される
-    private static float y = 0.8f * 0.4f;
-
     // Class for Actor(Pacman, Ms.Pacman, Ghost)
     private static class E {
 
@@ -122,6 +119,9 @@ public class Pacman10Hp3 {
         		this.speed = speed;
         	}
         }
+
+        // 配列Aの要素のspeedプロパティで使用される
+        private static float y = 0.8f * 0.4f;
 
         // モンスターの巣の中での動き
         private static final Map<Integer, MoveInPen[]> A;
@@ -349,11 +349,11 @@ public class Pacman10Hp3 {
 	    	break;
 	    }
 	    this.d();
-	  }
+	}
 	// 追跡対象のActorを決定(Pacman or Ms.Pacman)
 	void l() {
 	    if (this.id >= g.playerCount)
-	      this.targetPlayerId = (int) Math.floor(g.rand() * g.playerCount);
+	        this.targetPlayerId = (int) Math.floor(g.rand() * g.playerCount);
 	}
 	
 	// 位置, 速度の決定
@@ -362,7 +362,7 @@ public class Pacman10Hp3 {
 	    	g.pacManSound = a;
 	    	g.updateSoundIcon();
 	    }
-	    if (this.dir == g.oppositeDirections[b]) {
+	    if (this.dir == g.oppositeDirections.get(Integer.valueOf(b)).intValue()) {
 	    	this.dir = b;
 	    	this.posDelta = new float[] {0, 0};
 	    	if (this.currentSpeed != 2) this.c(0);
@@ -424,13 +424,15 @@ public class Pacman10Hp3 {
 		    	case 1: // 追跡
 		    	case 8: // プレイヤーに食べられる
 		    		int nDir = 0;
-			        if ((this.dir & h.allowedDir) == 0 && h.allowedDir == g.oppositeDirections[this.dir]) // 反対向きしか通れないなら反対向きを選ぶ
-			        	this.nextDir = g.oppositeDirections[this.dir];
+			        if ((this.dir & h.allowedDir) == 0
+			        		&& h.allowedDir == g.oppositeDirections.get(Integer.valueOf(this.dir)).intValue()) // 反対向きしか通れないなら反対向きを選ぶ
+			        	this.nextDir = g.oppositeDirections.get(Integer.valueOf(this.dir)).intValue();
 			        else { // 反対向き以外を選択可能なら、目的地に最も近い方向を選択する
 			        	float max = 99999999999f;
 			        	float distance = 0;
 			        	for (int k : i) {
-			        		if ((h.allowedDir & k) != 0 && this.dir != g.oppositeDirections[k]) {
+			        		if ((h.allowedDir & k) != 0
+			        				&& this.dir != g.oppositeDirections.get(Integer.valueOf(k)).intValue()) {
 			        			d = l.get(k);
 			        			float[] x = new float[] {(float) f[0], (float) f[1]};
 			        			x[d.axis] += d.increment;
@@ -445,12 +447,14 @@ public class Pacman10Hp3 {
 			        }
 			        break;
 		    	case 4: // ブルーモード
-			        if ((this.dir & h.allowedDir) == 0 && h.allowedDir == g.oppositeDirections[this.dir]) // 反対向きしか通れないなら反対向きを選ぶ
-			        	this.nextDir = g.oppositeDirections[this.dir];
+			        if ((this.dir & h.allowedDir) == 0
+			        		&& h.allowedDir == g.oppositeDirections.get(Integer.valueOf(this.dir)).intValue()) // 反対向きしか通れないなら反対向きを選ぶ
+			        	this.nextDir = g.oppositeDirections.get(Integer.valueOf(this.dir)).intValue();
 			        else { // 移動可能な方向のうち反対向き以外を選択
 			        	int ndir = 0;
 			        	do ndir = i[(int) Math.floor(g.rand() * 4)];
-			        	while ((ndir & h.allowedDir) == 0 || ndir == g.oppositeDirections[this.dir]);
+			        	while ((ndir & h.allowedDir) == 0
+			        				|| ndir == g.oppositeDirections.get(Integer.valueOf(this.dir)).intValue());
 			        	this.nextDir = ndir;
 			        }
 			        break;
@@ -460,7 +464,7 @@ public class Pacman10Hp3 {
 		void p(int[] b) {
 		    g.tilesChanged = a;
 		    if (this.reverseDirectionsNext) { // 方向を反転する(この判定がtrueになるのはモンスターのみ)
-		    	this.dir = g.oppositeDirections[this.dir];
+		    	this.dir = g.oppositeDirections.get(Integer.valueOf(this.dir)).intValue();
 		    	this.nextDir = 0;
 		    	this.reverseDirectionsNext = e;
 		    	this.i(a);
@@ -537,11 +541,11 @@ public class Pacman10Hp3 {
 		
 		void n() {
 		    if (this.pos[0] == g.q[0].y * 8 && this.pos[1] == g.q[0].x * 8) { // 画面左から右へワープ
-		      this.pos[0] = g.q[1].y * 8;
-		      this.pos[1] = (g.q[1].x - 1) * 8;
+		        this.pos[0] = g.q[1].y * 8;
+		        this.pos[1] = (g.q[1].x - 1) * 8;
 		    } else if (this.pos[0] == g.q[1].y * 8 && this.pos[1] == g.q[1].x * 8) { // 画面右から左へワープ
-		      this.pos[0] = g.q[0].y * 8;
-		      this.pos[1] = (g.q[0].x + 1) * 8;
+		        this.pos[0] = g.q[0].y * 8;
+		        this.pos[1] = (g.q[0].x + 1) * 8;
 		    }
 		    // モンスターが巣に入る
 		    if (this.mode == 8
@@ -552,7 +556,7 @@ public class Pacman10Hp3 {
 		    // プレイヤーがフルーツを食べる
 		    if (!this.ghost && this.pos[0] == v[0]
 		        && (this.pos[1] == v[1] || this.pos[1] == v[1] + 8))
-		      g.eatFruit(this.id);
+		        g.eatFruit(this.id);
 		}
 		
 		// posの値がtilePosと一致(pos が8の倍数)したときに呼び出される
@@ -572,11 +576,11 @@ public class Pacman10Hp3 {
 				        this.pos[1] += this.posDelta[1];
 				        this.posDelta = new float[] {0, 0};
 			        }
-		      } else if ((this.dir & b.allowedDir) == 0) { // nextDirもdirも移動不可だったら、停止
-		    	  if (this.dir != 0) this.lastActiveDir = this.dir;
-		    	  this.nextDir = this.dir = 0;
-		    	  this.c(0);
-		      }
+		    } else if ((this.dir & b.allowedDir) == 0) { // nextDirもdirも移動不可だったら、停止
+		    	if (this.dir != 0) this.lastActiveDir = this.dir;
+		    	this.nextDir = this.dir = 0;
+		    	this.c(0);
+		    }
 		}
 
 		void o() {
@@ -682,7 +686,7 @@ public class Pacman10Hp3 {
 			        		this.pos[c.axis] = b.dest * 8;
 			        		this.proceedToNextRoutineMove = a;
 			        	}
-			          break;
+			            break;
 			        case 2:
 			        case 8:
 			        	if (this.pos[c.axis] > b.dest * 8) {
@@ -1009,7 +1013,7 @@ public class Pacman10Hp3 {
 		}
     }
     
-    private static class Game {
+    static class Game {
 
         // レベル再開後、一定数のエサが食べられるとモンスターが巣から出てくる
         // そのしきい値をモンスター毎に設定
@@ -1905,6 +1909,7 @@ public class Pacman10Hp3 {
         private static final int[] C = { 90, 45, 30, }; // fps オプション
         private static final int D = C[0]; // 本来想定されているfps
         
+        private final GameFieldView view;
         private boolean ready;
         private boolean soundReady;
         private boolean graphicsReady;        
@@ -1966,7 +1971,7 @@ public class Pacman10Hp3 {
 		private float currentDotEatingSpeed;
 		private float cruiseElroySpeed;
 		private Map<Float, Boolean[]> speedIntervals;
-		private int[] oppositeDirections;
+		private Map<Integer, Integer> oppositeDirections;
 		
 		private int modeScoreMultiplier;
 		
@@ -2003,6 +2008,10 @@ public class Pacman10Hp3 {
 		
 	    private boolean[] dotEatingNow;
 	    private boolean[] dotEatingNext;
+	    
+	    Game(GameFieldView view) {
+	    	this.view = view;
+	    }
 
 
     	float rand() {
@@ -3121,7 +3130,9 @@ public class Pacman10Hp3 {
 			        blinkEnergizers();
 			        blinkScoreLabels();
 			        handleTimers();
-		      }
+		    	}
+		    
+		    setTimeout();
 		}
 
 		void extraLife(int b) {
@@ -3355,7 +3366,6 @@ public class Pacman10Hp3 {
 		}
 		
 		void initializeTickTimer() {
-		//    window.clearInterval(tickTimer);
 		    fps = C[fpsChoice];
 		    tickInterval = 1000 / fps;
 		    tickMultiplier = D / fps;
@@ -3367,7 +3377,10 @@ public class Pacman10Hp3 {
 		    lastTime = new Date().getTime();
 		    lastTimeDelta = 0;
 		    lastTimeSlownessCount = 0;
-		//    tickTimer = window.setInterval(tick, tickInterval)
+		}
+		
+		void setTimeout() {
+		    view.redrawHandler.sleep(Math.round(tickInterval)); // TODO: 要見直し			
 		}
 		
 		void decreaseFps() {
@@ -3404,15 +3417,16 @@ public class Pacman10Hp3 {
 		    	addCss();
 		    	createCanvasElement();
 		    	speedIntervals = new HashMap<Float, Boolean[]>();
-		    	oppositeDirections = new int[4];
-		    	oppositeDirections[1] = 2;
-		    	oppositeDirections[2] = 1;
-		    	oppositeDirections[4] = 8;
-		    	oppositeDirections[8] = 4;
+		    	oppositeDirections = new HashMap<Integer, Integer>();
+		    	oppositeDirections.put(Integer.valueOf(1), Integer.valueOf(2));
+		    	oppositeDirections.put(Integer.valueOf(2), Integer.valueOf(1));
+		    	oppositeDirections.put(Integer.valueOf(4), Integer.valueOf(8));
+		    	oppositeDirections.put(Integer.valueOf(8), Integer.valueOf(4));
 		    	addEventListeners();
 		    	fpsChoice = 0;
 		    	canDecreaseFps = a;
 		    	initializeTickTimer();
+		    	setTimeout();
 		    	newGame();
 		    }
 		}
@@ -3622,9 +3636,5 @@ public class Pacman10Hp3 {
 		    prepareGraphics();
 		    prepareSound();
 		}
-    }
-    
-    public static void main(String[] args) {
-    	new Game().init(); 
     }
 }
