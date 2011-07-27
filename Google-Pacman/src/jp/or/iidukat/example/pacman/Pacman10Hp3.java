@@ -7,6 +7,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import jp.or.iidukat.example.pacman.PlayField.Food;
+import jp.or.iidukat.example.pacman.PlayField.GameOver;
+import jp.or.iidukat.example.pacman.PlayField.Ready;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+
 
 public class Pacman10Hp3 {
 	
@@ -33,6 +39,8 @@ public class Pacman10Hp3 {
     	l = Collections.unmodifiableMap(ds);
     }
     
+    private static final int[] v = {80, 312}; // フルーツ出現位置
+    
     private static class PathElement {
         boolean path;
         int dot;
@@ -40,9 +48,9 @@ public class Pacman10Hp3 {
         boolean tunnel;
         int allowedDir;
     }    
-    
+
     // Class for Actor(Pacman, Ms.Pacman, Ghost)
-    private static class E {
+    static class E {
 
         private static final int[] i = {1, 4, 2, 8};
         
@@ -89,7 +97,7 @@ public class Pacman10Hp3 {
         			InitPosition.createGhostInitPosition(41.375f, 7, 1, 0, 20), // グズタ
         		});
         	ps.put(
-           		Integer.valueOf(1),
+           		Integer.valueOf(2),
            		new InitPosition[] {
            			InitPosition.createPlayerInitPosition(40.25f, 15, 8), // Pacman
            			InitPosition.createPlayerInitPosition(38.75f, 15, 4), // Ms.Pacman
@@ -103,7 +111,6 @@ public class Pacman10Hp3 {
         }
 
         private static final int[] s = {32, 312}; // モンスターの巣の入り口の位置
-        private static final int[] v = {80, 312}; // フルーツ出現位置
 
         private static class MoveInPen {
         	final float x;
@@ -188,15 +195,14 @@ public class Pacman10Hp3 {
            		Integer.valueOf(11),
            		new MoveInPen[] { new MoveInPen(39.5f, 7, 1, 4, y) });
         	mvs.put(
-                   	Integer.valueOf(12),
-                   	new MoveInPen[] {
-                   		new MoveInPen(41.4f, 7, 4, 39.5f, y),
-                   		new MoveInPen(39.5f, 7, 1, 4, y),
-                   	});
+                Integer.valueOf(12),
+                new MoveInPen[] {
+                	new MoveInPen(41.4f, 7, 4, 39.5f, y),
+                	new MoveInPen(39.5f, 7, 1, 4, y),
+                });
         	A = Collections.unmodifiableMap(mvs);
         }
         
-
     	final int id;
     	private final Game g;
     	boolean ghost;
@@ -230,8 +236,9 @@ public class Pacman10Hp3 {
     	float tunnelSpeed;
     	Boolean[] speedIntervals;
     	int dotCount;
-    	Object el;
-    	
+        
+    	Presentation el = new Presentation();
+
     	E(int b, Game g) {
     		this.id = b;
     		this.g = g;
@@ -255,155 +262,157 @@ public class Pacman10Hp3 {
     	
     	// Actor表示に使用するdivタグを生成: 表示位置、バックグランドのオフセットはダミー値
     	void createElement() {
-    		// this.el = document.createElement("div");
     		// this.el.className = "pcm-ac";
-    		// this.el.id = "actor" + this.id;
-    		// g.prepareElement(this.el, 0, 0);
-    		// g.playfieldEl.appendChild(this.el);
+    		this.el.width = 16;
+    		this.el.height = 16;
+    		this.el.id = "actor" + this.id;
+    		this.el.parent = g.playfieldEl.presentation;
+    		g.prepareElement(this.el, 0, 0);
+    		g.playfieldEl.actors.add(this);
     		this.elPos = new float[] {0, 0};
     		this.elBackgroundPos = new int[] {0, 0};
     	}
-	  // モンスターのモード設定
-	  void a(int b) {
-		  int c = this.mode;
-		  this.mode = b;
-		  if (this.id == g.playerCount + 3 && (b == 16 || c == 16)) g.updateCruiseElroySpeed();
-		  switch (c) {
-		  case 32:
-			  g.ghostExitingPenNow = e;
-			  break;
-		  case 8:
-			  if (g.ghostEyesCount > 0) g.ghostEyesCount--;
-			  if (g.ghostEyesCount == 0) g.playAmbientSound();
-			  break;
-	    }
-	    switch (b) {
-	    case 4:
-	    	this.fullSpeed = g.levels.ghostFrightSpeed * 0.8f;
-	    	this.tunnelSpeed = g.levels.ghostTunnelSpeed * 0.8f;
-	    	this.followingRoutine = e;
-	    	break;
-	    case 1:
-	    	this.fullSpeed = g.levels.ghostSpeed * 0.8f;
-	    	this.tunnelSpeed = g.levels.ghostTunnelSpeed * 0.8f;
-	    	this.followingRoutine = e;
-	    	break;
-	    case 2:
-	    	this.targetPos = this.scatterPos;
-	    	this.fullSpeed = g.levels.ghostSpeed * 0.8f;
-	    	this.tunnelSpeed = g.levels.ghostTunnelSpeed * 0.8f;
-	    	this.followingRoutine = e;
-	    	break;
-	    case 8:
-	    	this.tunnelSpeed = this.fullSpeed = 1.6f;
-	    	this.targetPos = new float[] {s[0], s[1]};
-	    	this.freeToLeavePen = this.followingRoutine = e;
-	    	break;
-	    case 16:
-	    	this.l();
-	    	this.followingRoutine = a;
-	    	this.routineMoveId = -1;
-	    	if (this.id == g.playerCount + 1)
-		        this.routineToFollow = 2;
-	    	else if (this.id == g.playerCount + 2)
-		        this.routineToFollow = 1;
-	    	else if (this.id == g.playerCount + 3)
-		        this.routineToFollow = 3;
-
-	    	break;
-	    case 32:
-	    	this.followingRoutine = a;
-	    	this.routineMoveId = -1;
-	    	if (this.id == g.playerCount + 1)
-	    		this.routineToFollow = 5;
-	    	else if (this.id == g.playerCount + 2)
-	    		this.routineToFollow = 4;
-	    	else if (this.id == g.playerCount + 3)
-	    		this.routineToFollow = 6;
-
-	    	g.ghostExitingPenNow = a;
-	    	break;
-	    case 64:
-	    	this.followingRoutine = a;
-	    	this.routineMoveId = -1;
-	    	
-	    	if (this.id == g.playerCount || this.id == g.playerCount + 1)
-	    		this.routineToFollow = 8;
-	    	else if (this.id == g.playerCount + 2)
-	    		this.routineToFollow = 7;
-	    	else if (this.id == g.playerCount + 3)
-	    		this.routineToFollow = 9;
-	    	
-	    	break;
-	    case 128:
-	    	this.followingRoutine = a;
-	    	this.routineMoveId = -1;
-	    	
-	    	if (this.id == g.playerCount || this.id == g.playerCount + 1)
-	    		this.routineToFollow = 11;
-	    	else if (this.id == g.playerCount + 2)
-	    		this.routineToFollow = 10;
-	    	else if (this.id == g.playerCount + 3)
-	    		this.routineToFollow = 12;
-	    	
-	    	break;
-	    }
-	    this.d();
-	}
-	// 追跡対象のActorを決定(Pacman or Ms.Pacman)
-	void l() {
-	    if (this.id >= g.playerCount)
-	        this.targetPlayerId = (int) Math.floor(g.rand() * g.playerCount);
-	}
+    	// モンスターのモード設定
+    	void a(int b) {
+    		int c = this.mode;
+    		this.mode = b;
+    		if (this.id == g.playerCount + 3 && (b == 16 || c == 16)) g.updateCruiseElroySpeed();
+    		switch (c) {
+    		case 32:
+    			g.ghostExitingPenNow = e;
+    			break;
+    		case 8:
+    			if (g.ghostEyesCount > 0) g.ghostEyesCount--;
+    			if (g.ghostEyesCount == 0) g.playAmbientSound();
+    			break;
+    		}
+		    switch (b) {
+		    case 4:
+		    	this.fullSpeed = g.levels.ghostFrightSpeed * 0.8f;
+		    	this.tunnelSpeed = g.levels.ghostTunnelSpeed * 0.8f;
+		    	this.followingRoutine = e;
+		    	break;
+		    case 1:
+		    	this.fullSpeed = g.levels.ghostSpeed * 0.8f;
+		    	this.tunnelSpeed = g.levels.ghostTunnelSpeed * 0.8f;
+		    	this.followingRoutine = e;
+		    	break;
+		    case 2:
+		    	this.targetPos = this.scatterPos;
+		    	this.fullSpeed = g.levels.ghostSpeed * 0.8f;
+		    	this.tunnelSpeed = g.levels.ghostTunnelSpeed * 0.8f;
+		    	this.followingRoutine = e;
+		    	break;
+		    case 8:
+		    	this.tunnelSpeed = this.fullSpeed = 1.6f;
+		    	this.targetPos = new float[] {s[0], s[1]};
+		    	this.freeToLeavePen = this.followingRoutine = e;
+		    	break;
+		    case 16:
+		    	this.l();
+		    	this.followingRoutine = a;
+		    	this.routineMoveId = -1;
+		    	if (this.id == g.playerCount + 1)
+			        this.routineToFollow = 2;
+		    	else if (this.id == g.playerCount + 2)
+			        this.routineToFollow = 1;
+		    	else if (this.id == g.playerCount + 3)
+			        this.routineToFollow = 3;
 	
-	// 位置, 速度の決定
-	void z(int b) {
-	    if (!g.userDisabledSound) { // サウンドアイコンの更新
-	    	g.pacManSound = a;
-	    	g.updateSoundIcon();
-	    }
-	    if (this.dir == g.oppositeDirections.get(Integer.valueOf(b)).intValue()) {
-	    	this.dir = b;
-	    	this.posDelta = new float[] {0, 0};
-	    	if (this.currentSpeed != 2) this.c(0);
-	    	if (this.dir != 0) this.lastActiveDir = this.dir;
-	    	this.nextDir = 0;
-	    } else if (this.dir != b)
-	    	if (this.dir == 0) {
-	    		if ((g.playfield.get(Integer.valueOf((int) this.pos[0]))
-	    						.get(Integer.valueOf((int) this.pos[1]))
-	    						.allowedDir & b) != 0)
-	    			this.dir = b;
-	    	} else {
-	    		PathElement p = g.playfield.get(Integer.valueOf(this.tilePos[0])).get(Integer.valueOf(this.tilePos[1]));
-	    		if (p != null && (p.allowedDir & b) != 0) { // 移動可能な方向が入力された場合
-	    		// 	遅延ぎみに方向入力されたかどうか判定
-	    			Direction c = l.get(this.dir);
-	    			float[] d = new float[] {this.pos[0], this.pos[1]};
-	    			d[c.axis] -= c.increment;
-	    			int f = 0;
-	    			if (d[0] == this.tilePos[0] && d[1] == this.tilePos[1]) {
-	    				f = 1;
-	    			} else {
-	    				d[c.axis] -= c.increment;
-	    				if (d[0] == this.tilePos[0] && d[1] == this.tilePos[1]) {
-	    					f = 2;
-	    				}
-	    			}
-	    			if (f != 0) { // 遅延ぎみに方向入力された場合、新しい移動方向に応じて位置を補正
-	    				this.dir = b;
-	    				this.pos[0] = this.tilePos[0];
-	    				this.pos[1] = this.tilePos[1];
-	    				c = l.get(this.dir);
-	    				this.pos[c.axis] += c.increment * f;
-	    				return;
-	    			}
-	    		}
-	    		// 移動方向の先行入力対応
-	    		this.nextDir = b;
-	    		this.posDelta = new float[] {0, 0};
-	    	}
-	  	}
+		    	break;
+		    case 32:
+		    	this.followingRoutine = a;
+		    	this.routineMoveId = -1;
+		    	if (this.id == g.playerCount + 1)
+		    		this.routineToFollow = 5;
+		    	else if (this.id == g.playerCount + 2)
+		    		this.routineToFollow = 4;
+		    	else if (this.id == g.playerCount + 3)
+		    		this.routineToFollow = 6;
+	
+		    	g.ghostExitingPenNow = a;
+		    	break;
+		    case 64:
+		    	this.followingRoutine = a;
+		    	this.routineMoveId = -1;
+		    	
+		    	if (this.id == g.playerCount || this.id == g.playerCount + 1)
+		    		this.routineToFollow = 8;
+		    	else if (this.id == g.playerCount + 2)
+		    		this.routineToFollow = 7;
+		    	else if (this.id == g.playerCount + 3)
+		    		this.routineToFollow = 9;
+		    	
+		    	break;
+		    case 128:
+		    	this.followingRoutine = a;
+		    	this.routineMoveId = -1;
+		    	
+		    	if (this.id == g.playerCount || this.id == g.playerCount + 1)
+		    		this.routineToFollow = 11;
+		    	else if (this.id == g.playerCount + 2)
+		    		this.routineToFollow = 10;
+		    	else if (this.id == g.playerCount + 3)
+		    		this.routineToFollow = 12;
+		    	
+		    	break;
+		    }
+		    this.d();
+    	}
+		// 追跡対象のActorを決定(Pacman or Ms.Pacman)
+		void l() {
+			if (this.id >= g.playerCount)
+				this.targetPlayerId = (int) Math.floor(g.rand() * g.playerCount);
+		}
+	
+		// 位置, 速度の決定
+		void z(int b) {
+		    if (!g.userDisabledSound) { // サウンドアイコンの更新
+		    	g.pacManSound = a;
+		    	g.updateSoundIcon();
+		    }
+		    if (this.dir == g.oppositeDirections.get(Integer.valueOf(b)).intValue()) {
+		    	this.dir = b;
+		    	this.posDelta = new float[] {0, 0};
+		    	if (this.currentSpeed != 2) this.c(0);
+		    	if (this.dir != 0) this.lastActiveDir = this.dir;
+		    	this.nextDir = 0;
+		    } else if (this.dir != b)
+		    	if (this.dir == 0) {
+		    		if ((g.playfield.get(Integer.valueOf((int) this.pos[0]))
+		    						.get(Integer.valueOf((int) this.pos[1]))
+		    						.allowedDir & b) != 0)
+		    			this.dir = b;
+		    	} else {
+		    		PathElement p = g.playfield.get(Integer.valueOf(this.tilePos[0])).get(Integer.valueOf(this.tilePos[1]));
+		    		if (p != null && (p.allowedDir & b) != 0) { // 移動可能な方向が入力された場合
+		    			// 	遅延ぎみに方向入力されたかどうか判定
+		    			Direction c = l.get(this.dir);
+		    			float[] d = new float[] {this.pos[0], this.pos[1]};
+		    			d[c.axis] -= c.increment;
+		    			int f = 0;
+		    			if (d[0] == this.tilePos[0] && d[1] == this.tilePos[1]) {
+		    				f = 1;
+		    			} else {
+		    				d[c.axis] -= c.increment;
+		    				if (d[0] == this.tilePos[0] && d[1] == this.tilePos[1]) {
+		    					f = 2;
+		    				}
+		    			}
+		    			if (f != 0) { // 遅延ぎみに方向入力された場合、新しい移動方向に応じて位置を補正
+		    				this.dir = b;
+		    				this.pos[0] = this.tilePos[0];
+		    				this.pos[1] = this.tilePos[1];
+		    				c = l.get(this.dir);
+		    				this.pos[c.axis] += c.increment * f;
+		    				return;
+		    			}
+		    		}
+		    		// 移動方向の先行入力対応
+		    		this.nextDir = b;
+		    		this.posDelta = new float[] {0, 0};
+		    	}
+		}
 		// モンスターが交差点/行き止まり にたどり着いたときの動作. nextDirの決定
 		// 	b: 反転済みフラグ
 		void i(boolean b) {
@@ -501,7 +510,7 @@ public class Pacman10Hp3 {
 		    this.tilePos[0] = b[0];
 		    this.tilePos[1] = b[1];
 		}
-		
+	
 		// 先行入力された方向に対応
 		void t() {
 		    int[] b = this.tilePos;
@@ -538,7 +547,7 @@ public class Pacman10Hp3 {
 		    	this.posDelta[dir.axis] += dir.increment;
 		    }
 		}
-		
+	
 		void n() {
 		    if (this.pos[0] == g.q[0].y * 8 && this.pos[1] == g.q[0].x * 8) { // 画面左から右へワープ
 		        this.pos[0] = g.q[1].y * 8;
@@ -558,7 +567,7 @@ public class Pacman10Hp3 {
 		        && (this.pos[1] == v[1] || this.pos[1] == v[1] + 8))
 		        g.eatFruit(this.id);
 		}
-		
+	
 		// posの値がtilePosと一致(pos が8の倍数)したときに呼び出される
 		void u() {
 		    this.n();
@@ -645,22 +654,22 @@ public class Pacman10Hp3 {
 		    		if (this.eatenInThisFrightMode) this.a(128);
 		    		else this.a(32);
 		    		return;
-		      } else if (this.mode == 32 || this.mode == 128) { // 将に外に出むとす
-		    	  this.pos = new float[] { s[0], s[1] + 4 };
-		    	  this.dir = this.modeChangedWhileInPen ? 8 : 4;
-		    	  int b = g.mainGhostMode;
-		    	  if (this.mode == 128 && b == 4) b = g.lastMainGhostMode;
-		    	  this.a(b);
-		    	  return;
-		      } else if (this.mode == 64) { // 食べられて巣に入る
-		    	  if (this.id == g.playerCount || this.freeToLeavePen) this.a(128); // アカベエはすぐに巣から出てくる
-		    	  else {
-		    		  this.eatenInThisFrightMode = a;
-		    		  this.a(16);
-		    	  }
-		    	  return;
-		      } else // 外にでる条件が満たされなければ、ルーチンを繰り返す
-		    	  this.routineMoveId = 0;
+		    	} else if (this.mode == 32 || this.mode == 128) { // 将に外に出むとす
+		    	    this.pos = new float[] { s[0], s[1] + 4 };
+		    	    this.dir = this.modeChangedWhileInPen ? 8 : 4;
+		    	    int b = g.mainGhostMode;
+		    	    if (this.mode == 128 && b == 4) b = g.lastMainGhostMode;
+		    	    this.a(b);
+		    	    return;
+		    	} else if (this.mode == 64) { // 食べられて巣に入る
+		    	    if (this.id == g.playerCount || this.freeToLeavePen) this.a(128); // アカベエはすぐに巣から出てくる
+		    	    else {
+		    		    this.eatenInThisFrightMode = a;
+  		    		    this.a(16);
+		    	    }
+		    	    return;
+		        } else // 外にでる条件が満たされなければ、ルーチンを繰り返す
+		    	    this.routineMoveId = 0;
 		
 		    MoveInPen mv = A.get(Integer.valueOf(this.routineToFollow))[this.routineMoveId];
 		    this.pos[0] = mv.y * 8;
@@ -673,8 +682,13 @@ public class Pacman10Hp3 {
 		}
 		// モンスターの巣の中/巣から出る挙動を管理(表示画像決定&位置移動)
 		void m() {
-		    MoveInPen b =
-		    	A.get(Integer.valueOf(this.routineToFollow))[this.routineMoveId];
+			
+		    MoveInPen b = null;
+		    MoveInPen[] mvs = A.get(Integer.valueOf(this.routineToFollow));
+		    
+		    if (0 <= this.routineMoveId && this.routineMoveId < mvs.length)
+		    	b = A.get(Integer.valueOf(this.routineToFollow))[this.routineMoveId];
+		    
 		    if (b != null)
 		    	if (this.speedIntervals[g.intervalTime]) {
 		    		Direction c = l.get(Integer.valueOf(this.dir));
@@ -741,7 +755,7 @@ public class Pacman10Hp3 {
 		    		this.b();
 		    	}
 		}
-		
+	
 		void move() {
 		    if (g.gameplayMode == 0 || this.ghost && g.gameplayMode == 1 && (this.mode == 8 || this.mode == 64)) {
 		    	if (this.requestedDir != 0) {
@@ -764,8 +778,8 @@ public class Pacman10Hp3 {
 		    if (this.elPos[0] != c || this.elPos[1] != b) {
 		    	this.elPos[0] = c;
 		    	this.elPos[1] = b;
-//		    	this.el.style.left = b + "px";
-//		    	this.el.style.top = c + "px"
+		    	this.el.left = b;
+		    	this.el.top = c;
 		    }
 		}
 		// Pacman, Ms.Pacman表示画像決定(アニメーション対応)
@@ -848,8 +862,7 @@ public class Pacman10Hp3 {
 				        b = 3;
 				        c = 0;
 			    	}
-	//	    else if (this.el.id == "pcm-bpcm") { // Cutscene
-		    else if (false) { // Cutscene
+		    else if (this.el.id == "pcm-bpcm") { // Cutscene
 		    	b = 14;
 		    	c = 0;
 		    	d = (int) Math.floor(g.globalTime * 0.2) % 4;
@@ -880,7 +893,7 @@ public class Pacman10Hp3 {
 		    	if (this.id == 1) b += 4;
 		    }
 		    return new int[] { c, b };
-		 }
+		}
 		// モンスターの表示画像決定
 		int[] r() {
 		    int b = 0;
@@ -937,22 +950,18 @@ public class Pacman10Hp3 {
 		    		break;
 		    	}
 		    	c = 10;
-//		    } else if (this.el.id == "pcm-ghin") {
-		    } else if (false) {		    	
+		    } else if ("pcm-ghin".equals(this.el.id)) {
 		    	b = 6;
 		    	c = 8;
 		    	b += (int) Math.floor(g.globalTime / 16) % 2;
-//		    } else if (this.el.id == "pcm-gbug") {
-		    } else if (false) {
+		    } else if ("pcm-gbug".equals(this.el.id)) {
 		    	b = 6;
 		    	c = 9;
 		    	c += (int) Math.floor(g.globalTime / 16) % 2;
-//		    } else if (this.el.id == "pcm-ghfa") {
-		    } else if (false) {
+		    } else if ("pcm-ghfa".equals(this.el.id)) {
 		    	b = g.cutsceneSequenceId == 3 ? 6 : 7;
 		    	c = 11;
-//		    } else if (this.el.id == "pcm-stck") {
-		    } else if (false) {
+		    } else if ("pcm-stck".equals(this.el.id)) {
 		    	b = g.cutsceneSequenceId == 1
 		            ? g.cutsceneTime > 60
 		                ? 1
@@ -967,7 +976,7 @@ public class Pacman10Hp3 {
 		        c = 13;
 		    } else { // 通常時の画像表示
 		    	int ndir = this.nextDir;
-		    	if (ndir != 0
+		    	if (ndir == 0
 		    		|| g.playfield.get(Integer.valueOf(this.tilePos[0]))
 		    						.get(Integer.valueOf(this.tilePos[1]))
 		    						.tunnel)
@@ -1011,7 +1020,18 @@ public class Pacman10Hp3 {
 		    	g.changeElementBkPos(this.el, b[1], b[0], a);
 		    }
 		}
-    }
+		
+		void draw(Bitmap sourceImage, Canvas c) {
+			if (!el.visibility) return;
+
+			// TODO: Margin処理をきちんと実装する
+			el.left -= 4;
+			el.top -= 4;
+			el.drawBitmap(sourceImage, c);
+			el.left += 4;
+			el.top += 4;
+		}
+	}
     
     static class Game {
 
@@ -1083,7 +1103,7 @@ public class Pacman10Hp3 {
         	Path.createVerticalPath(9, 1, 12),
         	Path.createVerticalPath(5, 12, 4),
         	Path.createVerticalPath(10, 12, 4),
-        	Path.createHorizontalPath(10, 15, 16),
+        	Path.createHorizontalPath(5, 15, 16),
         	Path.createHorizontalPath(5, 12, 31),
         	Path.createVerticalPath(60, 1, 4),
         	Path.createVerticalPath(54, 1, 4),
@@ -1920,13 +1940,14 @@ public class Pacman10Hp3 {
     	private Map<Integer, Map<Integer, PathElement>> playfield;
     	private int dotsRemaining;
     	private int dotsEaten;
-    	private Object canvasEl;
-    	private Object playfieldEl;
-    	private Object fruitEl;
-    	private Object doorEl;
-    	private Object soundEl;
+    	PacManCanvas canvasEl;
+    	private PlayField playfieldEl;
+    	private CutsceneCanvas cutsceneCanvasEl;
+    	private Fruit fruitEl;
+    	private Door doorEl;
+    	private Sound soundEl;
     	private int playerCount;
-    	private E[] actors;
+    	E[] actors;
     	
     	private float touchDX;
     	private float touchDY;
@@ -1939,7 +1960,7 @@ public class Pacman10Hp3 {
 	    private int level = 0;
 	    private LevelConfig levels;
 	    private boolean paused = e;
-	    private int globalTime = 0;
+	    private long globalTime = 0;
 	    
 	    private int frightModeTime = 0;
 	    private int intervalTime = 0;
@@ -1993,7 +2014,7 @@ public class Pacman10Hp3 {
 		
 		private float tickInterval;
 		private float lastTimeDelta;
-		private float lastTime;
+		private long lastTime;
 		private int fpsChoice;
 		private int fps;
 		private boolean canDecreaseFps;
@@ -2001,10 +2022,10 @@ public class Pacman10Hp3 {
 		private int tickMultiplier;
 		
 		private int scoreDigits;
-		private Object[] scoreLabelEl;
-		private Object[] scoreEl;
-		private Object livesEl;
-		private Object levelEl;
+		private ScoreLabel[] scoreLabelEl;
+		private Score[] scoreEl;
+		private Lives livesEl;
+		private Level levelEl;
 		
 	    private boolean[] dotEatingNow;
 	    private boolean[] dotEatingNext;
@@ -2050,11 +2071,13 @@ public class Pacman10Hp3 {
 		}
 	  
 		void showElementById(String b, boolean c) {
+			// TODO: 要修正
 			// var d = document.getElementById(b);
 			// if (d) d.style.visibility = c ? "visible" : "hidden"
 		}
 	  
 		float[] getAbsoluteElPos(Object b) {
+			// TODO: 要修正
 //			var c = [0, 0];
 //			do {
 //				c[0] += b.offsetTop;
@@ -2064,43 +2087,33 @@ public class Pacman10Hp3 {
 			return null;
 		}
 		
-		void prepareElement(Object b, int c, int d) {
+		void prepareElement(Presentation b, int c, int d) {
 			c = getCorrectedSpritePos(c);
 			d = getCorrectedSpritePos(d);
-			if (useCss) {
-//				b.style.backgroundImage = "url(src/pacman10-hp-sprite-2.png)";
-//				b.style.backgroundPosition = -c + "px " + -d + "px";
-//				b.style.backgroundRepeat = "no-repeat"
-			} else {
-//				b.style.overflow = "hidden";
-//				c = "display: block; position: relative; left: " + -c + "px; top: " + -d + "px";
-//				b.innerHTML = '<img style="' + c + '" src="src/pacman10-hp-sprite-2.png">'
-			}
+			b.bgPosX = c;
+			b.bgPosY = d;
 		}
-		void changeElementBkPos(Object b, int c, int d, boolean f) {
+		void changeElementBkPos(Presentation b, int c, int d, boolean f) {
 			if (f) {
 				c = getCorrectedSpritePos(c);
 				d = getCorrectedSpritePos(d);
 			}
-//			if (useCss) b.style.backgroundPosition = -c + "px " + -d + "px";
-//			else if (b.childNodes[0]) {
-//				b.childNodes[0].style.left = -c + "px";
-//				b.childNodes[0].style.top = -d + "px"
-//			}
+			b.bgPosX = c;
+			b.bgPosY = d;
 		}
 		void determinePlayfieldDimensions() {
 			playfieldWidth = 0;
 		    playfieldHeight = 0;
 		    for (Path c : n) {
-		      if (c.w > 0) {
-		        int x = c.x + c.w - 1;
-		        if (x > playfieldWidth) playfieldWidth = x;
-		      } else {
-		        int y = c.y + c.h - 1;
-		        if (y > playfieldHeight) playfieldHeight = y;
-		      }
+		    	if (c.w > 0) {
+		    		int x = c.x + c.w - 1;
+		    		if (x > playfieldWidth) playfieldWidth = x;
+		    	} else {
+		    		int y = c.y + c.h - 1;
+		    		if (y > playfieldHeight) playfieldHeight = y;
+		    	}
 		    }
-		  }
+		}
 		
 		void preparePlayfield() {
 			playfield = new HashMap<Integer, Map<Integer, PathElement>>();
@@ -2163,53 +2176,79 @@ public class Pacman10Hp3 {
 		
 		void prepareAllowedDirections() {
 		    for (int b = 8; b <= playfieldHeight * 8; b += 8)
-		      for (int c = 8; c <= playfieldWidth * 8; c += 8) {
-		        PathElement pe = playfield.get(Integer.valueOf(b)).get(Integer.valueOf(c));
-		        pe.allowedDir = 0;
-		        if (playfield.get(Integer.valueOf(b - 8)).get(Integer.valueOf(c)).path) pe.allowedDir += 1;
-		        if (playfield.get(Integer.valueOf(b + 8)).get(Integer.valueOf(c)).path) pe.allowedDir += 2;
-		        if (playfield.get(Integer.valueOf(b)).get(Integer.valueOf(c - 8)).path) pe.allowedDir += 4;
-		        if (playfield.get(Integer.valueOf(b)).get(Integer.valueOf(c + 8)).path) pe.allowedDir += 8;
-		      }
+		    	for (int c = 8; c <= playfieldWidth * 8; c += 8) {
+		    		PathElement pe = playfield.get(Integer.valueOf(b)).get(Integer.valueOf(c));
+		    		pe.allowedDir = 0;
+		    		if (playfield.get(Integer.valueOf(b - 8)).get(Integer.valueOf(c)).path) pe.allowedDir += 1;
+		    		if (playfield.get(Integer.valueOf(b + 8)).get(Integer.valueOf(c)).path) pe.allowedDir += 2;
+		    		if (playfield.get(Integer.valueOf(b)).get(Integer.valueOf(c - 8)).path) pe.allowedDir += 4;
+		    		if (playfield.get(Integer.valueOf(b)).get(Integer.valueOf(c + 8)).path) pe.allowedDir += 8;
+		    	}
 		}
 		// エサを作成
 		void createDotElements() {
 		    for (int b = 8; b <= playfieldHeight * 8; b += 8)
 		    	for (int c = 8; c <= playfieldWidth * 8; c += 8)
 		    		if (playfield.get(Integer.valueOf(b)).get(Integer.valueOf(c)).dot != 0) {
-//						var d = document.createElement("div");
-//		          		d.clpassName = "pcm-d";
-//		          		d.id = g.getDotElementId(b, c);
-//		          		d.style.left = c + -32 + "px";
-//		          		d.style.top = b + 0 + "px";
-//		          		g.playfieldEl.appendChild(d);
+		    			Food food = new Food();
+		    			food.presentation.id = getDotElementId(b, c);
+		          		food.presentation.left = c + -32;
+		          		food.presentation.top = b + 0;
+		          		food.presentation.width = 2;
+		          		food.presentation.height = 2;
+		          		food.presentation.bgColor = 0xf8b090;
+		          		food.presentation.parent = playfieldEl.presentation;
+		          		playfieldEl.foods.add(food);
 		    		}
 		}
 		
 		// パワーエサを作成
 		void createEnergizerElements() {
 		    for (Position c : p) {
-//		      	var d = g.getDotElementId(c.y * 8, c.x * 8);
+		      	String d = getDotElementId(c.y * 8, c.x * 8);
+		      	Food f = getDotElement(d);
+		      	if (f == null) continue;
 //		      	document.getElementById(d).className = "pcm-e";
-//		      	prepareElement(document.getElementById(d), 0, 144);
+		      	f.presentation.width = 8;
+		      	f.presentation.height = 8;
+		      	prepareElement(f.presentation, 0, 144);
 		    	playfield.get(Integer.valueOf(c.y * 8)).get(Integer.valueOf(c.x * 8)).dot = 2;
 		    }
 		}
 		
+		private Food getDotElement(String id) {
+			for (Food f : playfieldEl.foods) {
+				if (f.presentation.id.equals(id)) {
+					return f;
+				}
+			}
+			
+			return null;
+		}
+		
 		void createFruitElement() {
-//		    fruitEl = document.createElement("div");
-//		    fruitEl.id = "pcm-f";
-//		    fruitEl.style.left = g.getPlayfieldX(v[1]) + "px";
-//		    fruitEl.style.top = g.getPlayfieldY(v[0]) + "px";
-		    prepareElement(fruitEl, -32, -16);
-//		    playfieldEl.appendChild(g.fruitEl)
+			fruitEl = new Fruit();
+		    fruitEl.presentation.id = "pcm-f";
+		    fruitEl.presentation.width = 32;
+		    fruitEl.presentation.height = 16;
+		    fruitEl.presentation.left = getPlayfieldX(v[1]);
+		    fruitEl.presentation.top = getPlayfieldY(v[0]);
+		    prepareElement(fruitEl.presentation, -32, -16);
+		    fruitEl.presentation.parent = playfieldEl.presentation;
+		    playfieldEl.fruit = fruitEl;
 		}
 		
 		void createPlayfieldElements() {
-//			g.doorEl = document.createElement("div");
-//			g.doorEl.id = "pcm-do";
-//			g.doorEl.style.display = "none";
-//			g.playfieldEl.appendChild(g.doorEl);
+			doorEl = new Door();
+			doorEl.presentation.id = "pcm-do";
+			doorEl.presentation.width = 19;
+			doorEl.presentation.height = 2;
+			doorEl.presentation.left = 279;
+			doorEl.presentation.top = 46;
+			doorEl.presentation.bgColor = 0xffaaa5;
+			doorEl.presentation.visibility = false;
+			doorEl.presentation.parent = playfieldEl.presentation;
+			playfieldEl.door = doorEl;
 			createDotElements();
 			createEnergizerElements();
 			createFruitElement();
@@ -2241,16 +2280,19 @@ public class Pacman10Hp3 {
 		}
 	
 		void createPlayfield() {
-//		    g.playfieldEl = document.createElement("div");
-//		    g.playfieldEl.id = "pcm-p";
-//		    g.canvasEl.appendChild(g.playfieldEl)
+		    playfieldEl = new PlayField();
+		    playfieldEl.presentation.id = "pcm-p";
+		    playfieldEl.presentation.left = 45;
+		    playfieldEl.presentation.width = 464;
+		    playfieldEl.presentation.height = 136;
+		    playfieldEl.presentation.parent = canvasEl.presentation;
+		    canvasEl.playfield = playfieldEl;
 		}
 		
 	    void resetPlayfield() {
 		    dotsRemaining = 0;
 		    dotsEaten = 0;
-//		    g.playfieldEl.innerHTML = "";
-		    prepareElement(playfieldEl, 256, 0);
+		    prepareElement(playfieldEl.presentation, 256, 0);
 		    determinePlayfieldDimensions();
 		    preparePlayfield();
 		    preparePaths();
@@ -2467,13 +2509,14 @@ public class Pacman10Hp3 {
 		    if (h) {
 //		      j.style.background = "url(src/pacman10-hp-sprite-2.png) -" + killScreenTileX + "px -" + killScreenTileY + "px no-repeat";
 		      killScreenTileY += 8;
-		    } // else // j.style.background = "black";
+		    } else ;// j.style.background = "black";
 //		    playfieldEl.appendChild(j)
 		}
   
 		void killScreen() {
 		    seed(0);
 //		    canvasEl.style.visibility = "";
+		    canvasEl.presentation.visibility = true;
 		    createKillScreenElement(272, 0, 200, 80, e);
 		    createKillScreenElement(280, 80, 192, 56, e);
 		    killScreenTileX = 80;
@@ -2599,8 +2642,9 @@ public class Pacman10Hp3 {
 		    	addToScore(50, b);
 		    } else addToScore(10, b); // 普通のエサ
 		    
-//		    var d = document.getElementById(g.getDotElementId(c[0], c[1]));
+		    Food d = getDotElement(getDotElementId(c[0], c[1]));
 //		    d.style.display = "none";
+		    d.presentation.visibility = false;
 		    playfield.get(Integer.valueOf(c[0])).get(Integer.valueOf(c[1])).dot = 0;
 		    updateCruiseElroySpeed();
 		    resetForcePenLeaveTime();
@@ -2624,13 +2668,13 @@ public class Pacman10Hp3 {
 			
 		void hideFruit() {
 			fruitShown = e;
-			changeElementBkPos(fruitEl, 32, 16, a);
+			changeElementBkPos(fruitEl.presentation, 32, 16, a);
 		}
 		
 		void showFruit() {
 			fruitShown = a;
 			int[] b = getFruitSprite(levels.fruit);
-			changeElementBkPos(fruitEl, b[0], b[1], a);
+			changeElementBkPos(fruitEl.presentation, b[0], b[1], a);
 			fruitTime = (int) timing[15] + (int) ((timing[16] - timing[15]) * rand());
 		}
 		
@@ -2639,7 +2683,7 @@ public class Pacman10Hp3 {
 		    	playSound("fruit", 0);
 		    	fruitShown = e;
 		    	int[] c = getFruitScoreSprite(levels.fruit);
-		    	changeElementBkPos(fruitEl, c[0], c[1], a);
+		    	changeElementBkPos(fruitEl.presentation, c[0], c[1], a);
 		    	fruitTime = (int) timing[14];
 		    	addToScore(levels.fruitScore, b);
 		    }
@@ -2743,25 +2787,39 @@ public class Pacman10Hp3 {
 		    	gameplayModeTime = timing[4];
 		    	break;
 		    case 6:
-//		    	canvasEl.style.visibility = "hidden";
+		    	canvasEl.presentation.visibility = false;
 		    	gameplayModeTime = timing[5];
 		    	break;
 		    case 7:
 		    	stopAllAudio();
 //		    	canvasEl.style.visibility = "";
+		    	canvasEl.presentation.visibility = true;
 //		    	doorEl.style.display = "block";
-//		      	Object ready = document.createElement("div");
-//		      	ready.id = "pcm-re";
-//		      	prepareElement(ready, 160, 0);
-//		      	playfieldEl.appendChild(ready);
+		    	doorEl.presentation.visibility = true;
+		    	Ready m7_ready = new Ready();
+		      	m7_ready.presentation.id = "pcm-re";
+		      	m7_ready.presentation.width = 48;
+		      	m7_ready.presentation.height = 8;
+		      	m7_ready.presentation.left = 264;
+		      	m7_ready.presentation.top = 80;
+		      	prepareElement(m7_ready.presentation, 160, 0);
+		      	m7_ready.presentation.parent = playfieldEl.presentation;
+		      	playfieldEl.ready = m7_ready;
 		    	gameplayModeTime = timing[6];
 		    	break;
 		    case 4:
 //		    	doorEl.style.display = "block";
-//		    	Object ready = document.createElement("div");
-//			    ready.id = "pcm-re";
-//			    g.prepareElement(ready, 160, 0);
-//			    g.playfieldEl.appendChild(ready);
+		    	doorEl.presentation.visibility = true;
+		    	
+		    	Ready m4_ready = new Ready();
+		      	m4_ready.presentation.id = "pcm-re";
+		      	m4_ready.presentation.width = 48;
+		      	m4_ready.presentation.height = 8;
+		      	m4_ready.presentation.left = 264;
+		      	m4_ready.presentation.top = 80;
+		      	prepareElement(m4_ready.presentation, 160, 0);
+		      	m4_ready.presentation.parent = playfieldEl.presentation;
+		      	playfieldEl.ready = m4_ready;
 			    gameplayModeTime = timing[7];
 			    stopAllAudio();
 			    
@@ -2778,11 +2836,17 @@ public class Pacman10Hp3 {
 		    case 14:
 //		    	Object ready = document.getElementById("pcm-re");
 //			    google.dom.remove(ready);
+		    	playfieldEl.ready = null;
 			    stopAllAudio();
-//			    Object go = document.createElement("div");
-//			    go.id = "pcm-go";
-//			    prepareElement(go, 8, 152);
-//			    playfieldEl.appendChild(go);
+			    GameOver go = new GameOver();
+			    go.presentation.id = "pcm-go";
+			    go.presentation.width = 80;
+			    go.presentation.height = 8;
+			    go.presentation.left = 248;
+			    go.presentation.top = 80;
+			    prepareElement(go.presentation, 8, 152);
+			    go.presentation.parent = playfieldEl.presentation;
+			    playfieldEl.gameover = go;
 			    gameplayModeTime = timing[9];
 			    break;
 		    case 9:
@@ -2791,14 +2855,17 @@ public class Pacman10Hp3 {
 		    	break;
 		    case 10:
 //		    	doorEl.style.display = "none";
+		    	doorEl.presentation.visibility = false;
 		    	gameplayModeTime = timing[11];
 		    	break;
 		    case 11:
 //		    	canvasEl.style.visibility = "hidden";
+		    	canvasEl.presentation.visibility = false;
 		    	gameplayModeTime = timing[12];
 		    	break;
 		    case 12:
 //		    	playfieldEl.style.visibility = "hidden";
+		    	playfieldEl.presentation.visibility = false;
 		    	gameplayModeTime = timing[13];
 		    	break;
 		    case 1:
@@ -2837,17 +2904,23 @@ public class Pacman10Hp3 {
 	
 		void updateSoundIcon() {
 			if (soundEl != null)
-				if (pacManSound) changeElementBkPos(soundEl, 216, 105, e);
-				else changeElementBkPos(soundEl, 236, 105, e);
+				if (pacManSound) changeElementBkPos(soundEl.presentation, 216, 105, e);
+				else changeElementBkPos(soundEl.presentation, 236, 105, e);
 		}
 		
 		void startCutscene() {
 //			playfieldEl.style.visibility = "hidden";
+			playfieldEl.presentation.visibility = false;
 //		    canvasEl.style.visibility = "";
+			canvasEl.presentation.visibility = true;
 		    showChrome(e);
-//		    cutsceneCanvasEl = document.createElement("div");
-//		    cutsceneCanvasEl.id = "pcm-cc";
-//		    canvasEl.appendChild(g.cutsceneCanvasEl);
+		    cutsceneCanvasEl = new CutsceneCanvas();
+		    cutsceneCanvasEl.presentation.id = "pcm-cc";
+		    cutsceneCanvasEl.presentation.left = 45;
+		    cutsceneCanvasEl.presentation.width = 464;
+		    cutsceneCanvasEl.presentation.height = 136;
+		    cutsceneCanvasEl.presentation.parent = canvasEl.presentation;
+		    canvasEl.cutsceneCanvas = cutsceneCanvasEl;
 		    cutscene = B.get(Integer.valueOf(cutsceneId));
 		    cutsceneSequenceId = -1;
 		    frightModeTime = levels.frightTotalTime;
@@ -2855,18 +2928,19 @@ public class Pacman10Hp3 {
 		    for (CutsceneActor ca : cutscene.actors) {
 		    	int c = ca.id;
 		    	if (c > 0) c += playerCount - 1;
-//		    	var d = document.createElement("div");
-//		    	d.className = "pcm-ac";
-//		    	d.id = "actor" + c;
-//		    	prepareElement(d, 0, 0);
+
 		    	E actor = new E(c, this);
-//		    	actor.el = d;
+//		    	d.className = "pcm-ac";
+	    		actor.el.width = 16;
+	    		actor.el.height = 16;
+	    		actor.el.id = "actor" + c;
+		    	prepareElement(actor.el, 0, 0);
 		    	actor.elBackgroundPos = new int[] { 0, 0 };
 		    	actor.elPos = new float[] { 0, 0 };
 		    	actor.pos = new float[] { ca.y * 8, ca.x * 8 };
 		    	actor.posDelta = new float[] { 0, 0 };
 		    	actor.ghost = ca.ghost;
-//		    	cutsceneCanvasEl.appendChild(d);
+		    	cutsceneCanvasEl.actors.add(actor);
 		    	cas.add(actor);
 		    }
 		    cutsceneActors = cas.toArray(new E[0]); 
@@ -2877,7 +2951,8 @@ public class Pacman10Hp3 {
 		
 		void stopCutscene() {
 //		    playfieldEl.style.visibility = "";
-//		    google.dom.remove(g.cutsceneCanvasEl);
+		    playfieldEl.presentation.visibility = true;
+		    canvasEl.cutsceneCanvas = null;
 		    showChrome(a);
 		    newLevel(e);
 		}
@@ -2892,7 +2967,7 @@ public class Pacman10Hp3 {
 		    		E d = cutsceneActors[c];
 		    		d.dir = b.moves[c].dir;
 		    		d.speed = b.moves[c].speed;
-//		        	if (b.moves[c].elId) d.el.id = b.moves[c].elId;
+		        	if (b.moves[c].elId != null) d.el.id = b.moves[c].elId;
 		    		if (b.moves[c].mode != 0) d.mode = b.moves[c].mode;
 		    		d.b();
 		    	}
@@ -2916,6 +2991,7 @@ public class Pacman10Hp3 {
 		    for (E actor : actors) actor.k();
 		}
 		
+		// TODO: パワーエサの取得方法を再考する
 		void blinkEnergizers() {
 		    switch (gameplayMode) {
 		    case 4:
@@ -2927,26 +3003,56 @@ public class Pacman10Hp3 {
 		    case 11:
 		    case 12:
 //		      	playfieldEl.className = "";
+		    	for (Food f : playfieldEl.foods) {
+		    		if (f.presentation.hasBackground()) {
+		    			f.presentation.visibility = true;
+		    		}
+		    	}
 		    	break;
 		    case 8:
 		    case 14:
 //		    	playfieldEl.className = "blk";
+		    	for (Food f : playfieldEl.foods) {
+		    		if (f.presentation.hasBackground()) {
+		    			f.presentation.visibility = false;
+		    		}
+		    	}
 		    	break;
 		    default:
-//		    	if (globalTime % (timing[0] * 2) == 0) playfieldEl.className = "";
-//		    	else if (globalTime % (timing[0] * 2) == timing[0]) playfieldEl.className = "blk";
+		    	if (globalTime % (timing[0] * 2) == 0) {
+		    		// playfieldEl.className = "";
+			    	for (Food f : playfieldEl.foods) {
+			    		if (f.presentation.hasBackground()) {
+			    			f.presentation.visibility = true;
+			    		}
+			    	}
+		    	} else if (globalTime % (timing[0] * 2) == timing[0]) {
+		    		// playfieldEl.className = "blk";
+			    	for (Food f : playfieldEl.foods) {
+			    		if (f.presentation.hasBackground()) {
+			    			f.presentation.visibility = false;
+			    		}
+			    	}
+		    	}
 		    	break;
 		    }
 		}
 		
 		void blinkScoreLabels() {
 		    if (gameplayMode != 13) {
-		    	String b = null;
-		    	if (globalTime % (timing[17] * 2) == 0) b = "visible";
-		    	else if (globalTime % (timing[17] * 2) == timing[17]) b = "hidden";
-//		    	if (b != null)
-//		    		for (int c = 0; c < playerCount; c++)
-//		    			scoreLabelEl[c].style.visibility = b;
+		    	boolean modify = true;
+		    	boolean b = false;
+		    	
+		    	if (globalTime % (timing[17] * 2) == 0)
+		    		b = true;
+		    	else if (globalTime % (timing[17] * 2) == timing[17])
+		    		b = false;
+		    	else
+		    		modify = false;
+		    	
+		    	if (modify)
+		    		for (int c = 0; c < playerCount; c++)
+		    			scoreLabelEl[c].presentation.visibility = b;
 		    }
 		}
 		
@@ -2964,9 +3070,9 @@ public class Pacman10Hp3 {
 		    		break;
 		    	case 10:
 		    		if (((int) Math.floor(gameplayModeTime / (timing[11] / 8))) % 2 == 0)
-		    			changeElementBkPos(playfieldEl, 322, 2, e);
+		    			changeElementBkPos(playfieldEl.presentation, 322, 2, e);
 		    		else
-		    			changeElementBkPos(playfieldEl, 322, 138, e);
+		    			changeElementBkPos(playfieldEl.presentation, 322, 138, e);
 		    	}
 		    	
 		    	if (gameplayModeTime <= 0) {
@@ -3004,11 +3110,13 @@ public class Pacman10Hp3 {
 			        case 5:
 	//		        	document.getElementById("pcm-re");
 	//		        	google.dom.remove(b);
+			        	playfieldEl.ready = null;
 			        	changeGameplayMode(0);
 			        	break;
 			        case 8:
 	//		        	b = document.getElementById("pcm-go");
 	//		        	google.dom.remove(b);
+			        	playfieldEl.gameover = null;
 	//		        	google.pacManQuery && google.pacManQuery(); // google.pacManQueryというfunctionは存在しない
 			        	break;
 			        case 9:
@@ -3023,12 +3131,15 @@ public class Pacman10Hp3 {
 			        		changeGameplayMode(13);
 			        	} else {
 	//		        		canvasEl.style.visibility = "";
+			        		canvasEl.presentation.visibility = true;
 			        		newLevel(e);
 			        	}
 			        	break;
 			        case 12:
 	//		        	playfieldEl.style.visibility = "";
+			        	playfieldEl.presentation.visibility = true;
 	//		        	canvasEl.style.visibility = "";
+			        	canvasEl.presentation.visibility = true;
 			        	switchToDoubleMode();
 			        	break;
 			        }
@@ -3055,7 +3166,7 @@ public class Pacman10Hp3 {
 		    	if (ghostModeTime <= 0) {
 		    		ghostModeTime = 0;
 		    		ghostModeSwitchPos++;
-		    		if (levels.ghostModeSwitchTimes[ghostModeSwitchPos] != 0) {
+			    	if (ghostModeSwitchPos < levels.ghostModeSwitchTimes.length) {
 		    			ghostModeTime = levels.ghostModeSwitchTimes[ghostModeSwitchPos] * D;
 		    			switch (mainGhostMode) {
 		    			case 2:
@@ -3087,9 +3198,9 @@ public class Pacman10Hp3 {
 		
 		void handleTimers() {
 		    if (gameplayMode == 0) {
-		      handleForcePenLeaveTimer();
-		      handleFruitTimer();
-		      handleGhostModeTimer();
+		    	handleForcePenLeaveTimer();
+		    	handleFruitTimer();
+		    	handleGhostModeTimer();
 		    }
 		    handleGameplayModeTimer();
 		}
@@ -3109,7 +3220,7 @@ public class Pacman10Hp3 {
 		    }
 		    lastTime = b;
 		    if (gameplayMode == 13) { // Cutscene
-			    for (int i = 0; i < tickMultiplier + c; i++) {
+			    for (int i = 0; i < tickMultiplier + c; i++) { // tickMultiplierと処理地縁に応じて複数回のロジックを実行
 			        advanceCutscene();
 			        intervalTime = (intervalTime + 1) % D;
 			        globalTime++;
@@ -3117,7 +3228,7 @@ public class Pacman10Hp3 {
 			    checkCutscene();
 			    blinkScoreLabels();
 		    } else
-		    	for (int i = 0; i < tickMultiplier + c; i++) {
+		    	for (int i = 0; i < tickMultiplier + c; i++) { // tickMultiplierと処理地縁に応じて複数回のロジックを実行
 		    		moveActors();
 		    		if (gameplayMode == 0)
 		    			if (tilesChanged) {
@@ -3159,103 +3270,139 @@ public class Pacman10Hp3 {
 		    String c = String.valueOf(score[b]);
 		    if (c.length() > scoreDigits) c = c.substring(c.length() - scoreDigits);
 		    for (int d = 0; d < scoreDigits; d++) {
-//		    	var f = document.getElementById("pcm-sc-" + (b + 1) + "-" + d);
-		    	Object f = null;
+		    	Score.Number f = scoreEl[b].numbers.get(d);
 		    	String h = null;
 		    	if (d < c.length()) h = c.substring(d, d + 1);
 		        if (h != null)
-		        	changeElementBkPos(f, 8 + 8 * Integer.parseInt(h, 10), 144, a);
+		        	changeElementBkPos(f.presentation, 8 + 8 * Integer.parseInt(h, 10), 144, a);
 		        else
-		        	changeElementBkPos(f, 48, 0, a);
+		        	changeElementBkPos(f.presentation, 48, 0, a);
 		    }
 		}
 		
 		void updateChromeLives() {
-//		    livesEl.innerHTML = "";
+			livesEl.lives.clear();
 		    for (int b = 0; b < lives; b++) {
-//		    	var c = document.createElement("div");
-		    	Object c = null;
+		    	Lives.Life life = new Lives.Life();
+		    	prepareElement(life.presentation, 64, 129);
 //		    	c.className = "pcm-lif";
-		    	prepareElement(c, 64, 129);
-//		    	livesEl.appendChild(c);
+		    	life.presentation.width = 16;
+		    	life.presentation.height = 12;
+		    	life.presentation.top = b * 15; // margin-bottom: 3px
+		    	life.presentation.parent = livesEl.presentation;
+		    	livesEl.lives.add(life);
 		    }
 		}
 		
 		void updateChromeLevel() {
-//		    levelEl.innerHTML = "";
+			levelEl.fruits.clear();
+		    int top = (4 - Math.min(level, 4)) * 16 + 16;
 		    for (int b = level; b >= Math.max(level - 4 + 1, 1); b--) {
 		    	int c = b >= z.length ? z[z.length - 1].fruit : z[b].fruit;
-//		        d = document.createElement("div");
-		    	Object d = null;
+		    	Fruit d = new Fruit();
 		    	int[] fs = getFruitSprite(c);
-		    	prepareElement(d, fs[0], fs[1]);
-//		    	levelEl.appendChild(d)
+		    	prepareElement(d.presentation, fs[0], fs[1]);
+		    	d.presentation.width = 32;
+		    	d.presentation.height = 16;
+		    	top -= 16;
+		    	d.presentation.top = top;
+		    	d.presentation.parent = levelEl.presentation;
+		    	levelEl.fruits.add(d);
 		    }
-//		    levelEl.style.marginTop = (4 - Math.min(level, 4)) * 16 + "px"
 		}
 
 		// スコアとサウンドアイコンを生成
 		void createChrome() {
-//		    canvasEl.innerHTML = "";
+			canvasEl = new PacManCanvas();
 		    scoreDigits = playerCount == 1 ? 10 : 5;
-		    scoreLabelEl = new Object[2];
-//		    scoreLabelEl[0] = document.createElement("div");
-//		    scoreLabelEl[0].id = "pcm-sc-1-l";
-		    prepareElement(scoreLabelEl[0], 160, 56);
-//		    canvasEl.appendChild(scoreLabelEl[0]);
-		    scoreEl = new Object[2];
-//		    scoreEl[0] = document.createElement("div");
-//		    scoreEl[0].id = "pcm-sc-1";
+		    scoreLabelEl = new ScoreLabel[2];
+		    scoreLabelEl[0] = new ScoreLabel();
+		    scoreLabelEl[0].presentation.id = "pcm-sc-1-l";
+		    scoreLabelEl[0].presentation.left = -2;
+		    scoreLabelEl[0].presentation.top = 0;
+		    scoreLabelEl[0].presentation.width = 48;
+		    scoreLabelEl[0].presentation.height = 8;
+		    prepareElement(scoreLabelEl[0].presentation, 160, 56);
+		    scoreLabelEl[0].presentation.parent = canvasEl.presentation;
+		    canvasEl.scoreLabels[0] = scoreLabelEl[0];
+		    scoreEl = new Score[2];
+		    scoreEl[0] = new Score();
+		    scoreEl[0].presentation.id = "pcm-sc-1";
+		    scoreEl[0].presentation.left = 18;
+		    scoreEl[0].presentation.top = 16;
+		    scoreEl[0].presentation.width = 8;
+		    scoreEl[0].presentation.height = 56;
+		    scoreEl[0].presentation.parent = canvasEl.presentation;
+		    
 		    for (int b = 0; b < scoreDigits; b++) {
-//		    	var c = document.createElement("div");
-		    	Object c = null;
-//		    	c.id = "pcm-sc-1-" + b;
-//		    	c.style.top = b * 8 + "px";
-//		    	c.style.left = 0;
-//		    	c.style.position = "absolute";
-//		    	c.style.width = "8px";
-//		    	c.style.height = "8px";
-		    	prepareElement(c, 48, 0);
-//		    	scoreEl[0].appendChild(c)
+		    	Score.Number c = new Score.Number();
+		    	c.presentation.id = "pcm-sc-1-" + b;
+		    	c.presentation.top = b * 8;
+		    	c.presentation.left = 0;
+		    	c.presentation.width = 8;
+		    	c.presentation.height = 8;
+		    	prepareElement(c.presentation, 48, 0);
+		    	c.presentation.parent = scoreEl[0].presentation;
+		    	scoreEl[0].numbers.add(c);
 		    }
-//		    canvasEl.appendChild(scoreEl[0]);
-//		    livesEl = document.createElement("div");
-		    livesEl = null;
-//		    livesEl.id = "pcm-li";
-//		    canvasEl.appendChild(livesEl);
-//		    levelEl = document.createElement("div");
-		    levelEl = null;
-//		    levelEl.id = "pcm-le";
-//		    canvasEl.appendChild(levelEl);
+		    canvasEl.scores[0] = scoreEl[0];
+		    livesEl = new Lives();
+		    livesEl.presentation.id = "pcm-li";
+		    livesEl.presentation.left = 523;
+		    livesEl.presentation.top = 0;
+		    livesEl.presentation.height = 80;
+		    livesEl.presentation.width = 16;
+		    livesEl.presentation.parent = canvasEl.presentation;
+		    canvasEl.lives = livesEl;
+		    levelEl = new Level();
+		    levelEl.presentation.id = "pcm-le";
+		    levelEl.presentation.left = 515;
+		    levelEl.presentation.top = 74;
+		    levelEl.presentation.height = 64;
+		    levelEl.presentation.width = 32;
+		    levelEl.presentation.parent = canvasEl.presentation;
+		    canvasEl.level = levelEl;
 		    if (playerCount == 2) {
-//		    	scoreLabelEl[1] = document.createElement("div");
-		    	scoreLabelEl[1] = null;
-//		    	scoreLabelEl[1].id = "pcm-sc-2-l";
-//		    	prepareElement(scoreLabelEl[1], 160, 64);
-//		    	canvasEl.appendChild(scoreLabelEl[1]);
-//		    	scoreEl[1] = document.createElement("div");
-		    	scoreEl[1] = null;
-//		    	scoreEl[1].id = "pcm-sc-2";
+		    	scoreLabelEl[1] = new ScoreLabel();
+		    	scoreLabelEl[1].presentation.id = "pcm-sc-2-l";
+			    scoreLabelEl[1].presentation.left = -2;
+			    scoreLabelEl[1].presentation.top = 64;
+			    scoreLabelEl[1].presentation.width = 48;
+			    scoreLabelEl[1].presentation.height = 8;
+		    	prepareElement(scoreLabelEl[1].presentation, 160, 64);
+			    scoreLabelEl[1].presentation.parent = canvasEl.presentation;
+		    	canvasEl.scoreLabels[1] = scoreLabelEl[1];
+		    	scoreEl[1] = new Score();
+		    	scoreEl[1].presentation.id = "pcm-sc-2";
+		    	scoreEl[1].presentation.left = 18;
+		    	scoreEl[1].presentation.top = 80;
+		    	scoreEl[1].presentation.width = 8;
+		    	scoreEl[1].presentation.height = 56;
+			    scoreEl[1].presentation.parent = canvasEl.presentation;		    	
 		    	for (int b = 0; b < scoreDigits; b++) {
-//		    		c = document.createElement("div");
-		    		Object c = null;
-//		    		c.id = "pcm-sc-2-" + b;
-//		    		c.style.top = b * 8 + "px";
-//		    		c.style.left = 0;
-//		    		c.style.position = "absolute";
-//		    		c.style.width = "8px";
-//		    		c.style.height = "8px";
-		    		prepareElement(c, 48, 0);
-//		    		scoreEl[1].appendChild(c)
-		      }
-//		      canvasEl.appendChild(scoreEl[1])
+		    		Score.Number c = new Score.Number();
+		    		c.presentation.id = "pcm-sc-2-" + b;
+		    		c.presentation.top = b * 8;
+		    		c.presentation.left = 0;
+		    		c.presentation.width = 8;
+		    		c.presentation.height = 8;
+		    		prepareElement(c.presentation, 48, 0);
+			    	c.presentation.parent = scoreEl[1].presentation;
+		    		scoreEl[1].numbers.add(c);
+		    	}
+		    	canvasEl.scores[1] = scoreEl[1];
+		    
 		    }
 		    if (soundAvailable) {
-//		    	soundEl = document.createElement("div");
-		    	soundEl = null;
-//		    	soundEl.id = "pcm-so";
-		    	prepareElement(soundEl, -32, -16);
-//			    canvasEl.appendChild(soundEl);
+		    	soundEl = new Sound();
+		    	soundEl.presentation.id = "pcm-so";
+		    	soundEl.presentation.left = 7;
+		    	soundEl.presentation.top = 116;
+		    	soundEl.presentation.width = 12;
+		    	soundEl.presentation.height = 12;
+		    	prepareElement(soundEl.presentation, -32, -16);
+		    	soundEl.presentation.parent = canvasEl.presentation;
+			    canvasEl.sound = soundEl;
 //			    soundEl.onclick = toggleSound;
 			    updateSoundIcon();
 		    }
@@ -3287,11 +3434,11 @@ public class Pacman10Hp3 {
 		
 		void stopSoundChannel(int b) {
 		    if (soundAvailable)
-		      try {
-//		        flashSoundPlayer.stopChannel(b);
-		      } catch (Exception c) {
-		        soundAvailable = e;
-		      }
+		    	try {
+		    		// flashSoundPlayer.stopChannel(b);
+		    	} catch (Exception c) {
+		    		soundAvailable = e;
+		    	}
 		}
 		
 		void stopAllAudio() {
@@ -3371,8 +3518,8 @@ public class Pacman10Hp3 {
 		    tickMultiplier = D / fps;
 		    timing = new float[w.length];
 		    for (int b = 0; b < w.length; b++) {
-		      float c = !pacManSound && (b == 7 || b == 8) ? 1 : w[b]; // timing[7] -> Gameplay Mode 4, timing[8] -> Gameplay Mode 5. ともにゲーム開始直後がらみ.
-		      timing[b] = Math.round(c * D); // D = 90より、timingの要素はindex 7, 8以外は90.
+		    	float c = !pacManSound && (b == 7 || b == 8) ? 1 : w[b]; // timing[7] -> Gameplay Mode 4, timing[8] -> Gameplay Mode 5. ともにゲーム開始直後がらみ.
+		    	timing[b] = Math.round(c * D); // D = 90より、timingの要素はindex 7, 8以外は90.
 		    }
 		    lastTime = new Date().getTime();
 		    lastTimeDelta = 0;
@@ -3400,8 +3547,11 @@ public class Pacman10Hp3 {
 	    }
 	    
 		void createCanvasElement() {
-//		    canvasEl = document.createElement("div");
-//		    canvasEl.id = "pcm-c";
+			canvasEl = new PacManCanvas();
+		    canvasEl.presentation.id = "pcm-c";
+		    canvasEl.presentation.width = 554;
+		    canvasEl.presentation.height = 136;
+		    canvasEl.presentation.bgColor = 0x000000;
 //		    canvasEl.hideFocus = a;
 //		    document.getElementById("logo").appendChild(canvasEl);
 //		    canvasEl.tabIndex = 0;
@@ -3445,6 +3595,7 @@ public class Pacman10Hp3 {
 //    		if (!d) c.onload = g.imageLoaded;
 //    		c.src = b;
 //    		d && g.imageLoaded()
+			imageLoaded();
 		}
 		
 		void imageLoaded() {
@@ -3608,6 +3759,7 @@ public class Pacman10Hp3 {
 		//      google.dom.remove(g.styleElement);
 		//      google.dom.remove(g.flashIframe);
 		//      google.dom.remove(g.canvasEl);
+		      	canvasEl = null;
 		//      google.pacman = undefined
 		//    }
 		}

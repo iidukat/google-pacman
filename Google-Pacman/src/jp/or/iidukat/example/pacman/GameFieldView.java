@@ -4,7 +4,6 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.graphics.Rect;
 import android.os.Handler;
 import android.os.Message;
 import android.util.AttributeSet;
@@ -13,7 +12,6 @@ import android.view.View;
 
 public class GameFieldView extends View {
 
-//    private long mMoveDelay = 600;
     private long lastMove;
     private long lastClick;
 
@@ -69,28 +67,18 @@ public class GameFieldView extends View {
     
 	@Override
 	public void onDraw(Canvas canvas) {
-		// ゲームプレイフィールド
-		Rect src = new Rect(322, 2, 786, 138);
-		Rect dest = new Rect(
-				        (canvasWidth - 464) / 2,
-						(canvasHeight - 136) / 2,
-						(canvasWidth + 464) / 2,
-						(canvasHeight + 136) / 2);
-		canvas.drawBitmap(sourceImage, src, dest, null);
+//		// ゲームプレイフィールド
+//		Rect src = new Rect(322, 2, 786, 138);
+//		Rect dest = new Rect(
+//				        (canvasWidth - 464) / 2,
+//						(canvasHeight - 136) / 2,
+//						(canvasWidth + 464) / 2,
+//						(canvasHeight + 136) / 2);
+//		canvas.drawBitmap(sourceImage, src, dest, null);
 		
-		// Actor
-		
-		// エサ、パワーエサ
-		
-		// モンスターの巣のドア
-		
-		// スコア
-		
-		// プレーヤー残機
-		
-		// レベル
-		
-		// サウンドON/OFF
+//		game.canvasEl.presentation.left = (canvasWidth - 464) / 2;
+		game.canvasEl.presentation.top = (canvasHeight - 136) / 2;
+		game.canvasEl.draw(sourceImage, canvas);
 		
 	}
 
