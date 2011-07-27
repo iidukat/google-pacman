@@ -12,6 +12,7 @@ import jp.or.iidukat.example.pacman.PlayField.GameOver;
 import jp.or.iidukat.example.pacman.PlayField.Ready;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.util.FloatMath;
 
 
 public class Pacman10Hp3 {
@@ -362,7 +363,7 @@ public class Pacman10Hp3 {
 		// 追跡対象のActorを決定(Pacman or Ms.Pacman)
 		void l() {
 			if (this.id >= g.playerCount)
-				this.targetPlayerId = (int) Math.floor(g.rand() * g.playerCount);
+				this.targetPlayerId = (int) FloatMath.floor(g.rand() * g.playerCount);
 		}
 	
 		// 位置, 速度の決定
@@ -461,7 +462,7 @@ public class Pacman10Hp3 {
 			        	this.nextDir = g.oppositeDirections.get(Integer.valueOf(this.dir)).intValue();
 			        else { // 移動可能な方向のうち反対向き以外を選択
 			        	int ndir = 0;
-			        	do ndir = i[(int) Math.floor(g.rand() * 4)];
+			        	do ndir = i[(int) FloatMath.floor(g.rand() * 4)];
 			        	while ((ndir & h.allowedDir) == 0
 			        				|| ndir == g.oppositeDirections.get(Integer.valueOf(this.dir)).intValue());
 			        	this.nextDir = ndir;
@@ -599,10 +600,10 @@ public class Pacman10Hp3 {
 		    if (d[0] != this.tilePos[0] || d[1] != this.tilePos[1]) // tileが切り替わる
 		    	this.p(d); // tilePosの更新
 		    else {
-		    	long[] tPoses =
-		    		new long[] {
-		    			(long) Math.floor(b) * 8,
-		    			(long) Math.floor(c) * 8
+		    	float[] tPoses =
+		    		new float[] {
+			    			FloatMath.floor(b) * 8,
+			    			FloatMath.floor(c) * 8
 		    		};
 		    	if (this.pos[1] == tPoses[1] && this.pos[0] == tPoses[0])
 		    		this.u(); // posの値がtilePosと一致(pos が8の倍数)
@@ -799,7 +800,7 @@ public class Pacman10Hp3 {
 		    	c = 0;
 		    } else if (g.gameplayMode == 3) // プレイヤーが死んだ時の画像決定.
 		    	if (this.id == g.playerDyingId) { // 死んだ方
-		    		d = 20 - (int) Math.floor(g.gameplayModeTime / g.timing[4] * 21);
+		    		d = 20 - (int) FloatMath.floor(g.gameplayModeTime / g.timing[4] * 21);
 			        if (this.id == 0) { // Pacman
 			        	b = d - 1;
 			        	switch (b) {
@@ -865,7 +866,7 @@ public class Pacman10Hp3 {
 		    else if (this.el.id == "pcm-bpcm") { // Cutscene
 		    	b = 14;
 		    	c = 0;
-		    	d = (int) Math.floor(g.globalTime * 0.2) % 4;
+		    	d = (int) (Math.floor(g.globalTime * 0.2) % 4);
 		    	if (d == 3) d = 1;
 		    	c += 2 * d;
 		    } else { // 通常時のプレイヤー画像決定
@@ -883,7 +884,7 @@ public class Pacman10Hp3 {
 		    		c = 3;
 		    		break;
 		    	}
-		    	if (g.gameplayMode != 2) b = (int) Math.floor(g.globalTime * 0.3) % 4;
+		    	if (g.gameplayMode != 2) b = (int) (Math.floor(g.globalTime * 0.3) % 4);
 		    	if (b == 3 && this.dir == 0) b = 0;
 		    	if (b == 2 && this.id == 0) b = 0;
 		    	if (b == 3) {
@@ -928,10 +929,10 @@ public class Pacman10Hp3 {
 		    	c = 8;
 		    	// ブルーモード時間切れ間近の青白明滅
 		    	if (g.frightModeTime < g.levels.frightTotalTime - g.levels.frightTime
-		    			&& Math.floor(g.frightModeTime / g.timing[1]) % 2 == 0)
+		    			&& FloatMath.floor(g.frightModeTime / g.timing[1]) % 2 == 0)
 		    		b += 2;
 		
-		    	b += (int) Math.floor(g.globalTime / 16) % 2; // ブルーモードの画像切り替え
+		    	b += (int) (Math.floor(g.globalTime / 16) % 2); // ブルーモードの画像切り替え
 		    } else if (this.mode == 8 || this.mode == 64) { // 食べられて目玉だけ
 		    	int ndir = this.nextDir;
 		    	if (ndir != 0) ndir = this.dir;
@@ -953,11 +954,11 @@ public class Pacman10Hp3 {
 		    } else if ("pcm-ghin".equals(this.el.id)) {
 		    	b = 6;
 		    	c = 8;
-		    	b += (int) Math.floor(g.globalTime / 16) % 2;
+		    	b += (int) (Math.floor(g.globalTime / 16) % 2);
 		    } else if ("pcm-gbug".equals(this.el.id)) {
 		    	b = 6;
 		    	c = 9;
-		    	c += (int) Math.floor(g.globalTime / 16) % 2;
+		    	c += (int) (Math.floor(g.globalTime / 16) % 2);
 		    } else if ("pcm-ghfa".equals(this.el.id)) {
 		    	b = g.cutsceneSequenceId == 3 ? 6 : 7;
 		    	c = 11;
@@ -998,7 +999,7 @@ public class Pacman10Hp3 {
   			        }
   			        c = 4 + this.id - g.playerCount;
   			        if (this.speed > 0 || g.gameplayMode != 13)
-  			        	b += (int) Math.floor(g.globalTime / 16) % 2;
+  			        	b += (int) (Math.floor(g.globalTime / 16) % 2);
 		    }
 		    return new int[] { c, b };
 		}
@@ -2039,7 +2040,7 @@ public class Pacman10Hp3 {
 			long b = 4294967296L;
 			long c = 134775813L;
 			c = c * randSeed + 1;
-			return ((float) (randSeed = c % b)) / b;
+			return (randSeed = c % b) / b;
 		}
 		  
     	void seed(long b) {
@@ -2047,11 +2048,11 @@ public class Pacman10Hp3 {
     	}
 
 		float getDistance(int [] b, int [] c) {
-			return (float) Math.sqrt((c[1] - b[1]) * (c[1] - b[1]) + (c[0] - b[0]) * (c[0] - b[0]));
+			return FloatMath.sqrt((c[1] - b[1]) * (c[1] - b[1]) + (c[0] - b[0]) * (c[0] - b[0]));
 		}
 
 		float getDistance(float[] b, float[] c) {
-			return (float) Math.sqrt((c[1] - b[1]) * (c[1] - b[1]) + (c[0] - b[0]) * (c[0] - b[0]));
+			return FloatMath.sqrt((c[1] - b[1]) * (c[1] - b[1]) + (c[0] - b[0]) * (c[0] - b[0]));
 		}
 	  
 		float getPlayfieldX(float b) {
@@ -2524,8 +2525,8 @@ public class Pacman10Hp3 {
 		    for (int b = 280; b <= 472; b += 8)
 		    	for (int c = 0; c <= 136; c += 8) {
 		    		if (rand() < 0.03) {
-		    			killScreenTileX = (int) Math.floor(rand() * 25) * 10;
-		    			killScreenTileY = (int) Math.floor(rand() * 2) * 10;
+		    			killScreenTileX = (int) FloatMath.floor(rand() * 25) * 10;
+		    			killScreenTileY = (int) FloatMath.floor(rand() * 2) * 10;
 		    		}
 		    		createKillScreenElement(b, c, 8, 8, a);
 		    	}
@@ -2750,7 +2751,7 @@ public class Pacman10Hp3 {
 		    	List<Boolean> bools = new ArrayList<Boolean>();
 		    	for (int f = 0; f < D; f++) {
 		    		c += b;
-		    		double flr = Math.floor((double) c);
+		    		float flr = FloatMath.floor(c);
 		    		if (flr > d) {
 		    			bools.add(a);
 		    			d = flr;
@@ -3069,7 +3070,7 @@ public class Pacman10Hp3 {
 		    		for (int b = 0; b < playerCount + 4; b++) actors[b].b();
 		    		break;
 		    	case 10:
-		    		if (((int) Math.floor(gameplayModeTime / (timing[11] / 8))) % 2 == 0)
+		    		if (FloatMath.floor(gameplayModeTime / (timing[11] / 8)) % 2 == 0)
 		    			changeElementBkPos(playfieldEl.presentation, 322, 2, e);
 		    		else
 		    			changeElementBkPos(playfieldEl.presentation, 322, 138, e);
@@ -3215,7 +3216,7 @@ public class Pacman10Hp3 {
 		    }
 		    int c = 0;
 		    if (lastTimeDelta > tickInterval) { // 処理遅延時間累計がtickインターバルより大きい場合、tickインターバル未満に値を切り詰める
-		    	c = (int) Math.floor(lastTimeDelta / tickInterval);
+		    	c = (int) FloatMath.floor(lastTimeDelta / tickInterval);
 		    	lastTimeDelta -= tickInterval * c;
 		    }
 		    lastTime = b;
