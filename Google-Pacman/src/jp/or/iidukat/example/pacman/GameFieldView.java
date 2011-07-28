@@ -4,16 +4,17 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.PointF;
 import android.os.Handler;
 import android.os.Message;
 import android.util.AttributeSet;
+import android.util.FloatMath;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.ImageView;
 
 public class GameFieldView extends View {
-
-    private long lastMove;
-    private long lastClick;
 
     private Bitmap sourceImage;
     
@@ -35,7 +36,7 @@ public class GameFieldView extends View {
 
         public void sleep(long delayMillis) {
         	this.removeMessages(0);
-            sendMessageDelayed(obtainMessage(0), delayMillis);
+        	sendMessageDelayed(obtainMessage(0), delayMillis);
         }
     }
 
@@ -67,28 +68,58 @@ public class GameFieldView extends View {
     
 	@Override
 	public void onDraw(Canvas canvas) {
-//		// ゲームプレイフィールド
-//		Rect src = new Rect(322, 2, 786, 138);
-//		Rect dest = new Rect(
-//				        (canvasWidth - 464) / 2,
-//						(canvasHeight - 136) / 2,
-//						(canvasWidth + 464) / 2,
-//						(canvasHeight + 136) / 2);
-//		canvas.drawBitmap(sourceImage, src, dest, null);
-		
-//		game.canvasEl.presentation.left = (canvasWidth - 464) / 2;
 		game.canvasEl.presentation.top = (canvasHeight - 136) / 2;
 		game.canvasEl.draw(sourceImage, canvas);
-		
 	}
 
 	@Override
     public boolean onTouchEvent(MotionEvent event) {
 
-		if (System.currentTimeMillis() - lastClick > 500) {
-			lastClick = System.currentTimeMillis();
-
-        }
+//		// タッチイベントをログにダンプする
+//		dumpEvent(event);
+		
+		// ここでタッチイベントを処理
+		switch (event.getAction() & MotionEvent.ACTION_MASK) {
+		case MotionEvent.ACTION_DOWN:
+			game.handleTouchStart(event);
+			break;
+		case MotionEvent.ACTION_UP:
+			game.handleTouchEnd(event);
+			break;
+		case MotionEvent.ACTION_MOVE:
+			game.handleTouchMove(event);			
+			break;
+		}
+		
+		// イベントが処理されたことを知らせる
         return true;
 	}
+	
+	private void dumpEvent(MotionEvent event) {
+		String[] names = { "DOWN", "UP", "MOVE", "CANCEL", "OUTSIDE",
+				"POINTER_DOWN", "POINTER_UP", "7?", "8?", "9?", };
+		StringBuilder sb = new StringBuilder();
+		int action = event.getAction();
+		int actionCode = action & MotionEvent.ACTION_MASK;
+		sb.append("event ACTION_").append(names[actionCode]);
+		if (actionCode == MotionEvent.ACTION_POINTER_DOWN
+				|| actionCode == MotionEvent.ACTION_POINTER_UP) {
+			sb.append("(pid ").append(
+					action >> MotionEvent.ACTION_POINTER_ID_SHIFT);
+			sb.append(")");
+		}
+		sb.append("[");
+		for (int i = 0; i < event.getPointerCount(); i++) {
+			sb.append("#").append(i);
+			sb.append("(pid ").append(event.getPointerId(i));
+			sb.append(")=").append((int) event.getX(i));
+			sb.append(",").append((int) event.getY(i));
+			if (i + 1 < event.getPointerCount()) {
+				sb.append(";");
+			}
+		}
+		sb.append("]");
+//		Log.d(TAG, sb.toString());
+	}
+
 }

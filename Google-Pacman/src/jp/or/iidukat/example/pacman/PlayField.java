@@ -50,10 +50,11 @@ class PlayField {
 	}
 
 	static class Food {
+		boolean eaten = false;
 		Presentation presentation = new Presentation();
 
 		void draw(Bitmap sourceImage, Canvas c) {
-			if (!presentation.visibility)
+			if (eaten || !presentation.visibility)
 				return;
 
 			// TODO: 要見直し

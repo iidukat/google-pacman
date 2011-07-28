@@ -13,6 +13,7 @@ import jp.or.iidukat.example.pacman.PlayField.Ready;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.util.FloatMath;
+import android.view.MotionEvent;
 
 
 public class Pacman10Hp3 {
@@ -1954,6 +1955,7 @@ public class Pacman10Hp3 {
     	private float touchDY;
     	private float touchStartX;
     	private float touchStartY;
+    	private boolean touchCanceld = true;
     	
 	    private int[] score;
 	    private boolean[] extraLifeAwarded;
@@ -2040,7 +2042,7 @@ public class Pacman10Hp3 {
 			long b = 4294967296L;
 			long c = 134775813L;
 			c = c * randSeed + 1;
-			return (randSeed = c % b) / b;
+			return (randSeed = c % b) / (float) b;
 		}
 		  
     	void seed(long b) {
@@ -2071,21 +2073,21 @@ public class Pacman10Hp3 {
 			return "pcm-d" + b + "-" + c;
 		}
 	  
-		void showElementById(String b, boolean c) {
-			// TODO: 要修正
-			// var d = document.getElementById(b);
-			// if (d) d.style.visibility = c ? "visible" : "hidden"
-		}
+//		void showElementById(String b, boolean c) {
+//			// TODO: 要修正
+//			// var d = document.getElementById(b);
+//			// if (d) d.style.visibility = c ? "visible" : "hidden"
+//		}
 	  
-		float[] getAbsoluteElPos(Object b) {
+		float[] getAbsoluteElPos(Presentation presentation) {
 			// TODO: 要修正
-//			var c = [0, 0];
-//			do {
-//				c[0] += b.offsetTop;
-//				c[1] += b.offsetLeft
-//			} while (b = b.offsetParent);
-//			return c;
-			return null;
+			Presentation b = presentation;
+			float[] c = { 0, 0 };
+			do {
+				c[0] += b.top;
+				c[1] += b.left;
+			} while ((b = b.parent) != null);
+			return c;
 		}
 		
 		void prepareElement(Presentation b, int c, int d) {
@@ -2188,6 +2190,7 @@ public class Pacman10Hp3 {
 		}
 		// エサを作成
 		void createDotElements() {
+			playfieldEl.foods.clear();
 		    for (int b = 8; b <= playfieldHeight * 8; b += 8)
 		    	for (int c = 8; c <= playfieldWidth * 8; c += 8)
 		    		if (playfield.get(Integer.valueOf(b)).get(Integer.valueOf(c)).dot != 0) {
@@ -2228,7 +2231,7 @@ public class Pacman10Hp3 {
 		}
 		
 		void createFruitElement() {
-			fruitEl = new Fruit();
+			fruitEl = new Fruit(true);
 		    fruitEl.presentation.id = "pcm-f";
 		    fruitEl.presentation.width = 32;
 		    fruitEl.presentation.height = 16;
@@ -2349,15 +2352,15 @@ public class Pacman10Hp3 {
 		    return c;
 		}
 	    
-	    void handleKeyDown(Object b) {
-//	    	if (b != null) b = window.event;
-//	    	if (g.keyPressed(b.keyCode))
-//	    		if (b.preventDefault) b.preventDefault();
-//	    		else b.returnValue = e
-	    }
+//	    void handleKeyDown(Object b) {
+////	    	if (b != null) b = window.event;
+////	    	if (g.keyPressed(b.keyCode))
+////	    		if (b.preventDefault) b.preventDefault();
+////	    		else b.returnValue = e
+//	    }
 	    
 		void canvasClicked(float b, float c) {
-		    float[] d = getAbsoluteElPos(canvasEl);
+		    float[] d = getAbsoluteElPos(canvasEl.presentation);
 		    b -= d[1] - -32;
 		    c -= d[0] - 0;
 		    E player = actors[0];
@@ -2369,71 +2372,66 @@ public class Pacman10Hp3 {
 		    else if (k > 8 && j < k) player.requestedDir = c > h ? 2 : 1;
 		}
 
-		void handleClick(Object b) {
-//			if (b != null) b = window.event;
-//			canvasClicked(b.clientX, b.clientY);
-		}
+//		void handleClick(Object b) {
+////			if (b != null) b = window.event;
+////			canvasClicked(b.clientX, b.clientY);
+//		}
 		
-	    void registerTouch() {
-//	    	document.body.addEventListener("touchstart", g.handleTouchStart, a);
-//	    	canvasEl.addEventListener("touchstart", g.handleTouchStart, a);
-//	    	document.f && document.f.q && document.f.q.addEventListener("touchstart", g.handleTouchStart, a);
-	    }
+//	    void registerTouch() {
+////	    	document.body.addEventListener("touchstart", g.handleTouchStart, a);
+////	    	canvasEl.addEventListener("touchstart", g.handleTouchStart, a);
+////	    	document.f && document.f.q && document.f.q.addEventListener("touchstart", g.handleTouchStart, a);
+//	    }
 	    
-	    void handleTouchStart(Object b) {
+	    void handleTouchStart(MotionEvent e) {
 		    touchDX = 0;
 		    touchDY = 0;
-//		    if (b.touches.length == 1) {
-//		    	touchStartX = b.touches[0].pageX;
-//		    	touchStartY = b.touches[0].pageY;
-//		    	document.body.addEventListener("touchmove", g.handleTouchMove, a);
-//		    	document.body.addEventListener("touchend", g.handleTouchEnd, a)
-//		    }
-//		    b.preventDefault();
-//		    b.stopPropagation()
+		    if (e.getPointerCount() == 1) {
+			    touchCanceld = false;
+		    	touchStartX = e.getX(0);
+		    	touchStartY = e.getY(0);
+		    }
 	    }
 	    
-	    void handleTouchMove(Object b) {
-//	    	if (b.touches.length > 1) g.cancelTouch();
-//	    	else {
-//	    		touchDX = b.touches[0].pageX - g.touchStartX;
-//	    		touchDY = b.touches[0].pageY - g.touchStartY
-//	    	}
-//	    	b.preventDefault();
-//	    	b.stopPropagation()
+	    void handleTouchMove(MotionEvent e) {
+	    	if (touchCanceld) return;
+	    	
+	    	if (e.getPointerCount() > 1) cancelTouch();
+	    	else {
+	    		touchDX = e.getX(0) - touchStartX;
+	    		touchDY = e.getY(0) - touchStartY;
+	    	}
 	    }
     
-	    void handleTouchEnd(Object b) {
-		    if (touchDX == 0 && touchDY == 0) canvasClicked(touchStartX, touchStartY);
-		    else {
-		       float c = Math.abs(touchDX);
-		       float d = Math.abs(touchDY);
-		       if (c < 8 && d < 8) canvasClicked(touchStartX, touchStartY);
-		       else if (c > 15 && d < c * 2 / 3) actors[0].requestedDir = touchDX > 0 ? 8 : 4;
-		       else if (d > 15 && c < d * 2 / 3) actors[0].requestedDir = touchDY > 0 ? 2 : 1;
-		    }
-//		    b.preventDefault();
-//		    b.stopPropagation();
+	    void handleTouchEnd(MotionEvent e) {
+	    	if (touchCanceld) return;
+	    	
+	    	float c = Math.abs(touchDX);
+	    	float d = Math.abs(touchDY);
+	    	if (c < 8 && d < 8) canvasClicked(touchStartX, touchStartY);
+	    	else if (c > 15 && d < c * 2 / 3) actors[0].requestedDir = touchDX > 0 ? 8 : 4;
+	    	else if (d > 15 && c < d * 2 / 3) actors[0].requestedDir = touchDY > 0 ? 2 : 1;
 		    cancelTouch();
 	    }
 	    
 		void cancelTouch() {
-//		    document.body.removeEventListener("touchmove", g.handleTouchMove, a);
-//		    document.body.removeEventListener("touchend", g.handleTouchEnd, a);
 		    touchStartX = Float.NaN;
 		    touchStartY = Float.NaN;
+		    touchCanceld = true;
 		}
 		
-		void addEventListeners() {
-//		    if (window.addEventListener) {
-//		    	window.addEventListener("keydown", g.handleKeyDown, e);
-//		    	canvasEl.addEventListener("click", g.handleClick, e);
-//		    	registerTouch()
-//		    } else {
-//		    	document.body.attachEvent("onkeydown", g.handleKeyDown);
-//		    	canvasEl.attachEvent("onclick", g.handleClick)
-//		    }
-		}
+		
+		
+//		void addEventListeners() {
+////		    if (window.addEventListener) {
+////		    	window.addEventListener("keydown", g.handleKeyDown, e);
+////		    	canvasEl.addEventListener("click", g.handleClick, e);
+////		    	registerTouch()
+////		    } else {
+////		    	document.body.attachEvent("onkeydown", g.handleKeyDown);
+////		    	canvasEl.attachEvent("onclick", g.handleClick)
+////		    }
+//		}
 		
 		void startGameplay() {
 		    score = new int[] {0, 0};
@@ -2645,6 +2643,7 @@ public class Pacman10Hp3 {
 		    
 		    Food d = getDotElement(getDotElementId(c[0], c[1]));
 //		    d.style.display = "none";
+		    d.eaten = true;
 		    d.presentation.visibility = false;
 		    playfield.get(Integer.valueOf(c[0])).get(Integer.valueOf(c[1])).dot = 0;
 		    updateCruiseElroySpeed();
@@ -2877,14 +2876,14 @@ public class Pacman10Hp3 {
 		    	break;
 		    }
 		 }
-  
+
 		void showChrome(boolean b) {
-		    showElementById("pcm-sc-1-l", b);
-		    showElementById("pcm-sc-2-l", b);
-		    showElementById("pcm-sc-1", b);
-		    showElementById("pcm-sc-2", b);
-		    showElementById("pcm-li", b);
-		    showElementById("pcm-so", b);
+		    scoreLabelEl[0].presentation.visibility = b; // showElementById("pcm-sc-1-l", b);
+		    if (scoreLabelEl[1] != null) scoreLabelEl[1].presentation.visibility = b; // showElementById("pcm-sc-2-l", b);
+		    scoreEl[0].presentation.visibility = b; //showElementById("pcm-sc-1", b);
+		    if (scoreEl[1] != null) scoreEl[1].presentation.visibility = b; // showElementById("pcm-sc-2", b);
+		    livesEl.presentation.visibility = b;// showElementById("pcm-li", b);
+		    soundEl.presentation.visibility = b;// showElementById("pcm-so", b);
 		}
 		
 		boolean toggleSound(Object b) {
@@ -3300,7 +3299,7 @@ public class Pacman10Hp3 {
 		    int top = (4 - Math.min(level, 4)) * 16 + 16;
 		    for (int b = level; b >= Math.max(level - 4 + 1, 1); b--) {
 		    	int c = b >= z.length ? z[z.length - 1].fruit : z[b].fruit;
-		    	Fruit d = new Fruit();
+		    	Fruit d = new Fruit(false);
 		    	int[] fs = getFruitSprite(c);
 		    	prepareElement(d.presentation, fs[0], fs[1]);
 		    	d.presentation.width = 32;
@@ -3538,14 +3537,14 @@ public class Pacman10Hp3 {
 		    	if (fpsChoice == C.length - 1) canDecreaseFps = e;
 		    }
 		}
-	    void addCss() {
-//	    	var b = "#pcm-c {  width: 554px;  border-top: 25px solid black;  padding-bottom: 25px;  height: 136px;  position: relative;  background: black;  outline: 0;  overflow: hidden;  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);}#pcm-c * {  position: absolute;  overflow: hidden;}#pcm-p,#pcm-cc {  left: 45px;  width: 464px;  height: 136px;  z-index: 99;  overflow: hidden;}#pcm-p .pcm-d {  width: 2px;  height: 2px;  margin-left: 3px;  margin-top: 3px;  background: #f8b090;  z-index: 100;}#pcm-p .pcm-e {  width: 8px;  height: 8px;  z-index: 101;}#pcm-sc-1 {  left: 18px;  top: 16px;  width: 8px;  height: 56px;  position: absolute;  overflow: hidden;}#pcm-sc-2 {  left: 18px;  top: 80px;  width: 8px;  height: 56px;  position: absolute;  overflow: hidden;}#pcm-le {  position: absolute;  left: 515px;  top: 74px;  height: 64px;  width: 32px;} #pcm-le div {  position: relative;}#pcm-sc-1-l {    left: -2px;  top: 0;  width: 48px;  height: 8px;}#pcm-sc-2-l {    left: -2px;  top: 64px;  width: 48px;  height: 8px;}#pcm-so {  left: 7px;  top: 116px;  width: 12px;  height: 12px;  border: 8px solid black;  cursor: pointer;}#pcm-li {  position: absolute;  left: 523px;  top: 0;  height: 80px;  width: 16px;}#pcm-li .pcm-lif {  position: relative;  width: 16px;  height: 12px;  margin-bottom: 3px;}#pcm-p.blk .pcm-e {  visibility: hidden;}#pcm-c .pcm-ac {  width: 16px;  height: 16px;  margin-left: -4px;  margin-top: -4px;  z-index: 110;}#pcm-c .pcm-n {  z-index: 111;}#pcm-c #pcm-stck {  z-index: 109;}#pcm-c #pcm-gbug {  width: 32px;}#pcm-c #pcm-bpcm {  width: 32px;  height: 32px;  margin-left: -20px;  margin-top: -20px;}#pcm-f,#pcm-le div {  width: 32px;  height: 16px;  z-index: 105;}#pcm-f {  margin-left: -8px;  margin-top: -4px;}#pcm-do {  width: 19px;  height: 2px;  left: 279px;  top: 46px;  overflow: hidden;  position: absolute;  background: #ffaaa5;}#pcm-re {  width: 48px;  height: 8px;  z-index: 120;  left: 264px;  top: 80px;}#pcm-go {  width: 80px;  height: 8px;  z-index: 120;  left: 248px;  top: 80px;}";
-//	    	styleElement = document.createElement("style");
-//	    	styleElement.type = "text/css";
-//	    	if (styleElement.styleSheet) styleElement.styleSheet.cssText = b;
-//	    	else styleElement.appendChild(document.createTextNode(b));
-//	    	document.getElementsByTagName("head")[0].appendChild(styleElement)
-	    }
+//	    void addCss() {
+////	    	var b = "#pcm-c {  width: 554px;  border-top: 25px solid black;  padding-bottom: 25px;  height: 136px;  position: relative;  background: black;  outline: 0;  overflow: hidden;  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);}#pcm-c * {  position: absolute;  overflow: hidden;}#pcm-p,#pcm-cc {  left: 45px;  width: 464px;  height: 136px;  z-index: 99;  overflow: hidden;}#pcm-p .pcm-d {  width: 2px;  height: 2px;  margin-left: 3px;  margin-top: 3px;  background: #f8b090;  z-index: 100;}#pcm-p .pcm-e {  width: 8px;  height: 8px;  z-index: 101;}#pcm-sc-1 {  left: 18px;  top: 16px;  width: 8px;  height: 56px;  position: absolute;  overflow: hidden;}#pcm-sc-2 {  left: 18px;  top: 80px;  width: 8px;  height: 56px;  position: absolute;  overflow: hidden;}#pcm-le {  position: absolute;  left: 515px;  top: 74px;  height: 64px;  width: 32px;} #pcm-le div {  position: relative;}#pcm-sc-1-l {    left: -2px;  top: 0;  width: 48px;  height: 8px;}#pcm-sc-2-l {    left: -2px;  top: 64px;  width: 48px;  height: 8px;}#pcm-so {  left: 7px;  top: 116px;  width: 12px;  height: 12px;  border: 8px solid black;  cursor: pointer;}#pcm-li {  position: absolute;  left: 523px;  top: 0;  height: 80px;  width: 16px;}#pcm-li .pcm-lif {  position: relative;  width: 16px;  height: 12px;  margin-bottom: 3px;}#pcm-p.blk .pcm-e {  visibility: hidden;}#pcm-c .pcm-ac {  width: 16px;  height: 16px;  margin-left: -4px;  margin-top: -4px;  z-index: 110;}#pcm-c .pcm-n {  z-index: 111;}#pcm-c #pcm-stck {  z-index: 109;}#pcm-c #pcm-gbug {  width: 32px;}#pcm-c #pcm-bpcm {  width: 32px;  height: 32px;  margin-left: -20px;  margin-top: -20px;}#pcm-f,#pcm-le div {  width: 32px;  height: 16px;  z-index: 105;}#pcm-f {  margin-left: -8px;  margin-top: -4px;}#pcm-do {  width: 19px;  height: 2px;  left: 279px;  top: 46px;  overflow: hidden;  position: absolute;  background: #ffaaa5;}#pcm-re {  width: 48px;  height: 8px;  z-index: 120;  left: 264px;  top: 80px;}#pcm-go {  width: 80px;  height: 8px;  z-index: 120;  left: 248px;  top: 80px;}";
+////	    	styleElement = document.createElement("style");
+////	    	styleElement.type = "text/css";
+////	    	if (styleElement.styleSheet) styleElement.styleSheet.cssText = b;
+////	    	else styleElement.appendChild(document.createTextNode(b));
+////	    	document.getElementsByTagName("head")[0].appendChild(styleElement)
+//	    }
 	    
 		void createCanvasElement() {
 			canvasEl = new PacManCanvas();
@@ -3565,7 +3564,7 @@ public class Pacman10Hp3 {
 //		      	var b = document.getElementById("logo-l");
 //		      	google.dom.remove(b);
 //		      	document.getElementById("logo").style.background = "black";
-		    	addCss();
+//		    	addCss();
 		    	createCanvasElement();
 		    	speedIntervals = new HashMap<Float, Boolean[]>();
 		    	oppositeDirections = new HashMap<Integer, Integer>();
@@ -3573,7 +3572,7 @@ public class Pacman10Hp3 {
 		    	oppositeDirections.put(Integer.valueOf(2), Integer.valueOf(1));
 		    	oppositeDirections.put(Integer.valueOf(4), Integer.valueOf(8));
 		    	oppositeDirections.put(Integer.valueOf(8), Integer.valueOf(4));
-		    	addEventListeners();
+//		    	addEventListeners();
 		    	fpsChoice = 0;
 		    	canDecreaseFps = a;
 		    	initializeTickTimer();
