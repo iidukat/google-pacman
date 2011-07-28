@@ -864,7 +864,7 @@ public class Pacman10Hp3 {
 				        b = 3;
 				        c = 0;
 			    	}
-		    else if (this.el.id == "pcm-bpcm") { // Cutscene
+		    else if ("pcm-bpcm".equals(this.el.id)) { // Cutscene
 		    	b = 14;
 		    	c = 0;
 		    	d = (int) (Math.floor(g.globalTime * 0.2) % 4);
@@ -1026,12 +1026,22 @@ public class Pacman10Hp3 {
 		void draw(Bitmap sourceImage, Canvas c) {
 			if (!el.visibility) return;
 
-			// TODO: Margin処理をきちんと実装する
-			el.left -= 4;
-			el.top -= 4;
-			el.drawBitmap(sourceImage, c);
-			el.left += 4;
-			el.top += 4;
+			if ("pcm-bpcm".equals(el.id)) {
+				el.width = 32;
+				el.height = 32;
+				el.left -= 20;
+				el.top -= 20;
+				el.drawBitmap(sourceImage, c);
+				el.left += 20;
+				el.top += 20;
+			} else {
+				// TODO: Margin処理をきちんと実装する
+				el.left -= 4;
+				el.top -= 4;
+				el.drawBitmap(sourceImage, c);
+				el.left += 4;
+				el.top += 4;				
+			}
 		}
 	}
     
@@ -2465,9 +2475,11 @@ public class Pacman10Hp3 {
 		    dotEatingChannel = new int[] {0, 0};
 		    dotEatingSoundPart = new int[] {1, 1};
 		    clearDotEatingNow();
-		    
-		    if (b) changeGameplayMode(4);
-		    else changeGameplayMode(6);
+
+		    // TODO: Cutsceneデバッグ用の修正。後ほど元に戻す
+//		    if (b) changeGameplayMode(4);
+//		    else changeGameplayMode(6);
+		    changeGameplayMode(10);
 		}
 
 		void initiateDoubleMode() {
@@ -2878,12 +2890,23 @@ public class Pacman10Hp3 {
 		 }
 
 		void showChrome(boolean b) {
-		    scoreLabelEl[0].presentation.visibility = b; // showElementById("pcm-sc-1-l", b);
-		    if (scoreLabelEl[1] != null) scoreLabelEl[1].presentation.visibility = b; // showElementById("pcm-sc-2-l", b);
-		    scoreEl[0].presentation.visibility = b; //showElementById("pcm-sc-1", b);
-		    if (scoreEl[1] != null) scoreEl[1].presentation.visibility = b; // showElementById("pcm-sc-2", b);
-		    livesEl.presentation.visibility = b;// showElementById("pcm-li", b);
-		    soundEl.presentation.visibility = b;// showElementById("pcm-so", b);
+		    if (scoreLabelEl[0] != null)
+		    	scoreLabelEl[0].presentation.visibility = b; // showElementById("pcm-sc-1-l", b);
+		    
+		    if (scoreLabelEl[1] != null)
+		    	scoreLabelEl[1].presentation.visibility = b; // showElementById("pcm-sc-2-l", b);
+		    
+		    if (scoreEl[0] != null)
+		    	scoreEl[0].presentation.visibility = b; //showElementById("pcm-sc-1", b);
+		    
+		    if (scoreEl[1] != null)
+		    	scoreEl[1].presentation.visibility = b; // showElementById("pcm-sc-2", b);
+		    
+		    if (livesEl != null)
+		    	livesEl.presentation.visibility = b;// showElementById("pcm-li", b);
+		    
+		    if (soundEl != null)
+		    	soundEl.presentation.visibility = b;// showElementById("pcm-so", b);
 		}
 		
 		boolean toggleSound(Object b) {
@@ -3296,7 +3319,7 @@ public class Pacman10Hp3 {
 		
 		void updateChromeLevel() {
 			levelEl.fruits.clear();
-		    int top = (4 - Math.min(level, 4)) * 16 + 16;
+		    int top = (4 - Math.min(level, 4)) * 16 - 16;
 		    for (int b = level; b >= Math.max(level - 4 + 1, 1); b--) {
 		    	int c = b >= z.length ? z[z.length - 1].fruit : z[b].fruit;
 		    	Fruit d = new Fruit(false);
@@ -3304,7 +3327,7 @@ public class Pacman10Hp3 {
 		    	prepareElement(d.presentation, fs[0], fs[1]);
 		    	d.presentation.width = 32;
 		    	d.presentation.height = 16;
-		    	top -= 16;
+		    	top += 16;
 		    	d.presentation.top = top;
 		    	d.presentation.parent = levelEl.presentation;
 		    	levelEl.fruits.add(d);
