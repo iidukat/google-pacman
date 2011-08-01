@@ -2476,10 +2476,9 @@ public class Pacman10Hp3 {
 		    dotEatingSoundPart = new int[] {1, 1};
 		    clearDotEatingNow();
 
-		    // TODO: Cutsceneデバッグ用の修正。後ほど元に戻す
-//		    if (b) changeGameplayMode(4);
-//		    else changeGameplayMode(6);
-		    changeGameplayMode(10);
+		    if (b) changeGameplayMode(4);
+		    else changeGameplayMode(6);
+//		    changeGameplayMode(10);
 		}
 
 		void initiateDoubleMode() {
