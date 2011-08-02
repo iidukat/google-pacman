@@ -1942,11 +1942,11 @@ public class Pacman10Hp3 {
         private static final int D = C[0]; // 本来想定されているfps
         
         private final GameFieldView view;
+        private SoundPlayer soundPlayer;
         private boolean ready;
         private boolean soundReady;
         private boolean graphicsReady;        
     	private long randSeed;
-    	private boolean useCss;
     	private int playfieldWidth;
     	private int playfieldHeight;
     	private Map<Integer, Map<Integer, PathElement>> playfield;
@@ -2015,8 +2015,8 @@ public class Pacman10Hp3 {
 		private int playerEatingGhostId;
 		private int playerDyingId;
 		
-		private boolean pacManSound;
-		private boolean soundAvailable;
+		private boolean pacManSound = true;
+		volatile boolean soundAvailable;
 		private boolean userDisabledSound;
 		
 		private Cutscene cutscene;
@@ -2082,12 +2082,6 @@ public class Pacman10Hp3 {
 		String getDotElementId(int b, int c) {
 			return "pcm-d" + b + "-" + c;
 		}
-	  
-//		void showElementById(String b, boolean c) {
-//			// TODO: 要修正
-//			// var d = document.getElementById(b);
-//			// if (d) d.style.visibility = c ? "visible" : "hidden"
-//		}
 	  
 		float[] getAbsoluteElPos(Presentation presentation) {
 			// TODO: 要修正
@@ -2315,53 +2309,53 @@ public class Pacman10Hp3 {
 		    createActorElements();
 	    }
 	    
-	    boolean keyPressed(int b){
-		    boolean  c = e;
-		    switch (b) {
-		    case 37: // Left
-		      actors[0].requestedDir = 4;
-		      c = a;
-		      break;
-		    case 38: // Up
-		      actors[0].requestedDir = 1;
-		      c = a;
-		      break;
-		    case 39: // Right
-		      actors[0].requestedDir = 8;
-		      c = a;
-		      break;
-		    case 40: // Down
-		      actors[0].requestedDir = 2;
-		      c = a;
-		      break;
-		    case 65: // A as Left for 2P
-		      if (playerCount == 2) {
-		        actors[1].requestedDir = 4;
-		        c = a;
-		      }
-		      break;
-		    case 83: // S as Down for 2P
-		      if (playerCount == 2) {
-		        actors[1].requestedDir = 2;
-		        c = a;
-		      }
-		      break;
-		    case 68: // D as Right for 2P
-		      if (playerCount == 2) {
-		        actors[1].requestedDir = 8;
-		        c = a;
-		      }
-		      break;
-		    case 87: // W as UP for 2P
-		      if (playerCount == 2) {
-		        actors[1].requestedDir = 1;
-		        c = a;
-		      }
-		      break;
-		    }
-		    return c;
-		}
-	    
+//	    boolean keyPressed(int b){
+//		    boolean  c = e;
+//		    switch (b) {
+//		    case 37: // Left
+//		      actors[0].requestedDir = 4;
+//		      c = a;
+//		      break;
+//		    case 38: // Up
+//		      actors[0].requestedDir = 1;
+//		      c = a;
+//		      break;
+//		    case 39: // Right
+//		      actors[0].requestedDir = 8;
+//		      c = a;
+//		      break;
+//		    case 40: // Down
+//		      actors[0].requestedDir = 2;
+//		      c = a;
+//		      break;
+//		    case 65: // A as Left for 2P
+//		      if (playerCount == 2) {
+//		        actors[1].requestedDir = 4;
+//		        c = a;
+//		      }
+//		      break;
+//		    case 83: // S as Down for 2P
+//		      if (playerCount == 2) {
+//		        actors[1].requestedDir = 2;
+//		        c = a;
+//		      }
+//		      break;
+//		    case 68: // D as Right for 2P
+//		      if (playerCount == 2) {
+//		        actors[1].requestedDir = 8;
+//		        c = a;
+//		      }
+//		      break;
+//		    case 87: // W as UP for 2P
+//		      if (playerCount == 2) {
+//		        actors[1].requestedDir = 1;
+//		        c = a;
+//		      }
+//		      break;
+//		    }
+//		    return c;
+//		}
+//	    
 //	    void handleKeyDown(Object b) {
 ////	    	if (b != null) b = window.event;
 ////	    	if (g.keyPressed(b.keyCode))
@@ -2429,19 +2423,6 @@ public class Pacman10Hp3 {
 		    touchStartY = Float.NaN;
 		    touchCanceld = true;
 		}
-		
-		
-		
-//		void addEventListeners() {
-////		    if (window.addEventListener) {
-////		    	window.addEventListener("keydown", g.handleKeyDown, e);
-////		    	canvasEl.addEventListener("click", g.handleClick, e);
-////		    	registerTouch()
-////		    } else {
-////		    	document.body.attachEvent("onkeydown", g.handleKeyDown);
-////		    	canvasEl.attachEvent("onclick", g.handleClick)
-////		    }
-//		}
 		
 		void startGameplay() {
 		    score = new int[] {0, 0};
@@ -3447,7 +3428,7 @@ public class Pacman10Hp3 {
 		    if (!(!soundAvailable || !pacManSound || paused)) {
 		    	if (!d) stopSoundChannel(c);
 		    	try {
-//		    		flashSoundPlayer.playTrack(b, c);
+		    		soundPlayer.playTrack(b, c);
 		    	} catch (Exception f) {
 		    		soundAvailable = e;
 		    	}
@@ -3457,7 +3438,7 @@ public class Pacman10Hp3 {
 		void stopSoundChannel(int b) {
 		    if (soundAvailable)
 		    	try {
-		    		// flashSoundPlayer.stopChannel(b);
+		    		 soundPlayer.stopChannel(b);
 		    	} catch (Exception c) {
 		    		soundAvailable = e;
 		    	}
@@ -3466,7 +3447,7 @@ public class Pacman10Hp3 {
 		void stopAllAudio() {
 			if (soundAvailable) {
 				try {
-//					flashSoundPlayer.stopAmbientTrack();
+					soundPlayer.stopAmbientTrack();
 				} catch (Exception b) {
 					soundAvailable = e;
 				}
@@ -3527,7 +3508,7 @@ public class Pacman10Hp3 {
 		    	
 		    	if (b != null)
 		    		try {
-//		    			flashSoundPlayer.playAmbientTrack(b);
+		    			soundPlayer.playAmbientTrack(b);
 		    		} catch (Exception c) {
 		    			soundAvailable = e;
 		    		}
@@ -3559,14 +3540,6 @@ public class Pacman10Hp3 {
 		    	if (fpsChoice == C.length - 1) canDecreaseFps = e;
 		    }
 		}
-//	    void addCss() {
-////	    	var b = "#pcm-c {  width: 554px;  border-top: 25px solid black;  padding-bottom: 25px;  height: 136px;  position: relative;  background: black;  outline: 0;  overflow: hidden;  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);}#pcm-c * {  position: absolute;  overflow: hidden;}#pcm-p,#pcm-cc {  left: 45px;  width: 464px;  height: 136px;  z-index: 99;  overflow: hidden;}#pcm-p .pcm-d {  width: 2px;  height: 2px;  margin-left: 3px;  margin-top: 3px;  background: #f8b090;  z-index: 100;}#pcm-p .pcm-e {  width: 8px;  height: 8px;  z-index: 101;}#pcm-sc-1 {  left: 18px;  top: 16px;  width: 8px;  height: 56px;  position: absolute;  overflow: hidden;}#pcm-sc-2 {  left: 18px;  top: 80px;  width: 8px;  height: 56px;  position: absolute;  overflow: hidden;}#pcm-le {  position: absolute;  left: 515px;  top: 74px;  height: 64px;  width: 32px;} #pcm-le div {  position: relative;}#pcm-sc-1-l {    left: -2px;  top: 0;  width: 48px;  height: 8px;}#pcm-sc-2-l {    left: -2px;  top: 64px;  width: 48px;  height: 8px;}#pcm-so {  left: 7px;  top: 116px;  width: 12px;  height: 12px;  border: 8px solid black;  cursor: pointer;}#pcm-li {  position: absolute;  left: 523px;  top: 0;  height: 80px;  width: 16px;}#pcm-li .pcm-lif {  position: relative;  width: 16px;  height: 12px;  margin-bottom: 3px;}#pcm-p.blk .pcm-e {  visibility: hidden;}#pcm-c .pcm-ac {  width: 16px;  height: 16px;  margin-left: -4px;  margin-top: -4px;  z-index: 110;}#pcm-c .pcm-n {  z-index: 111;}#pcm-c #pcm-stck {  z-index: 109;}#pcm-c #pcm-gbug {  width: 32px;}#pcm-c #pcm-bpcm {  width: 32px;  height: 32px;  margin-left: -20px;  margin-top: -20px;}#pcm-f,#pcm-le div {  width: 32px;  height: 16px;  z-index: 105;}#pcm-f {  margin-left: -8px;  margin-top: -4px;}#pcm-do {  width: 19px;  height: 2px;  left: 279px;  top: 46px;  overflow: hidden;  position: absolute;  background: #ffaaa5;}#pcm-re {  width: 48px;  height: 8px;  z-index: 120;  left: 264px;  top: 80px;}#pcm-go {  width: 80px;  height: 8px;  z-index: 120;  left: 248px;  top: 80px;}";
-////	    	styleElement = document.createElement("style");
-////	    	styleElement.type = "text/css";
-////	    	if (styleElement.styleSheet) styleElement.styleSheet.cssText = b;
-////	    	else styleElement.appendChild(document.createTextNode(b));
-////	    	document.getElementsByTagName("head")[0].appendChild(styleElement)
-//	    }
 	    
 		void createCanvasElement() {
 			canvasEl = new PacManCanvas();
@@ -3583,10 +3556,6 @@ public class Pacman10Hp3 {
 		void everythingIsReady() {
 		    if (!ready) {
 		    	ready = a;
-//		      	var b = document.getElementById("logo-l");
-//		      	google.dom.remove(b);
-//		      	document.getElementById("logo").style.background = "black";
-//		    	addCss();
 		    	createCanvasElement();
 		    	speedIntervals = new HashMap<Float, Boolean[]>();
 		    	oppositeDirections = new HashMap<Integer, Integer>();
@@ -3594,7 +3563,6 @@ public class Pacman10Hp3 {
 		    	oppositeDirections.put(Integer.valueOf(2), Integer.valueOf(1));
 		    	oppositeDirections.put(Integer.valueOf(4), Integer.valueOf(8));
 		    	oppositeDirections.put(Integer.valueOf(8), Integer.valueOf(4));
-//		    	addEventListeners();
 		    	fpsChoice = 0;
 		    	canDecreaseFps = a;
 		    	initializeTickTimer();
@@ -3604,9 +3572,7 @@ public class Pacman10Hp3 {
 		}
 
 		void checkIfEverythingIsReady() {
-		    if (soundReady || graphicsReady) updateLoadingProgress(0.67f);
 		    if (soundReady && graphicsReady) {
-		    	updateLoadingProgress(1);
 		    	everythingIsReady();
 		    }
 		}
@@ -3630,183 +3596,20 @@ public class Pacman10Hp3 {
 			preloadImage("src/pacman10-hp-sprite-2.png");
 		}
 		
-		String trimString(String b) {
-			return b.replace("/^[\\s\\xa0]+|[\\s\\xa0]+$/g", "");
-		}
-		
-		// Comparator
-		int g(int b, int c) {
-			if (b < c) return -1;
-			else if (b > c) return 1;
-			return 0;
-		}
-		int compareVersions(String b, String c) {
-//			for (var d = 0,
-//					f = g.trimString(String(b)).split("."),
-//					h = g.trimString(String(c)).split("."),
-//					j = Math.max(f.length, h.length),
-//					k = 0; d == 0 && k < j; k++) {
-//				var x = f[k] || "",
-//				F = h[k] || "",
-//				G = new RegExp("(\\d*)(\\D*)", "g"),
-//				H = new RegExp("(\\d*)(\\D*)", "g");
-//				do {
-//					var t = G.exec(x) || ["", "", ""],
-//						u = H.exec(F) || ["", "", ""];
-//					if (t[0].length == 0 && u[0].length == 0) break;
-//					d = t[1].length == 0 ? 0 : parseInt(t[1], 10);
-//					var I = u[1].length == 0 ? 0 : parseInt(u[1], 10);
-//					d = g.g(d, I) || g.g(t[2].length == 0, u[2].length == 0) || g.g(t[2], u[2])
-//				} while (d == 0)
-//			}
-//			return d;
-			return 1;
-		}
-		
-		// Flashバージョン取得
-		String getFlashVersion(String b) {
-//			b = b.match(/[\d]+/g);
-//			b.length = 3;
-//			return b.join(".")
-			return "";
-		}
-		
-		// Flash検出
-		void detectFlash() {
-//		    var b = e,
-//		      c = "";
-//		    if (navigator.plugins && navigator.plugins.length) {
-//		      var d = navigator.plugins["Shockwave Flash"];
-//		      if (d) {
-//		        b = a;
-//		        if (d.description) c = g.getFlashVersion(d.description)
-//		      }
-//		      if (navigator.plugins["Shockwave Flash 2.0"]) {
-//		        b = a;
-//		        c = "2.0.0.11"
-//		      }
-//		    } else if (navigator.mimeTypes && navigator.mimeTypes.length) {
-//		      if (b = (d = navigator.mimeTypes["application/x-shockwave-flash"]) && d.enabledPlugin) {
-//		        c = d.enabledPlugin.description;
-//		        c = g.getFlashVersion(c)
-//		      }
-//		    } else
-//		      try {
-//		        d = new ActiveXObject("ShockwaveFlash.ShockwaveFlash.7");
-//		        b = a;
-//		        c = g.getFlashVersion(d.GetVariable("$version"))
-//		      } catch (f) {
-//		        try {
-//		          d = new ActiveXObject("ShockwaveFlash.ShockwaveFlash.6");
-//		          b = a;
-//		          c = "6.0.21"
-//		        } catch (h) {
-//		          try {
-//		            d = new ActiveXObject("ShockwaveFlash.ShockwaveFlash");
-//		            b = a;
-//		            c = g.getFlashVersion(d.GetVariable("$version"))
-//		          } catch (j) {}
-//		        }
-//		      }
-//		
-//		    g.hasFlash = b;
-//		    g.flashVersion = c
-		}
-		
-		boolean isFlashVersion(String b) {
-//			return compareVersions(flashVersion, b) >= 0;
-			return true;
-		}
-		
 		void prepareSound() {
 		    soundAvailable = e;
 		    soundReady = e;
-		    detectFlash();
-//		    if (!hasFlash || !isFlashVersion("9.0.0.0")) {
-		    	soundReady = a;
-		    	checkIfEverythingIsReady();
-//		    } else {
-//   	 		flashIframe = document.createElement("iframe");
-//    			flashIframe.name = "pm-sound";
-//    			flashIframe.style.position = "absolute";
-//    			flashIframe.style.top = "-150px";
-//    			flashIframe.style.border = 0;
-//    			flashIframe.style.width = "100px";
-//    			flashIframe.style.height = "100px";
-//    			google.dom.append(flashIframe);
-//    			flashIframeDoc = flashIframe.contentDocument;
-//    			if (flashIframeDoc == undefined || flashIframeDoc == null) flashIframeDoc = flashIframe.contentWindow.document;
-//    			flashIframeDoc.open();
-//    			flashIframeDoc.write('<html><head></head><body><object classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=9,0,0,0" width="0" height="0" id="pacman-sound-player" type="application/x-shockwave-flash"> <param name="movie" value="src/swf/pacman10-hp-sound.swf"> <param name="allowScriptAccess" value="always"> <object id="pacman-sound-player-2"  type="application/x-shockwave-flash" data="src/swf/pacman10-hp-sound.swf" width="0" height="0"><param name="allowScriptAccess" value="always"> </object></object></body></html>');
-//    			flashIframeDoc.close();
-//    			window.setTimeout(g.flashNotReady, 3E3)
-//		    }
-		}
-		
-		void flashNotReady() {
-		    if (!ready) {
-		    	soundAvailable = e;
-		    	soundReady = a;
-		    	checkIfEverythingIsReady();
-		    }
-		}
-		
-		void flashReady(Object b) {
-//			flashSoundPlayer = b;
-			soundAvailable = a;
+		    
+		    soundPlayer = new SoundPlayer(view.getContext(), this);
+		    soundPlayer.init();
+
 			soundReady = a;
 			checkIfEverythingIsReady();
-		}
-		
-		void flashLoaded() {
-//			if (flashIframeDoc) {
-//				var b = g.flashIframeDoc.getElementById("pacman-sound-player");
-//				if (b && b.playTrack) {
-//					flashReady(b);
-//					return;
-//				} else if ((b = flashIframeDoc.getElementById("pacman-sound-player-2")) && b.playTrack) {
-//					flashReady(b);
-//					return;
-//				}
-//			}
-			flashNotReady();
-		}
-		
-		void destroy() {
-		//    if (google.pacman) {
-		      	stopAllAudio();
-		//      window.clearInterval(g.tickTimer);
-		//      window.clearInterval(g.dotTimer);
-		//      window.clearInterval(g.dotTimerMs);
-		//      google.dom.remove(g.styleElement);
-		//      google.dom.remove(g.flashIframe);
-		//      google.dom.remove(g.canvasEl);
-		      	canvasEl = null;
-		//      google.pacman = undefined
-		//    }
-		}
-		
-		void exportFunctionCalls() {
-		//    google.pacman = {};
-		//    google.pacman.insertCoin = g.insertCoin;
-		//    google.pacman.flashLoaded = g.flashLoaded;
-		//    google.pacman.destroy = g.destroy
-		}
-		
-		void updateLoadingProgress(float b) {
-		//    b = Math.round(b * 200);
-		//    document.getElementById("logo-b").style.width = b + "px"
+
 		}
 		
 		void init() {
 		    ready = e;
-//		    document.getElementById("logo").title = "";
-		    updateLoadingProgress(0.33f);
-		    exportFunctionCalls();
-//		    useCss = navigator.userAgent.indexOf("MSIE 5.") != -1
-//		                || navigator.userAgent.indexOf("MSIE 6.") != -1
-//		                || navigator.userAgent.indexOf("MSIE 7.") != -1
-//		                ? e : a;
 		    prepareGraphics();
 		    prepareSound();
 		}
