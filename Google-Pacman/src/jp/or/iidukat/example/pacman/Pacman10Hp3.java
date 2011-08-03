@@ -3396,7 +3396,7 @@ public class Pacman10Hp3 {
 		    	canvasEl.scores[1] = scoreEl[1];
 		    
 		    }
-//		    if (soundAvailable) {
+		    if (soundAvailable) {
 		    	soundEl = new Sound();
 		    	soundEl.presentation.id = "pcm-so";
 		    	soundEl.presentation.left = 15; // 7 + 8
@@ -3408,7 +3408,7 @@ public class Pacman10Hp3 {
 			    canvasEl.sound = soundEl;
 //			    soundEl.onclick = toggleSound;
 			    updateSoundIcon();
-//		    }
+		    }
 		}
 		
 		void clearDotEatingNow() {
@@ -3440,7 +3440,7 @@ public class Pacman10Hp3 {
 		    	try {
 		    		 soundPlayer.stopChannel(b);
 		    	} catch (Exception c) {
-//		    		soundAvailable = e;
+		    		soundAvailable = e;
 		    	}
 		}
 		
@@ -3449,7 +3449,7 @@ public class Pacman10Hp3 {
 				try {
 					soundPlayer.stopAmbientTrack();
 				} catch (Exception b) {
-//					soundAvailable = e;
+					soundAvailable = e;
 				}
 				for (int c = 0; c < 5; c++) stopSoundChannel(c);
 			}
@@ -3514,7 +3514,7 @@ public class Pacman10Hp3 {
 		    			soundPlayer.playAmbientTrack(b);
 		    			soundPlayer.oldAmbient = b;
 		    		} catch (Exception c) {
-//		    			soundAvailable = e;
+		    			soundAvailable = e;
 		    		}
 		    }
 		}

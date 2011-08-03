@@ -56,6 +56,7 @@ public class SoundPlayer {
 			soundIds.put("eating_dot_2", Integer.valueOf(soundPool.load(context, R.raw.eating_dot_2, 1)));
 			soundIds.put("eating_dot_double", Integer.valueOf(soundPool.load(context, R.raw.eating_dot_double, 1)));
 			soundIds.put("eating_ghost", Integer.valueOf(soundPool.load(context, R.raw.eating_ghost, 1)));
+			soundIds.put("extra_life", Integer.valueOf(soundPool.load(context, R.raw.extra_life, 1)));
 			soundIds.put("fruit", Integer.valueOf(soundPool.load(context, R.raw.fruit, 1)));
 			soundIds.put("start_music_double", Integer.valueOf(soundPool.load(context, R.raw.start_music_double, 1)));
 			soundIds.put("start_music", Integer.valueOf(soundPool.load(context, R.raw.start_music, 1)));
@@ -122,6 +123,7 @@ public class SoundPlayer {
 		int id = channels[channel];
 		if (id != 0) {
 			soundPool.stop(id);
+			channels[channel] = 0;
 		}
 	}
 
@@ -130,7 +132,7 @@ public class SoundPlayer {
 		Integer id = ambientIds.get(track);
 		if (id != null) {
 			ambientChannel =
-				Integer.valueOf(ambientPool.play(id.intValue(), 1, 1, 1, -1, 1));
+				Integer.valueOf(ambientPool.play(id.intValue(), 1, 1, 0, -1, 1));
 		} else {
 			throw new SoundPlayerException("playing ambient " + track + " is failed.");
 		}
@@ -139,6 +141,7 @@ public class SoundPlayer {
 	void stopAmbientTrack() throws SoundPlayerException {
 		if (ambientChannel != 0) {
 			ambientPool.stop(ambientChannel);
+			ambientChannel = 0;
 		}
 		oldAmbient = null;
 	}
