@@ -14,7 +14,7 @@ class Lives {
 		if (!presentation.visibility)
 			return;
 
-		presentation.drawRectShape(c);
+//		presentation.drawRectShape(c);
 
 		for (Life life : lives) {
 			life.draw(sourceImage, c);

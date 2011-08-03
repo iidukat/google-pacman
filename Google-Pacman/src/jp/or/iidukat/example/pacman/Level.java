@@ -13,7 +13,7 @@ class Level {
 	void draw(Bitmap sourceImage, Canvas c) {
 		if (!presentation.visibility) return;
 		
-		presentation.drawRectShape(c); 
+//		presentation.drawRectShape(c); 
 		
 		for (Fruit f : fruits) {
 			f.draw(sourceImage, c);

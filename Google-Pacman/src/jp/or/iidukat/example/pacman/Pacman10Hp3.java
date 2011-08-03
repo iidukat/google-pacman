@@ -3316,7 +3316,7 @@ public class Pacman10Hp3 {
 
 		// スコアとサウンドアイコンを生成
 		void createChrome() {
-			canvasEl = new PacManCanvas();
+			canvasEl.reset();
 		    scoreDigits = playerCount == 1 ? 10 : 5;
 		    scoreLabelEl = new ScoreLabel[2];
 		    scoreLabelEl[0] = new ScoreLabel();
@@ -3561,25 +3561,27 @@ public class Pacman10Hp3 {
 		    if (!ready) {
 		    	ready = a;
 		    	createCanvasElement();
+		    	speedIntervals = new HashMap<Float, Boolean[]>();
+		    	oppositeDirections = new HashMap<Integer, Integer>();
+		    	oppositeDirections.put(Integer.valueOf(1), Integer.valueOf(2));
+		    	oppositeDirections.put(Integer.valueOf(2), Integer.valueOf(1));
+		    	oppositeDirections.put(Integer.valueOf(4), Integer.valueOf(8));
+		    	oppositeDirections.put(Integer.valueOf(8), Integer.valueOf(4));
+		    	fpsChoice = 0;
+		    	canDecreaseFps = a;
+		    	initializeTickTimer();
 		    	view.invalidate();
 		    }
 		}
 		
 		// TODO: 要メソッド名見直し
 		void start() {
-	    	speedIntervals = new HashMap<Float, Boolean[]>();
-	    	oppositeDirections = new HashMap<Integer, Integer>();
-	    	oppositeDirections.put(Integer.valueOf(1), Integer.valueOf(2));
-	    	oppositeDirections.put(Integer.valueOf(2), Integer.valueOf(1));
-	    	oppositeDirections.put(Integer.valueOf(4), Integer.valueOf(8));
-	    	oppositeDirections.put(Integer.valueOf(8), Integer.valueOf(4));
-	    	fpsChoice = 0;
-	    	canDecreaseFps = a;
-	    	initializeTickTimer();
-	    	setTimeout();
-	    	newGame();
+			if (ready) {
+				setTimeout();
+				newGame();
+			}
 		}
-
+		
 		void checkIfEverythingIsReady() {
 		    if (soundReady && graphicsReady) {
 		    	everythingIsReady();

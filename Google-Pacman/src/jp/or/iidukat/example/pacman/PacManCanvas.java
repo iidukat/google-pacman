@@ -18,6 +18,8 @@ class PacManCanvas {
 	void draw(Bitmap sourceImage, Canvas c) {
 		if (!presentation.visibility) return;
 		
+//		presentation.drawRectShape(c);
+		
 		if (playfield != null) {
 			playfield.draw(sourceImage, c);
 		}
@@ -49,5 +51,15 @@ class PacManCanvas {
 		if (cutsceneCanvas != null) {
 			cutsceneCanvas.draw(sourceImage, c);
 		}
+	}
+	
+	void reset() {
+		playfield = null;
+		scoreLabels[0] = null;
+		scoreLabels[1] = null;
+		scores[0] = null;
+		sound = null;
+		lives = null;
+		level = null;
 	}
 }
