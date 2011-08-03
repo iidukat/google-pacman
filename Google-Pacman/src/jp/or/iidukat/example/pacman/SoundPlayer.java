@@ -17,14 +17,13 @@ public class SoundPlayer {
 	private SoundPool ambientPool;
 	private volatile boolean soundPoolAvailable;
 	private volatile boolean ambientPoolAvailable;
-	private volatile boolean soundLoadCompleted;
-	private volatile boolean ambientLoadCompleted;
 
 	private Map<String, Integer> soundIds;
 	private Map<String, Integer> ambientIds;
 
-	private Integer[] channels = new Integer[5];
-	private Integer ambientChannel;
+	private int[] channels = new int[5];
+	private int ambientChannel;
+	String oldAmbient;
 
 	SoundPlayer(Context context, Game game) {
 		this.context = context;
@@ -33,7 +32,7 @@ public class SoundPlayer {
 
 	void init() {
 		{
-			soundPool = new SoundPool(9, AudioManager.STREAM_MUSIC, 0);
+			soundPool = new SoundPool(5, AudioManager.STREAM_MUSIC, 0);
 			soundPool.setOnLoadCompleteListener(new OnLoadCompleteListener() {
 				private int count = 0;
 				private boolean success = true;
@@ -42,7 +41,6 @@ public class SoundPlayer {
 					count++;
 					success = success && (status == 0);
 					if (count == 9) {
-						soundLoadCompleted = true;
 						if (success) {
 							soundPoolAvailable = true;
 							game.soundAvailable = soundPoolAvailable && ambientPoolAvailable;
@@ -64,8 +62,8 @@ public class SoundPlayer {
 		}
 
 		{
-			ambientPool = new SoundPool(7, AudioManager.STREAM_MUSIC, 0);
-			soundPool.setOnLoadCompleteListener(new OnLoadCompleteListener() {
+			ambientPool = new SoundPool(1, AudioManager.STREAM_MUSIC, 0);
+			ambientPool.setOnLoadCompleteListener(new OnLoadCompleteListener() {
 				private int count = 0;
 				private boolean success = true;
 				@Override
@@ -73,7 +71,6 @@ public class SoundPlayer {
 					count++;
 					success = success && (status == 0);
 					if (count == 7) {
-						ambientLoadCompleted = true;
 						if (success) {
 							ambientPoolAvailable = true;
 							game.soundAvailable = soundPoolAvailable && ambientPoolAvailable;							
@@ -90,27 +87,19 @@ public class SoundPlayer {
 			ambientIds.put("ambient_fright", Integer.valueOf(ambientPool.load(context, R.raw.ambient_fright, 1)));
 			ambientIds.put("cutscene", Integer.valueOf(ambientPool.load(context, R.raw.cutscene, 1)));
 		}
-		
-		while (!soundLoadCompleted || !ambientLoadCompleted) {
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				return;
-			}
-		}
 	}
-
+	
 	void destroy() {
 		soundPool.release();
 		for (int i = 0; i < channels.length; i++) {
-			channels[i] = null; 
+			channels[i] = 0; 
 		}
 
 		ambientPool.release();
-		ambientChannel = null;
+		ambientChannel = 0;
 	}
 
-	void playTrack(String track, int channel) throws SoundPlayException {
+	void playTrack(String track, int channel) throws SoundPlayerException {
 
 		if (channel >= channels.length) {
 			throw new IllegalArgumentException("channel is too large. : " + channel);
@@ -118,40 +107,40 @@ public class SoundPlayer {
 
 		Integer id = soundIds.get(track);
 		if (id != null) {
-			channels[channel] = id;
-			soundPool.play(id.intValue(), 1, 1, 1, 0, 1);
+			channels[channel] =
+				Integer.valueOf(soundPool.play(id.intValue(), 1, 1, 0, 0, 1));
 		} else {
-			throw new SoundPlayException("playing " + track + " is failed.");
+			throw new SoundPlayerException("playing " + track + " is failed.");
 		}
 	}
 
-	void stopChannel(int channel) throws SoundPlayException {
+	void stopChannel(int channel) throws SoundPlayerException {
 		if (channel >= channels.length) {
 			throw new IllegalArgumentException("channel is too large. : " + channel);
 		}
 
-		Integer id = channels[channel];
-		if (id != null) {
-			soundPool.stop(id.intValue());
+		int id = channels[channel];
+		if (id != 0) {
+			soundPool.stop(id);
 		}
 	}
 
-	void playAmbientTrack(String track) throws SoundPlayException {
+	void playAmbientTrack(String track) throws SoundPlayerException {
 
 		Integer id = ambientIds.get(track);
 		if (id != null) {
-			ambientChannel = id;
-			ambientPool.play(id.intValue(), 1, 1, 1, -1, 1);
+			ambientChannel =
+				Integer.valueOf(ambientPool.play(id.intValue(), 1, 1, 1, -1, 1));
 		} else {
-			throw new SoundPlayException("playing ambient " + track
-					+ " is failed.");
+			throw new SoundPlayerException("playing ambient " + track + " is failed.");
 		}
 	}
 
-	void stopAmbientTrack() throws SoundPlayException {
-		if (ambientChannel != null) {
-			ambientPool.stop(ambientChannel.intValue());
+	void stopAmbientTrack() throws SoundPlayerException {
+		if (ambientChannel != 0) {
+			ambientPool.stop(ambientChannel);
 		}
+		oldAmbient = null;
 	}
 
 }

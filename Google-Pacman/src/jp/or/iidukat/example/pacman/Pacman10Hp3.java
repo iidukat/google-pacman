@@ -1942,7 +1942,7 @@ public class Pacman10Hp3 {
         private static final int D = C[0]; // 本来想定されているfps
         
         private final GameFieldView view;
-        private SoundPlayer soundPlayer;
+        SoundPlayer soundPlayer;
         private boolean ready;
         private boolean soundReady;
         private boolean graphicsReady;        
@@ -2690,7 +2690,7 @@ public class Pacman10Hp3 {
 		}
 		
 		void ghostDies(int b, int c) {
-		    playSound("eating-ghost", 0);
+		    playSound("eating_ghost", 0);
 		    addToScore(200 * modeScoreMultiplier, c);
 		    modeScoreMultiplier *= 2;
 		    ghostBeingEatenId = b;
@@ -2774,7 +2774,7 @@ public class Pacman10Hp3 {
 		    	break;
 		    case 3:
 		    	if (playerDyingId == 0) playSound("death", 0);
-		    	else playSound("death-double", 0);
+		    	else playSound("death_double", 0);
 		    	
 		    	gameplayModeTime = timing[4];
 		    	break;
@@ -2815,8 +2815,8 @@ public class Pacman10Hp3 {
 			    gameplayModeTime = timing[7];
 			    stopAllAudio();
 			    
-			    if (playerCount == 2) playSound("start-music-double", 0, a);
-			    else playSound("start-music", 0, a);
+			    if (playerCount == 2) playSound("start_music_double", 0, a);
+			    else playSound("start_music", 0, a);
 			    
 			    break;
 		    case 5:
@@ -3250,7 +3250,7 @@ public class Pacman10Hp3 {
 		}
 
 		void extraLife(int b) {
-		    playSound("extra-life", 0);
+		    playSound("extra_life", 0);
 		    extraLifeAwarded[b] = a;
 		    lives++;
 		    if (lives > 5) lives = 5;
@@ -3396,7 +3396,7 @@ public class Pacman10Hp3 {
 		    	canvasEl.scores[1] = scoreEl[1];
 		    
 		    }
-		    if (soundAvailable) {
+//		    if (soundAvailable) {
 		    	soundEl = new Sound();
 		    	soundEl.presentation.id = "pcm-so";
 		    	soundEl.presentation.left = 7;
@@ -3408,7 +3408,7 @@ public class Pacman10Hp3 {
 			    canvasEl.sound = soundEl;
 //			    soundEl.onclick = toggleSound;
 			    updateSoundIcon();
-		    }
+//		    }
 		}
 		
 		void clearDotEatingNow() {
@@ -3430,7 +3430,7 @@ public class Pacman10Hp3 {
 		    	try {
 		    		soundPlayer.playTrack(b, c);
 		    	} catch (Exception f) {
-		    		soundAvailable = e;
+//		    		soundAvailable = e;
 		    	}
 		    }
 		}
@@ -3440,7 +3440,7 @@ public class Pacman10Hp3 {
 		    	try {
 		    		 soundPlayer.stopChannel(b);
 		    	} catch (Exception c) {
-		    		soundAvailable = e;
+//		    		soundAvailable = e;
 		    	}
 		}
 		
@@ -3449,7 +3449,7 @@ public class Pacman10Hp3 {
 				try {
 					soundPlayer.stopAmbientTrack();
 				} catch (Exception b) {
-					soundAvailable = e;
+//					soundAvailable = e;
 				}
 				for (int c = 0; c < 5; c++) stopSoundChannel(c);
 			}
@@ -3462,11 +3462,11 @@ public class Pacman10Hp3 {
 		    			dotEatingNext[b] = a; // デッドコード
 		    		else {
 		    			if (b == 0) {
-		    				String c = dotEatingSoundPart[b] == 1 ? "eating-dot-1" : "eating-dot-2";
+		    				String c = dotEatingSoundPart[b] == 1 ? "eating_dot_1" : "eating_dot_2";
 		    				playSound(c, 1 + dotEatingChannel[b], a);
 		//    				dotTimer = window.setInterval(g.repeatDotEatingSoundPacMan, 150) // 無意味な処理
 		    			} else {
-		    				playSound("eating-dot-double", 3 + dotEatingChannel[b], a);
+		    				playSound("eating_dot_double", 3 + dotEatingChannel[b], a);
 		//    				dotTimerMs = window.setInterval(g.repeatDotEatingSoundMsPacMan, 150) // 無意味な処理
 		    			}
 		    			dotEatingChannel[b] = (dotEatingChannel[b] + 1) % 2; // 0 と 1 をスイッチ
@@ -3495,22 +3495,26 @@ public class Pacman10Hp3 {
 		    	String b = null;
 		    	if (gameplayMode == 0 || gameplayMode == 1)
 		    		b = ghostEyesCount != 0
-		              	? "ambient-eyes"
+		              	? "ambient_eyes"
 		              	: mainGhostMode == 4
-		              		? "ambient-fright"
+		              		? "ambient_fright"
 		              		: dotsEaten > 241
-		              			? "ambient-4"
+		              			? "ambient_4"
 		              			: dotsEaten > 207
-		              				? "ambient-3"
+		              				? "ambient_3"
 		              				: dotsEaten > 138
-		              					? "ambient-2" : "ambient-1";
+		              					? "ambient_2" : "ambient_1";
 		        else if (gameplayMode == 13) b = "cutscene";
 		    	
 		    	if (b != null)
+		    		if (b.equals(soundPlayer.oldAmbient)) {
+		    			return;
+		    		}
 		    		try {
 		    			soundPlayer.playAmbientTrack(b);
+		    			soundPlayer.oldAmbient = b;
 		    		} catch (Exception c) {
-		    			soundAvailable = e;
+//		    			soundAvailable = e;
 		    		}
 		    }
 		}

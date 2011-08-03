@@ -4,68 +4,70 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.graphics.PointF;
 import android.os.Handler;
 import android.os.Message;
 import android.util.AttributeSet;
-import android.util.FloatMath;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.ImageView;
 
 public class GameFieldView extends View {
 
-    private Bitmap sourceImage;
-    
-    private int canvasHeight = -1;
-    private int canvasWidth = -1;
+	private Bitmap sourceImage;
 
-    private Pacman10Hp3.Game game;
-    
-    final RefreshHandler redrawHandler = new RefreshHandler();
+	private int canvasHeight = -1;
+	private int canvasWidth = -1;
 
-    class RefreshHandler extends Handler {
+	Pacman10Hp3.Game game;
 
-        @Override
-        public void handleMessage(Message msg) {
-        	game.tick();
-            // TODO: 必要な領域だけinvalidateするように変更する
-            GameFieldView.this.invalidate();
-        }
+	final RefreshHandler redrawHandler = new RefreshHandler();
 
-        public void sleep(long delayMillis) {
-        	this.removeMessages(0);
-        	sendMessageDelayed(obtainMessage(0), delayMillis);
-        }
-    }
+	class RefreshHandler extends Handler {
+
+		@Override
+		public void handleMessage(Message msg) {
+			game.tick();
+			// TODO: 必要な領域だけinvalidateするように変更する
+			GameFieldView.this.invalidate();
+		}
+
+		public void sleep(long delayMillis) {
+			this.removeMessages(0);
+			sendMessageDelayed(obtainMessage(0), delayMillis);
+		}
+	}
+
+	public GameFieldView(Context context) {
+		super(context);
+		initGameFieldView();
+
+		// TODO: ユーザのアクションによりゲームが開始されるように修正する
+		this.game = new Pacman10Hp3.Game(this);
+		this.game.init();
+	}
 
 	public GameFieldView(Context context, AttributeSet attrs) {
 		super(context, attrs);
 		initGameFieldView();
-		
+
 		// TODO: ユーザのアクションによりゲームが開始されるように修正する
 		this.game = new Pacman10Hp3.Game(this);
 		this.game.init();
-		
 	}
 
 	private void initGameFieldView() {
-        setFocusable(true); 
-        sourceImage =
-        	BitmapFactory.decodeResource(
-			        			getResources(),
-			        			R.drawable.pacman_sprite);
+		setFocusable(true);
+		sourceImage = BitmapFactory.decodeResource(getResources(),
+				R.drawable.pacman_sprite);
 	}
-	
-    @Override
-    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+
+	@Override
+	protected void onSizeChanged(int w, int h, int oldw, int oldh) {
 		int width = w > h ? w : h;
 		int height = w > h ? h : w;
-		canvasWidth = width > 464 ? width : 464; 
+		canvasWidth = width > 464 ? width : 464;
 		canvasHeight = height > 136 ? height : 136;
-    }
-    
+	}
+
 	@Override
 	public void onDraw(Canvas canvas) {
 		game.canvasEl.presentation.top = (canvasHeight - 136) / 2;
@@ -73,11 +75,11 @@ public class GameFieldView extends View {
 	}
 
 	@Override
-    public boolean onTouchEvent(MotionEvent event) {
+	public boolean onTouchEvent(MotionEvent event) {
 
-//		// タッチイベントをログにダンプする
-//		dumpEvent(event);
-		
+		// // タッチイベントをログにダンプする
+		// dumpEvent(event);
+
 		// ここでタッチイベントを処理
 		switch (event.getAction() & MotionEvent.ACTION_MASK) {
 		case MotionEvent.ACTION_DOWN:
@@ -87,14 +89,14 @@ public class GameFieldView extends View {
 			game.handleTouchEnd(event);
 			break;
 		case MotionEvent.ACTION_MOVE:
-			game.handleTouchMove(event);			
+			game.handleTouchMove(event);
 			break;
 		}
-		
+
 		// イベントが処理されたことを知らせる
-        return true;
+		return true;
 	}
-	
+
 	private void dumpEvent(MotionEvent event) {
 		String[] names = { "DOWN", "UP", "MOVE", "CANCEL", "OUTSIDE",
 				"POINTER_DOWN", "POINTER_UP", "7?", "8?", "9?", };
@@ -119,7 +121,7 @@ public class GameFieldView extends View {
 			}
 		}
 		sb.append("]");
-//		Log.d(TAG, sb.toString());
+		// Log.d(TAG, sb.toString());
 	}
 
 }
