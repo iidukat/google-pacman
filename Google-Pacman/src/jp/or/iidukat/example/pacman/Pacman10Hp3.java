@@ -3399,8 +3399,8 @@ public class Pacman10Hp3 {
 //		    if (soundAvailable) {
 		    	soundEl = new Sound();
 		    	soundEl.presentation.id = "pcm-so";
-		    	soundEl.presentation.left = 7;
-		    	soundEl.presentation.top = 116;
+		    	soundEl.presentation.left = 15; // 7 + 8
+		    	soundEl.presentation.top = 124; // 116 + 8
 		    	soundEl.presentation.width = 12;
 		    	soundEl.presentation.height = 12;
 		    	prepareElement(soundEl.presentation, -32, -16);
@@ -3561,18 +3561,23 @@ public class Pacman10Hp3 {
 		    if (!ready) {
 		    	ready = a;
 		    	createCanvasElement();
-		    	speedIntervals = new HashMap<Float, Boolean[]>();
-		    	oppositeDirections = new HashMap<Integer, Integer>();
-		    	oppositeDirections.put(Integer.valueOf(1), Integer.valueOf(2));
-		    	oppositeDirections.put(Integer.valueOf(2), Integer.valueOf(1));
-		    	oppositeDirections.put(Integer.valueOf(4), Integer.valueOf(8));
-		    	oppositeDirections.put(Integer.valueOf(8), Integer.valueOf(4));
-		    	fpsChoice = 0;
-		    	canDecreaseFps = a;
-		    	initializeTickTimer();
-		    	setTimeout();
-		    	newGame();
+		    	view.invalidate();
 		    }
+		}
+		
+		// TODO: 要メソッド名見直し
+		void start() {
+	    	speedIntervals = new HashMap<Float, Boolean[]>();
+	    	oppositeDirections = new HashMap<Integer, Integer>();
+	    	oppositeDirections.put(Integer.valueOf(1), Integer.valueOf(2));
+	    	oppositeDirections.put(Integer.valueOf(2), Integer.valueOf(1));
+	    	oppositeDirections.put(Integer.valueOf(4), Integer.valueOf(8));
+	    	oppositeDirections.put(Integer.valueOf(8), Integer.valueOf(4));
+	    	fpsChoice = 0;
+	    	canDecreaseFps = a;
+	    	initializeTickTimer();
+	    	setTimeout();
+	    	newGame();
 		}
 
 		void checkIfEverythingIsReady() {
