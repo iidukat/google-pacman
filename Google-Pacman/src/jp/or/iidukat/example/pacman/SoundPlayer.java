@@ -40,7 +40,7 @@ public class SoundPlayer {
 				public void onLoadComplete(SoundPool soundPool, int sampleId, int status) {
 					count++;
 					success = success && (status == 0);
-					if (count == 9) {
+					if (count == 10) {
 						if (success) {
 							soundPoolAvailable = true;
 							game.soundAvailable = soundPoolAvailable && ambientPoolAvailable;
