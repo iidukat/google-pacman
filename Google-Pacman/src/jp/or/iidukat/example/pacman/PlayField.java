@@ -16,6 +16,7 @@ class PlayField {
 	List<Food> foods = new ArrayList<Food>();
 	Fruit fruit;
 	Ready ready;
+	List<KillScreenTile> killScreenTiles = new ArrayList<KillScreenTile>();
 	GameOver gameover;
 
 	void draw(Bitmap sourceImage, Canvas c) {
@@ -40,10 +41,14 @@ class PlayField {
 			actor.draw(sourceImage, c);
 		}
 
+		for (KillScreenTile tile : killScreenTiles) {
+			tile.draw(sourceImage, c);
+		}
+		
 		if (ready != null) {
 			ready.draw(sourceImage, c);
 		}
-
+		
 		if (gameover != null) {
 			gameover.draw(sourceImage, c);
 		}
@@ -87,4 +92,20 @@ class PlayField {
 			presentation.drawBitmap(sourceImage, c);
 		}
 	}
+	
+	static class KillScreenTile {
+		Presentation presentation = new Presentation();
+		
+		void draw(Bitmap sourceImage, Canvas c) {
+			if (!presentation.visibility) return;
+
+			// TODO: 要見直し
+			if (presentation.hasBackground()) {
+				presentation.drawBitmap(sourceImage, c);
+			} else {
+				presentation.drawRectShape(c);
+			}
+		}	
+	}
+
 }

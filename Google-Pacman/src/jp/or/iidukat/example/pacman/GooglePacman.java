@@ -40,10 +40,14 @@ public class GooglePacman extends Activity {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.game_start:
+			view.game.setDefaultKillScreenLevel();
+			view.game.start();
+			return true;
+		case R.id.kill_screen:
+			view.game.setKillScreenLevel(1);
 			view.game.start();
 			return true;
 		}
-		
 		return false;
 	}
 }

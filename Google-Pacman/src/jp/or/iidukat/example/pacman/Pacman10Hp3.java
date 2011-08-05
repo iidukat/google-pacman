@@ -9,11 +9,11 @@ import java.util.Map;
 
 import jp.or.iidukat.example.pacman.PlayField.Food;
 import jp.or.iidukat.example.pacman.PlayField.GameOver;
+import jp.or.iidukat.example.pacman.PlayField.KillScreenTile;
 import jp.or.iidukat.example.pacman.PlayField.Ready;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.util.FloatMath;
-import android.util.Log;
 import android.view.MotionEvent;
 
 
@@ -1103,7 +1103,8 @@ public class Pacman10Hp3 {
     
     static class Game {
     	private static final String TAG = "Pacman10Hp3.Game";
-
+    	private static final int DEFAULT_KILL_SCREEN_LEVEL = 256;
+    	
         // レベル再開後、一定数のエサが食べられるとモンスターが巣から出てくる
         // そのしきい値をモンスター毎に設定
         private static final int[] m = {0, 7, 17, 32};
@@ -2029,6 +2030,7 @@ public class Pacman10Hp3 {
 	    private boolean[] extraLifeAwarded;
 	    private int lives = 3;
 	    private int level = 0;
+	    private int killScreenLevel = DEFAULT_KILL_SCREEN_LEVEL;
 	    private LevelConfig levels;
 	    private boolean paused = e;
 	    private long globalTime = 0;
@@ -2570,16 +2572,22 @@ public class Pacman10Hp3 {
 
 		void createKillScreenElement(int b, int c, int d, int f, boolean h) {
 //		    var j = document.createElement("div");
-//		    j.style.left = b + "px";
-//		    j.style.top = c + "px";
-//		    j.style.width = d + "px";
-//		    j.style.height = f + "px";
+			KillScreenTile j = new KillScreenTile();
+			j.presentation.left = b; // j.style.left = b + "px";
+			j.presentation.top = c; // j.style.top = c + "px";
+			j.presentation.width = d; // j.style.width = d + "px";
+			j.presentation.height = f; // j.style.height = f + "px";
 //		    j.style.zIndex = 119;
 		    if (h) {
-//		      j.style.background = "url(src/pacman10-hp-sprite-2.png) -" + killScreenTileX + "px -" + killScreenTileY + "px no-repeat";
-		      killScreenTileY += 8;
-		    } else ;// j.style.background = "black";
-//		    playfieldEl.appendChild(j)
+//		      	j.style.background = "url(src/pacman10-hp-sprite-2.png) -" + killScreenTileX + "px -" + killScreenTileY + "px no-repeat";
+		    	j.presentation.bgPosX = killScreenTileX;
+		    	j.presentation.bgPosY = killScreenTileY;
+		    	killScreenTileY += 8;
+		    } else {
+		    	j.presentation.bgColor = 0x000000; // j.style.background = "black";
+		    }
+		    playfieldEl.killScreenTiles.add(j);
+		    j.presentation.parent = playfieldEl.presentation; // playfieldEl.appendChild(j)
 		}
   
 		void killScreen() {
@@ -2616,7 +2624,7 @@ public class Pacman10Hp3 {
 		    updateChrome();
 		    resetPlayfield();
 		    restartGameplay(b);
-		    if (level == 256) killScreen();
+		    if (level == killScreenLevel) killScreen();
 		}
 		
 		void newLife() {
@@ -3713,7 +3721,15 @@ public class Pacman10Hp3 {
 			soundReady = a;
 			checkIfEverythingIsReady();
 		}
-		
+
+		void setKillScreenLevel(int level) {
+			this.killScreenLevel = level;
+		}
+
+		void setDefaultKillScreenLevel() {
+			this.killScreenLevel = DEFAULT_KILL_SCREEN_LEVEL;
+		}
+
 		void init() {
 		    ready = e;
 		    prepareGraphics();

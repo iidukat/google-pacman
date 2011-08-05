@@ -4,4 +4,8 @@
 		android:title="@string/game_start_label"
 		android:alphabeticShortcut="@string/game_start_shortcut">
 	</item>
+	<item android:id="@+id/kill_screen"
+		android:title="@string/kill_screen_label"
+		android:alphabeticShortcut="@string/kill_screen_shortcut">
+	</item>	
 </menu>
