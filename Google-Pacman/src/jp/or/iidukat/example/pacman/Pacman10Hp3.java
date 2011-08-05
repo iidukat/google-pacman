@@ -13,6 +13,7 @@ import jp.or.iidukat.example.pacman.PlayField.Ready;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.util.FloatMath;
+import android.util.Log;
 import android.view.MotionEvent;
 
 
@@ -1046,6 +1047,7 @@ public class Pacman10Hp3 {
 	}
     
     static class Game {
+    	private static final String TAG = "Pacman10Hp3.Game";
 
         // レベル再開後、一定数のエサが食べられるとモンスターが巣から出てくる
         // そのしきい値をモンスター毎に設定
@@ -1942,7 +1944,8 @@ public class Pacman10Hp3 {
         private static final int D = C[0]; // 本来想定されているfps
         
         private final GameFieldView view;
-        SoundPlayer soundPlayer;
+        private SoundPlayer soundPlayer;
+        private AudioClip cutsceneAudioClip;
         private boolean ready;
         private boolean soundReady;
         private boolean graphicsReady;        
@@ -2949,10 +2952,12 @@ public class Pacman10Hp3 {
 		    cutsceneActors = cas.toArray(new E[0]); 
 		    cutsceneNextSequence();
 		    stopAllAudio();
-		    playAmbientSound();
+//		    playAmbientSound();
+		    playCutsceneTrack();
 		}
 		
 		void stopCutscene() {
+			stopCutsceneTrack();
 //		    playfieldEl.style.visibility = "";
 		    playfieldEl.presentation.visibility = true;
 		    canvasEl.cutsceneCanvas = null;
@@ -3430,7 +3435,8 @@ public class Pacman10Hp3 {
 		    	try {
 		    		soundPlayer.playTrack(b, c);
 		    	} catch (Exception f) {
-//		    		soundAvailable = e;
+		    		soundAvailable = e;
+//		    		Log.e(TAG, "playSound", f);
 		    	}
 		    }
 		}
@@ -3441,6 +3447,7 @@ public class Pacman10Hp3 {
 		    		 soundPlayer.stopChannel(b);
 		    	} catch (Exception c) {
 		    		soundAvailable = e;
+//		    		Log.e(TAG, "stopSoundChannel", c);
 		    	}
 		}
 		
@@ -3450,6 +3457,7 @@ public class Pacman10Hp3 {
 					soundPlayer.stopAmbientTrack();
 				} catch (Exception b) {
 					soundAvailable = e;
+//		    		Log.e(TAG, "stopAllAudio", b);
 				}
 				for (int c = 0; c < 5; c++) stopSoundChannel(c);
 			}
@@ -3504,9 +3512,9 @@ public class Pacman10Hp3 {
 		              				? "ambient_3"
 		              				: dotsEaten > 138
 		              					? "ambient_2" : "ambient_1";
-		        else if (gameplayMode == 13) b = "cutscene";
+//		        else if (gameplayMode == 13) b = "cutscene";
 		    	
-		    	if (b != null)
+		    	if (b != null) {
 		    		if (b.equals(soundPlayer.oldAmbient)) {
 		    			return;
 		    		}
@@ -3515,8 +3523,18 @@ public class Pacman10Hp3 {
 		    			soundPlayer.oldAmbient = b;
 		    		} catch (Exception c) {
 		    			soundAvailable = e;
+//			    		Log.e(TAG, "playAmbientSound", c);
 		    		}
+		    	}
 		    }
+		}
+		
+		void playCutsceneTrack() {
+			cutsceneAudioClip.loop();
+		}
+		
+		void stopCutsceneTrack() {
+			cutsceneAudioClip.stop();
 		}
 		
 		void initializeTickTimer() {
@@ -3588,7 +3606,7 @@ public class Pacman10Hp3 {
 		    }
 		}
 		
-		void preloadImage(String b) {
+		void preloadImage() {
 // 		    var c = new Image,
 //    			d = google.browser.engine.IE;
 //    		if (!d) c.onload = g.imageLoaded;
@@ -3604,7 +3622,7 @@ public class Pacman10Hp3 {
 		
 		void prepareGraphics() {
 			graphicsReady = e;
-			preloadImage("src/pacman10-hp-sprite-2.png");
+			preloadImage();
 		}
 		
 		void prepareSound() {
@@ -3613,16 +3631,23 @@ public class Pacman10Hp3 {
 		    
 		    soundPlayer = new SoundPlayer(view.getContext(), this);
 		    soundPlayer.init();
+		    
+		    cutsceneAudioClip = new AudioClip(view.getContext(), R.raw.cutscene);
+		    cutsceneAudioClip.init();
 
 			soundReady = a;
 			checkIfEverythingIsReady();
-
 		}
 		
 		void init() {
 		    ready = e;
 		    prepareGraphics();
 		    prepareSound();
+		}
+		
+		void destroy() {
+			soundPlayer.destroy();
+			cutsceneAudioClip.destroy();
 		}
     }
 }

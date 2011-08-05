@@ -10,7 +10,29 @@ import android.media.SoundPool;
 import android.media.SoundPool.OnLoadCompleteListener;
 
 public class SoundPlayer {
-
+	
+	private static final int[] soundResources = {
+		R.raw.death_double, 
+		R.raw.death,
+		R.raw.eating_dot_1,
+		R.raw.eating_dot_2,
+		R.raw.eating_dot_double,
+		R.raw.eating_ghost,
+		R.raw.extra_life,
+		R.raw.fruit,
+		R.raw.start_music_double,
+		R.raw.start_music,
+	};
+	
+	private static final int[] ambientResources = {
+		R.raw.ambient_1,
+		R.raw.ambient_2,
+		R.raw.ambient_3,
+		R.raw.ambient_4,
+		R.raw.ambient_eyes,
+		R.raw.ambient_fright,
+	};
+	
 	private final Context context;
 	private final Game game;
 	private SoundPool soundPool;
@@ -40,7 +62,7 @@ public class SoundPlayer {
 				public void onLoadComplete(SoundPool soundPool, int sampleId, int status) {
 					count++;
 					success = success && (status == 0);
-					if (count == 10) {
+					if (count == soundResources.length) {
 						if (success) {
 							soundPoolAvailable = true;
 							game.soundAvailable = soundPoolAvailable && ambientPoolAvailable;
@@ -50,16 +72,11 @@ public class SoundPlayer {
 				}
 			});
 			soundIds = new HashMap<String, Integer>();
-			soundIds.put("death_double", Integer.valueOf(soundPool.load(context, R.raw.death_double, 1)));
-			soundIds.put("death", Integer.valueOf(soundPool.load(context, R.raw.death, 1)));
-			soundIds.put("eating_dot_1", Integer.valueOf(soundPool.load(context, R.raw.eating_dot_1, 1)));
-			soundIds.put("eating_dot_2", Integer.valueOf(soundPool.load(context, R.raw.eating_dot_2, 1)));
-			soundIds.put("eating_dot_double", Integer.valueOf(soundPool.load(context, R.raw.eating_dot_double, 1)));
-			soundIds.put("eating_ghost", Integer.valueOf(soundPool.load(context, R.raw.eating_ghost, 1)));
-			soundIds.put("extra_life", Integer.valueOf(soundPool.load(context, R.raw.extra_life, 1)));
-			soundIds.put("fruit", Integer.valueOf(soundPool.load(context, R.raw.fruit, 1)));
-			soundIds.put("start_music_double", Integer.valueOf(soundPool.load(context, R.raw.start_music_double, 1)));
-			soundIds.put("start_music", Integer.valueOf(soundPool.load(context, R.raw.start_music, 1)));
+			for (int res : soundResources) {
+				soundIds.put(
+						context.getResources().getResourceEntryName(res),
+						Integer.valueOf(soundPool.load(context, res, 1)));
+			}
 		}
 
 		{
@@ -71,7 +88,7 @@ public class SoundPlayer {
 				public void onLoadComplete(SoundPool soundPool, int sampleId, int status) {
 					count++;
 					success = success && (status == 0);
-					if (count == 7) {
+					if (count == ambientResources.length) {
 						if (success) {
 							ambientPoolAvailable = true;
 							game.soundAvailable = soundPoolAvailable && ambientPoolAvailable;							
@@ -80,13 +97,11 @@ public class SoundPlayer {
 				}
 			});
 			ambientIds = new HashMap<String, Integer>();
-			ambientIds.put("ambient_1", Integer.valueOf(ambientPool.load(context, R.raw.ambient_1, 1)));
-			ambientIds.put("ambient_2", Integer.valueOf(ambientPool.load(context, R.raw.ambient_2, 1)));
-			ambientIds.put("ambient_3", Integer.valueOf(ambientPool.load(context, R.raw.ambient_3, 1)));
-			ambientIds.put("ambient_4", Integer.valueOf(ambientPool.load(context, R.raw.ambient_4, 1)));
-			ambientIds.put("ambient_eyes", Integer.valueOf(ambientPool.load(context, R.raw.ambient_eyes, 1)));
-			ambientIds.put("ambient_fright", Integer.valueOf(ambientPool.load(context, R.raw.ambient_fright, 1)));
-			ambientIds.put("cutscene", Integer.valueOf(ambientPool.load(context, R.raw.cutscene, 1)));
+			for (int res : ambientResources) {
+				ambientIds.put(
+						context.getResources().getResourceEntryName(res),
+						Integer.valueOf(ambientPool.load(context, res, 1)));
+			}
 		}
 	}
 	

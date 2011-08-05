@@ -24,7 +24,7 @@ public class GooglePacman extends Activity {
     
     @Override
     public void onDestroy() {
-    	view.game.soundPlayer.destroy();
+    	view.game.destroy();
     	super.onDestroy();
     }
     
