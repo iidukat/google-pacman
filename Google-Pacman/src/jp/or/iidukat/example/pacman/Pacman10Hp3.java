@@ -2367,6 +2367,10 @@ public class Pacman10Hp3 {
 //	    }
 	    
 		void canvasClicked(float b, float c) {
+			if (handleSoundIconClick(b, c)) {
+				return;
+			}
+			
 		    float[] d = getAbsoluteElPos(canvasEl.presentation);
 		    b -= d[1] - -32;
 		    c -= d[0] - 0;
@@ -2377,6 +2381,20 @@ public class Pacman10Hp3 {
 		    float k = Math.abs(c - h);
 		    if (j > 8 && k < j) player.requestedDir = b > f ? 8 : 4;
 		    else if (k > 8 && j < k) player.requestedDir = c > h ? 2 : 1;
+		}
+		
+		boolean handleSoundIconClick(float b, float c) {
+			if (!soundAvailable) return false;
+			
+			float[] d = getAbsoluteElPos(soundEl.presentation);
+			if (d[1] <= b && b <= d[1] + 12) {
+				if (d[0] <= c && c <= d[0] + 12) {
+					toggleSound();
+					return true;
+				}
+			}
+			
+			return false;
 		}
 
 //		void handleClick(Object b) {
@@ -2892,7 +2910,7 @@ public class Pacman10Hp3 {
 		    	soundEl.presentation.visibility = b;// showElementById("pcm-so", b);
 		}
 		
-		boolean toggleSound(Object b) {
+		boolean toggleSound() { // 元は引数b
 //		    b = window.event || b;
 //	    	b.cancelBubble = a;
 		    if (pacManSound) {
