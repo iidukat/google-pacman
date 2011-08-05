@@ -239,8 +239,74 @@ public class Pacman10Hp3 {
     	float tunnelSpeed;
     	Boolean[] speedIntervals;
     	int dotCount;
-        
-    	Presentation el = new Presentation();
+ 
+    	static class ActorPresentation extends Presentation {
+
+    		void drawBitmap(Bitmap sourceImage, Canvas c) {
+    			float top = getTop();
+    			float left = getLeft();
+    			Presentation p = this;
+    			
+    			while ((p = p.parent) != null) {
+    				top += p.top;
+    				left += p.left;
+    			}
+
+    			// TODO: floatをintに変更して問題ないかどうか検討すること
+    			src.set(
+    				Math.round(bgPosX),
+    				Math.round(bgPosY),
+    				Math.round(bgPosX + width),
+    				Math.round(bgPosY + height));
+    			dest.set(
+    					left,
+    					top,
+    					left + width,
+    					top + height);
+    			c.drawBitmap(sourceImage, src, dest, null);
+    		}
+    		
+    		void drawRectShape(Canvas c) {
+    			float top = getTop();
+    			float left = getLeft();
+    			Presentation p = this;
+    			
+    			while ((p = p.parent) != null) {
+    				top += p.top;
+    				left += p.left;
+    			}
+    			
+    			dest.set(
+    					left,
+    					top,
+    					left + width,
+    					top + height);
+    			
+    			paint.setColor(bgColor);
+    			paint.setAlpha(0xff);
+    			
+    			c.drawRect(dest, paint);
+    		}
+    		
+    		private float getLeft() {
+    			if ("pcm-bpcm".equals(id)) {
+    				return left - 20;
+    			} else {
+    				return left - 4;
+    			}
+    		}
+
+    		private float getTop() {
+    			if ("pcm-bpcm".equals(id)) {
+    				return top - 20;
+    			} else {
+    				return top - 4;
+    			}
+    		}
+
+    	}
+    	
+    	Presentation el = new ActorPresentation();
 
     	E(int b, Game g) {
     		this.id = b;
@@ -871,6 +937,9 @@ public class Pacman10Hp3 {
 		    	d = (int) (Math.floor(g.globalTime * 0.2) % 4);
 		    	if (d == 3) d = 1;
 		    	c += 2 * d;
+		    	// BigPacMan
+		    	this.el.width = 32;
+		    	this.el.height = 32;
 		    } else { // 通常時のプレイヤー画像決定
 		    	switch (d) {
 		    	case 4:
@@ -1026,23 +1095,9 @@ public class Pacman10Hp3 {
 		
 		void draw(Bitmap sourceImage, Canvas c) {
 			if (!el.visibility) return;
+			
+			el.drawBitmap(sourceImage, c);
 
-			if ("pcm-bpcm".equals(el.id)) {
-				el.width = 32;
-				el.height = 32;
-				el.left -= 20;
-				el.top -= 20;
-				el.drawBitmap(sourceImage, c);
-				el.left += 20;
-				el.top += 20;
-			} else {
-				// TODO: Margin処理をきちんと実装する
-				el.left -= 4;
-				el.top -= 4;
-				el.drawBitmap(sourceImage, c);
-				el.left += 4;
-				el.top += 4;				
-			}
 		}
 	}
     
@@ -2203,8 +2258,8 @@ public class Pacman10Hp3 {
 		    		if (playfield.get(Integer.valueOf(b)).get(Integer.valueOf(c)).dot != 0) {
 		    			Food food = new Food();
 		    			food.presentation.id = getDotElementId(b, c);
-		          		food.presentation.left = c + -32;
-		          		food.presentation.top = b + 0;
+		          		food.presentation.left = c + -32 + 3; // margin-left: 3
+		          		food.presentation.top = b + 0 + 3; // margint-top: 3
 		          		food.presentation.width = 2;
 		          		food.presentation.height = 2;
 		          		food.presentation.bgColor = 0xf8b090;
@@ -2220,6 +2275,8 @@ public class Pacman10Hp3 {
 		      	Food f = getDotElement(d);
 		      	if (f == null) continue;
 //		      	document.getElementById(d).className = "pcm-e";
+		      	f.presentation.left -= 3;
+		      	f.presentation.top -= 3;
 		      	f.presentation.width = 8;
 		      	f.presentation.height = 8;
 		      	prepareElement(f.presentation, 0, 144);
@@ -2238,12 +2295,12 @@ public class Pacman10Hp3 {
 		}
 		
 		void createFruitElement() {
-			fruitEl = new Fruit(true);
+			fruitEl = new Fruit();
 		    fruitEl.presentation.id = "pcm-f";
 		    fruitEl.presentation.width = 32;
 		    fruitEl.presentation.height = 16;
-		    fruitEl.presentation.left = getPlayfieldX(v[1]);
-		    fruitEl.presentation.top = getPlayfieldY(v[0]);
+		    fruitEl.presentation.left = getPlayfieldX(v[1]) - 8;
+		    fruitEl.presentation.top = getPlayfieldY(v[0]) - 4;
 		    prepareElement(fruitEl.presentation, -32, -16);
 		    fruitEl.presentation.parent = playfieldEl.presentation;
 		    playfieldEl.fruit = fruitEl;
@@ -3325,7 +3382,7 @@ public class Pacman10Hp3 {
 		    int top = (4 - Math.min(level, 4)) * 16 - 16;
 		    for (int b = level; b >= Math.max(level - 4 + 1, 1); b--) {
 		    	int c = b >= z.length ? z[z.length - 1].fruit : z[b].fruit;
-		    	Fruit d = new Fruit(false);
+		    	Fruit d = new Fruit();
 		    	int[] fs = getFruitSprite(c);
 		    	prepareElement(d.presentation, fs[0], fs[1]);
 		    	d.presentation.width = 32;

@@ -61,12 +61,7 @@ class PlayField {
 			if (presentation.hasBackground()) {
 				presentation.drawBitmap(sourceImage, c);
 			} else {
-				// TODO: margin処理を実装する
-				presentation.left += 3;
-				presentation.top += 3;
 				presentation.drawRectShape(c);
-				presentation.left -= 3;
-				presentation.top -= 3;
 			}
 		}
 	}
