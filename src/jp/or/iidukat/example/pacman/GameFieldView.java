@@ -17,7 +17,7 @@ public class GameFieldView extends View {
 	private int canvasHeight = -1;
 	private int canvasWidth = -1;
 
-	Pacman10Hp3.Game game;
+	PacmanGame game;
 
 	final RefreshHandler redrawHandler = new RefreshHandler();
 
@@ -41,7 +41,7 @@ public class GameFieldView extends View {
 		initGameFieldView();
 
 		// TODO: ユーザのアクションによりゲームが開始されるように修正する
-		this.game = new Pacman10Hp3.Game(this);
+		this.game = new PacmanGame(this);
 		this.game.init();
 	}
 
@@ -50,7 +50,7 @@ public class GameFieldView extends View {
 		initGameFieldView();
 
 		// TODO: ユーザのアクションによりゲームが開始されるように修正する
-		this.game = new Pacman10Hp3.Game(this);
+		this.game = new PacmanGame(this);
 		this.game.init();
 	}
 

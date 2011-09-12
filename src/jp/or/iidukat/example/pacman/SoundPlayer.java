@@ -3,7 +3,6 @@ package jp.or.iidukat.example.pacman;
 import java.util.HashMap;
 import java.util.Map;
 
-import jp.or.iidukat.example.pacman.Pacman10Hp3.Game;
 import android.content.Context;
 import android.media.AudioManager;
 import android.media.SoundPool;
@@ -34,7 +33,7 @@ public class SoundPlayer {
 	};
 	
 	private final Context context;
-	private final Game game;
+	private final PacmanGame game;
 	private SoundPool soundPool;
 	private SoundPool ambientPool;
 	private volatile boolean soundPoolAvailable;
@@ -47,7 +46,7 @@ public class SoundPlayer {
 	private int ambientChannel;
 	String oldAmbient;
 
-	SoundPlayer(Context context, Game game) {
+	SoundPlayer(Context context, PacmanGame game) {
 		this.context = context;
 		this.game = game;
 	}
