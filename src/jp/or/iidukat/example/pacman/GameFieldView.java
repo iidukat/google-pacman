@@ -70,8 +70,8 @@ public class GameFieldView extends View {
 
 	@Override
 	public void onDraw(Canvas canvas) {
-		game.canvasEl.presentation.top = (canvasHeight - 136) / 2;
-		game.canvasEl.draw(sourceImage, canvas);
+		game.getCanvasEl().getPresentation().setTop((canvasHeight - 136) / 2);
+		game.getCanvasEl().draw(sourceImage, canvas);
 	}
 
 	@Override

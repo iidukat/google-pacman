@@ -7,1066 +7,32 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import jp.or.iidukat.example.pacman.PlayField.Food;
-import jp.or.iidukat.example.pacman.PlayField.GameOver;
-import jp.or.iidukat.example.pacman.PlayField.KillScreenTile;
-import jp.or.iidukat.example.pacman.PlayField.Ready;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
+import jp.or.iidukat.example.pacman.entity.CutsceneCanvas;
+import jp.or.iidukat.example.pacman.entity.Door;
+import jp.or.iidukat.example.pacman.entity.E;
+import jp.or.iidukat.example.pacman.entity.Fruit;
+import jp.or.iidukat.example.pacman.entity.Level;
+import jp.or.iidukat.example.pacman.entity.Lives;
+import jp.or.iidukat.example.pacman.entity.PacManCanvas;
+import jp.or.iidukat.example.pacman.entity.PlayField;
+import jp.or.iidukat.example.pacman.entity.Score;
+import jp.or.iidukat.example.pacman.entity.ScoreLabel;
+import jp.or.iidukat.example.pacman.entity.Sound;
+import jp.or.iidukat.example.pacman.entity.PlayField.Food;
+import jp.or.iidukat.example.pacman.entity.PlayField.GameOver;
+import jp.or.iidukat.example.pacman.entity.PlayField.KillScreenTile;
+import jp.or.iidukat.example.pacman.entity.PlayField.Ready;
 import android.util.FloatMath;
 import android.view.MotionEvent;
 
 
+/**
+ * @author iidukat
+ *
+ */
 public class PacmanGame {
 	
     // Class for Actor(Pacman, Ms.Pacman, Ghost)
-    static class E {
-
-        private static final int[] i = {1, 4, 2, 8};
-        
-        private static class InitPosition {
-        	final float x;
-        	final float y;
-        	final int dir;
-        	final float scatterX;
-        	final float scatterY;
-
-        	InitPosition(float x, float y, int dir) {
-        		this(x, y, dir, 0, 0);
-        	}
-        	
-        	InitPosition(float x, float y, int dir, float scatterX, float scatterY) {
-        		this.x = x;
-        		this.y = y;
-        		this.dir = dir;
-        		this.scatterX = scatterX;
-        		this.scatterY = scatterY;
-        	}
-        	
-        	static InitPosition createPlayerInitPosition(float x, float y, int dir) {
-        		return new InitPosition(x, y, dir);
-        	}
-        	
-        	static InitPosition createGhostInitPosition(float x, float y, int dir,
-        											float scatterX, float scatterY) {
-        		return new InitPosition(x, y, dir, scatterX, scatterY);
-        	}
-        }
-
-        // Actor初期配置
-        private static final Map<Integer, InitPosition[]> r;
-        static {
-        	Map<Integer, InitPosition[]> ps = new HashMap<Integer, InitPosition[]>();
-        	ps.put(
-        		Integer.valueOf(1),
-        		new InitPosition[] {
-        			InitPosition.createPlayerInitPosition(39.5f, 15, 4), // Pacman
-        			InitPosition.createGhostInitPosition(39.5f, 4, 4, 57, -4), // アカベエ
-        			InitPosition.createGhostInitPosition(39.5f, 7, 2, 0, -4), // ピンキー
-        			InitPosition.createGhostInitPosition(37.625f, 7, 1, 57, 20), // アオスケ
-        			InitPosition.createGhostInitPosition(41.375f, 7, 1, 0, 20), // グズタ
-        		});
-        	ps.put(
-           		Integer.valueOf(2),
-           		new InitPosition[] {
-           			InitPosition.createPlayerInitPosition(40.25f, 15, 8), // Pacman
-           			InitPosition.createPlayerInitPosition(38.75f, 15, 4), // Ms.Pacman
-           			InitPosition.createGhostInitPosition(39.5f, 4, 4, 57, -4), // アカベエ
-           			InitPosition.createGhostInitPosition(39.5f, 7, 2, 0, -4), // ピンキー
-           			InitPosition.createGhostInitPosition(37.625f, 7, 1, 57, 20), // アオスケ
-           			InitPosition.createGhostInitPosition(41.375f, 7, 1, 0, 20), // グズタ
-           		});
-        	
-        	r = Collections.unmodifiableMap(ps);
-        }
-
-        private static final int[] s = {32, 312}; // モンスターの巣の入り口の位置
-
-        private static class MoveInPen {
-        	final float x;
-        	final float y;
-        	final int dir;
-        	final float dest;
-        	final float speed;
-        	MoveInPen(float x, float y, int dir, float dest, float speed) {
-        		this.x = x;
-        		this.y = y;
-        		this.dir = dir;
-        		this.dest = dest;
-        		this.speed = speed;
-        	}
-        }
-
-        // 配列Aの要素のspeedプロパティで使用される
-        private static float y = 0.8f * 0.4f;
-
-        // モンスターの巣の中での動き
-        private static final Map<Integer, MoveInPen[]> A;
-        static {
-        	Map<Integer, MoveInPen[]> mvs = new HashMap<Integer, MoveInPen[]>();
-        	mvs.put(
-        		Integer.valueOf(1),
-        		new MoveInPen[] {
-        			new MoveInPen(37.6f, 7, 1, 6.375f, 0.48f),
-        			new MoveInPen(37.6f, 6.375f, 2, 7.625f, 0.48f),
-        			new MoveInPen(37.6f, 7.625f, 1, 7, 0.48f),
-        		});
-        	mvs.put(
-        		Integer.valueOf(2),
-        		new MoveInPen[] {
-        			new MoveInPen(39.5f, 7, 2, 7.625f, 0.48f),
-        			new MoveInPen(39.5f, 7.625f, 1, 6.375f, 0.48f),
-        			new MoveInPen(39.5f, 6.375f, 2, 7, 0.48f),
-        		});
-        	mvs.put(
-        		Integer.valueOf(3),
-        		new MoveInPen[] {
-        			new MoveInPen(41.4f, 7, 1, 6.375f, 0.48f),
-        			new MoveInPen(41.4f, 6.375f, 2, 7.625f, 0.48f),
-        			new MoveInPen(41.4f, 7.625f, 1, 7, 0.48f),
-        		});
-        	mvs.put(
-        		Integer.valueOf(4),
-        		new MoveInPen[] {
-        			new MoveInPen(37.6f, 7, 8, 39.5f, y),
-        			new MoveInPen(39.5f, 7, 1, 4, y),
-        		});
-        	mvs.put(
-        		Integer.valueOf(5),
-        		new MoveInPen[] { new MoveInPen(39.5f, 7, 1, 4, y) });
-        	mvs.put(
-            	Integer.valueOf(6),
-            	new MoveInPen[] {
-            		new MoveInPen(41.4f, 7, 4, 39.5f, y),
-            		new MoveInPen(39.5f, 7, 1, 4, y),
-            	});
-        	mvs.put(
-               	Integer.valueOf(7),
-               	new MoveInPen[] {
-               		new MoveInPen(39.5f, 4, 2, 7, 1.6f),
-               		new MoveInPen(39.5f, 7, 4, 37.625f, 1.6f),
-               	});
-        	mvs.put(
-           		Integer.valueOf(8),
-           		new MoveInPen[] { new MoveInPen(39.5f, 4, 2, 7, 1.6f) });
-        	mvs.put(
-               	Integer.valueOf(9),
-               	new MoveInPen[] {
-               		new MoveInPen(39.5f, 4, 2, 7, 1.6f),
-               		new MoveInPen(39.5f, 7, 8, 41.375f, 1.6f),
-               	});
-        	mvs.put(
-               	Integer.valueOf(10),
-               	new MoveInPen[] {
-               		new MoveInPen(37.6f, 7, 8, 39.5f, y),
-               		new MoveInPen(39.5f, 7, 1, 4, y),
-               	});
-        	mvs.put(
-           		Integer.valueOf(11),
-           		new MoveInPen[] { new MoveInPen(39.5f, 7, 1, 4, y) });
-        	mvs.put(
-                Integer.valueOf(12),
-                new MoveInPen[] {
-                	new MoveInPen(41.4f, 7, 4, 39.5f, y),
-                	new MoveInPen(39.5f, 7, 1, 4, y),
-                });
-        	A = Collections.unmodifiableMap(mvs);
-        }
-        
-    	final int id;
-    	private final PacmanGame g;
-    	boolean ghost;
-    	int mode;
-    	float[] pos;
-    	float[] posDelta;
-    	int[] tilePos;
-    	int[] lastGoodTilePos;
-    	float[] elPos;
-    	int[] elBackgroundPos;
-    	float[] targetPos;
-    	float[] scatterPos;
-    	int dir;
-    	int lastActiveDir;
-    	float speed;
-    	float physicalSpeed;
-    	int requestedDir;
-    	int nextDir;
-    	boolean reverseDirectionsNext;
-    	boolean freeToLeavePen;
-    	boolean modeChangedWhileInPen;
-    	boolean eatenInThisFrightMode;
-    	boolean followingRoutine;
-    	boolean proceedToNextRoutineMove;
-    	int routineToFollow;
-    	int routineMoveId;
-    	int targetPlayerId;
-    	int currentSpeed;
-    	float fullSpeed;
-    	float dotEatingSpeed;
-    	float tunnelSpeed;
-    	Boolean[] speedIntervals;
-    	int dotCount;
- 
-    	static class ActorPresentation extends Presentation {
-
-    		void drawBitmap(Bitmap sourceImage, Canvas c) {
-    			float top = getTop();
-    			float left = getLeft();
-    			Presentation p = this;
-    			
-    			while ((p = p.parent) != null) {
-    				top += p.top;
-    				left += p.left;
-    			}
-
-    			// TODO: floatをintに変更して問題ないかどうか検討すること
-    			src.set(
-    				Math.round(bgPosX),
-    				Math.round(bgPosY),
-    				Math.round(bgPosX + width),
-    				Math.round(bgPosY + height));
-    			dest.set(
-    					left,
-    					top,
-    					left + width,
-    					top + height);
-    			c.drawBitmap(sourceImage, src, dest, null);
-    		}
-    		
-    		void drawRectShape(Canvas c) {
-    			float top = getTop();
-    			float left = getLeft();
-    			Presentation p = this;
-    			
-    			while ((p = p.parent) != null) {
-    				top += p.top;
-    				left += p.left;
-    			}
-    			
-    			dest.set(
-    					left,
-    					top,
-    					left + width,
-    					top + height);
-    			
-    			paint.setColor(bgColor);
-    			paint.setAlpha(0xff);
-    			
-    			c.drawRect(dest, paint);
-    		}
-    		
-    		private float getLeft() {
-    			if ("pcm-bpcm".equals(id)) {
-    				return left - 20;
-    			} else {
-    				return left - 4;
-    			}
-    		}
-
-    		private float getTop() {
-    			if ("pcm-bpcm".equals(id)) {
-    				return top - 20;
-    			} else {
-    				return top - 4;
-    			}
-    		}
-
-    	}
-    	
-    	Presentation el = new ActorPresentation();
-
-    	E(int b, PacmanGame g) {
-    		this.id = b;
-    		this.g = g;
-    	}
-    	
-    	// Actorを再配置
-    	void A() {
-		    InitPosition b = r.get(g.playerCount)[this.id];
-		    this.pos = new float[] {b.y * 8, b.x * 8};
-		    this.posDelta = new float[] {0, 0};
-		    this.tilePos = new int[] {(int) b.y * 8, (int) b.x * 8};
-		    this.targetPos = new float[] {b.scatterY * 8, b.scatterX * 8};
-		    this.scatterPos = new float[] {b.scatterY * 8, b.scatterX * 8};
-		    this.lastActiveDir = this.dir = b.dir;
-		    this.physicalSpeed = 0;
-		    this.requestedDir = this.nextDir = 0;
-		    this.c(0);
-		    this.reverseDirectionsNext = this.freeToLeavePen = this.modeChangedWhileInPen = this.eatenInThisFrightMode = false;
-		    this.l();
-    	}
-    	
-    	// Actor表示に使用するdivタグを生成: 表示位置、バックグランドのオフセットはダミー値
-    	void createElement() {
-    		// this.el.className = "pcm-ac";
-    		this.el.width = 16;
-    		this.el.height = 16;
-    		this.el.id = "actor" + this.id;
-    		this.el.parent = g.playfieldEl.presentation;
-    		g.prepareElement(this.el, 0, 0);
-    		g.playfieldEl.actors.add(this);
-    		this.elPos = new float[] {0, 0};
-    		this.elBackgroundPos = new int[] {0, 0};
-    	}
-    	// モンスターのモード設定
-    	void a(int b) {
-    		int c = this.mode;
-    		this.mode = b;
-    		if (this.id == g.playerCount + 3 && (b == 16 || c == 16)) g.updateCruiseElroySpeed();
-    		switch (c) {
-    		case 32:
-    			g.ghostExitingPenNow = false;
-    			break;
-    		case 8:
-    			if (g.ghostEyesCount > 0) g.ghostEyesCount--;
-    			if (g.ghostEyesCount == 0) g.playAmbientSound();
-    			break;
-    		}
-		    switch (b) {
-		    case 4:
-		    	this.fullSpeed = g.levels.ghostFrightSpeed * 0.8f;
-		    	this.tunnelSpeed = g.levels.ghostTunnelSpeed * 0.8f;
-		    	this.followingRoutine = false;
-		    	break;
-		    case 1:
-		    	this.fullSpeed = g.levels.ghostSpeed * 0.8f;
-		    	this.tunnelSpeed = g.levels.ghostTunnelSpeed * 0.8f;
-		    	this.followingRoutine = false;
-		    	break;
-		    case 2:
-		    	this.targetPos = this.scatterPos;
-		    	this.fullSpeed = g.levels.ghostSpeed * 0.8f;
-		    	this.tunnelSpeed = g.levels.ghostTunnelSpeed * 0.8f;
-		    	this.followingRoutine = false;
-		    	break;
-		    case 8:
-		    	this.tunnelSpeed = this.fullSpeed = 1.6f;
-		    	this.targetPos = new float[] {s[0], s[1]};
-		    	this.freeToLeavePen = this.followingRoutine = false;
-		    	break;
-		    case 16:
-		    	this.l();
-		    	this.followingRoutine = true;
-		    	this.routineMoveId = -1;
-		    	if (this.id == g.playerCount + 1)
-			        this.routineToFollow = 2;
-		    	else if (this.id == g.playerCount + 2)
-			        this.routineToFollow = 1;
-		    	else if (this.id == g.playerCount + 3)
-			        this.routineToFollow = 3;
-	
-		    	break;
-		    case 32:
-		    	this.followingRoutine = true;
-		    	this.routineMoveId = -1;
-		    	if (this.id == g.playerCount + 1)
-		    		this.routineToFollow = 5;
-		    	else if (this.id == g.playerCount + 2)
-		    		this.routineToFollow = 4;
-		    	else if (this.id == g.playerCount + 3)
-		    		this.routineToFollow = 6;
-	
-		    	g.ghostExitingPenNow = true;
-		    	break;
-		    case 64:
-		    	this.followingRoutine = true;
-		    	this.routineMoveId = -1;
-		    	
-		    	if (this.id == g.playerCount || this.id == g.playerCount + 1)
-		    		this.routineToFollow = 8;
-		    	else if (this.id == g.playerCount + 2)
-		    		this.routineToFollow = 7;
-		    	else if (this.id == g.playerCount + 3)
-		    		this.routineToFollow = 9;
-		    	
-		    	break;
-		    case 128:
-		    	this.followingRoutine = true;
-		    	this.routineMoveId = -1;
-		    	
-		    	if (this.id == g.playerCount || this.id == g.playerCount + 1)
-		    		this.routineToFollow = 11;
-		    	else if (this.id == g.playerCount + 2)
-		    		this.routineToFollow = 10;
-		    	else if (this.id == g.playerCount + 3)
-		    		this.routineToFollow = 12;
-		    	
-		    	break;
-		    }
-		    this.d();
-    	}
-		// 追跡対象のActorを決定(Pacman or Ms.Pacman)
-		void l() {
-			if (this.id >= g.playerCount)
-				this.targetPlayerId = (int) FloatMath.floor(g.rand() * g.playerCount);
-		}
-	
-		// 位置, 速度の決定
-		void z(int b) {
-		    if (!g.userDisabledSound) { // サウンドアイコンの更新
-		    	g.pacManSound = true;
-		    	g.updateSoundIcon();
-		    }
-		    if (this.dir == g.oppositeDirections.get(Integer.valueOf(b)).intValue()) {
-		    	this.dir = b;
-		    	this.posDelta = new float[] {0, 0};
-		    	if (this.currentSpeed != 2) this.c(0);
-		    	if (this.dir != 0) this.lastActiveDir = this.dir;
-		    	this.nextDir = 0;
-		    } else if (this.dir != b)
-		    	if (this.dir == 0) {
-		    		if ((g.playfield.get(Integer.valueOf((int) this.pos[0]))
-		    						.get(Integer.valueOf((int) this.pos[1]))
-		    						.allowedDir & b) != 0)
-		    			this.dir = b;
-		    	} else {
-		    		PathElement p = g.playfield.get(Integer.valueOf(this.tilePos[0])).get(Integer.valueOf(this.tilePos[1]));
-		    		if (p != null && (p.allowedDir & b) != 0) { // 移動可能な方向が入力された場合
-		    			// 	遅延ぎみに方向入力されたかどうか判定
-		    			Direction c = PacmanGame.l.get(this.dir);
-		    			float[] d = new float[] {this.pos[0], this.pos[1]};
-		    			d[c.axis] -= c.increment;
-		    			int f = 0;
-		    			if (d[0] == this.tilePos[0] && d[1] == this.tilePos[1]) {
-		    				f = 1;
-		    			} else {
-		    				d[c.axis] -= c.increment;
-		    				if (d[0] == this.tilePos[0] && d[1] == this.tilePos[1]) {
-		    					f = 2;
-		    				}
-		    			}
-		    			if (f != 0) { // 遅延ぎみに方向入力された場合、新しい移動方向に応じて位置を補正
-		    				this.dir = b;
-		    				this.pos[0] = this.tilePos[0];
-		    				this.pos[1] = this.tilePos[1];
-		    				c = PacmanGame.l.get(this.dir);
-		    				this.pos[c.axis] += c.increment * f;
-		    				return;
-		    			}
-		    		}
-		    		// 移動方向の先行入力対応
-		    		this.nextDir = b;
-		    		this.posDelta = new float[] {0, 0};
-		    	}
-		}
-		// モンスターが交差点/行き止まり にたどり着いたときの動作. nextDirの決定
-		// 	b: 反転済みフラグ
-		void i(boolean b) {
-			int[] c = this.tilePos;
-			Direction d = PacmanGame.l.get(Integer.valueOf(this.dir));
-			int[] f = new int[] {c[0], c[1]};
-			f[d.axis] += d.increment * 8; // 進行方向へ1マス先取り
-			PathElement h =
-				g.playfield.get(Integer.valueOf(f[0]))
-							.get(Integer.valueOf(f[1]));
-			if (b && !h.intersection)
-				h = g.playfield.get(Integer.valueOf(c[0]))
-								.get(Integer.valueOf(c[1])); // 交差点/行き止まり でなければ現在位置に戻る(反転済みの場合)
-			
-		    if (h.intersection)
-		    	switch (this.mode) {
-		    	case 2: // Scatter
-		    	case 1: // 追跡
-		    	case 8: // プレイヤーに食べられる
-		    		int nDir = 0;
-			        if ((this.dir & h.allowedDir) == 0
-			        		&& h.allowedDir == g.oppositeDirections.get(Integer.valueOf(this.dir)).intValue()) // 反対向きしか通れないなら反対向きを選ぶ
-			        	this.nextDir = g.oppositeDirections.get(Integer.valueOf(this.dir)).intValue();
-			        else { // 反対向き以外を選択可能なら、目的地に最も近い方向を選択する
-			        	float max = 99999999999f;
-			        	float distance = 0;
-			        	for (int k : i) {
-			        		if ((h.allowedDir & k) != 0
-			        				&& this.dir != g.oppositeDirections.get(Integer.valueOf(k)).intValue()) {
-			        			d = PacmanGame.l.get(k);
-			        			float[] x = new float[] {(float) f[0], (float) f[1]};
-			        			x[d.axis] += d.increment;
-			        			distance = g.getDistance(x, new float[] {this.targetPos[0], this.targetPos[1]});
-			        			if (distance < max) {
-			        				max = distance;
-			        				nDir = k;
-			        			}
-			        		}
-			        	}
-			        	if (nDir != 0) this.nextDir = nDir;
-			        }
-			        break;
-		    	case 4: // ブルーモード
-			        if ((this.dir & h.allowedDir) == 0
-			        		&& h.allowedDir == g.oppositeDirections.get(Integer.valueOf(this.dir)).intValue()) // 反対向きしか通れないなら反対向きを選ぶ
-			        	this.nextDir = g.oppositeDirections.get(Integer.valueOf(this.dir)).intValue();
-			        else { // 移動可能な方向のうち反対向き以外を選択
-			        	int ndir = 0;
-			        	do ndir = i[(int) FloatMath.floor(g.rand() * 4)];
-			        	while ((ndir & h.allowedDir) == 0
-			        				|| ndir == g.oppositeDirections.get(Integer.valueOf(this.dir)).intValue());
-			        	this.nextDir = ndir;
-			        }
-			        break;
-		      }
-		}
-		// tilePosとposの差分が有意になったとき呼び出される
-		void p(int[] b) {
-		    g.tilesChanged = true;
-		    if (this.reverseDirectionsNext) { // 方向を反転する(この判定がtrueになるのはモンスターのみ)
-		    	this.dir = g.oppositeDirections.get(Integer.valueOf(this.dir)).intValue();
-		    	this.nextDir = 0;
-		    	this.reverseDirectionsNext = false;
-		    	this.i(true);
-		    }
-		    if (!this.ghost
-		    		&& !g.playfield.get(Integer.valueOf(b[0]))
-		    						.get(Integer.valueOf(b[1]))
-		    						.path) { // プレイヤーがパスでないところへ移動しようとする
-			    // 最後に正常に移動成功した位置に補正
-			    this.pos[0] = this.lastGoodTilePos[0];
-			    this.pos[1] = this.lastGoodTilePos[1];
-			    b[0] = this.lastGoodTilePos[0];
-			    b[1] = this.lastGoodTilePos[1];
-			    this.dir = 0;
-		    } else // モンスターの移動 or プレイヤーがパスであるところへ移動
-		    	this.lastGoodTilePos = new int[] {b[0], b[1]};
-		
-		    // トンネル通過[モンスターが食べられた時以外](currentSpeed:2) or それ以外(currentSpeed:0)
-		    if (g.playfield.get(Integer.valueOf(b[0]))
-		    				.get(Integer.valueOf(b[1]))
-		    				.tunnel
-		    		&& this.mode != 8)
-		    	this.c(2);
-		    else
-		    	this.c(0);
-		    
-		    // プレイヤーがエサを食べる
-		    if (!this.ghost
-		    		&& g.playfield.get(Integer.valueOf(b[0]))
-		    						.get(Integer.valueOf(b[1]))
-		    						.dot != 0)
-		    	g.dotEaten(this.id, b);
-		    
-		    this.tilePos[0] = b[0];
-		    this.tilePos[1] = b[1];
-		}
-	
-		// 先行入力された方向に対応
-		void t() {
-		    int[] b = this.tilePos;
-		    float[] c;
-		    float[] d;
-		    switch (this.dir) {
-		    case 1:
-		    	c = new float[] { b[0], b[1] };
-		        d = new float[] { b[0] + 3.6f, b[1] };
-		        break;
-		    case 2:
-		    	c = new float[] { b[0] - 4, b[1] };
-		    	d = new float[] { b[0], b[1] };
-		    	break;
-		    case 4:
-		    	c = new float[] { b[0], b[1] };
-		    	d = new float[] { b[0], b[1] + 3.6f };
-		    	break;
-		    case 8:
-		    	c = new float[] { b[0], b[1] - 4 };
-		    	d = new float[] { b[0], b[1] };
-		    	break;
-		    default:
-		    	// posDeltaの更新が行われないようにダミーの値をセット
-		    	c = new float[] { this.pos[0] + 1, this.pos[1] + 1 };
-		    	d = new float[] { this.pos[0] - 1, this.pos[1] - 1 };
-		    	break;
-		    }
-		    if (this.pos[0] >= c[0]
-		        && this.pos[0] <= d[0]
-		        && this.pos[1] >= c[1]
-		        && this.pos[1] <= d[1]) {
-		    	Direction dir = PacmanGame.l.get(Integer.valueOf(this.nextDir));
-		    	this.posDelta[dir.axis] += dir.increment;
-		    }
-		}
-	
-		void n() {
-		    if (this.pos[0] == g.q[0].y * 8 && this.pos[1] == g.q[0].x * 8) { // 画面左から右へワープ
-		        this.pos[0] = g.q[1].y * 8;
-		        this.pos[1] = (g.q[1].x - 1) * 8;
-		    } else if (this.pos[0] == g.q[1].y * 8 && this.pos[1] == g.q[1].x * 8) { // 画面右から左へワープ
-		        this.pos[0] = g.q[0].y * 8;
-		        this.pos[1] = (g.q[0].x + 1) * 8;
-		    }
-		    // モンスターが巣に入る
-		    if (this.mode == 8
-		    		&& this.pos[0] == s[0]
-		    		&& this.pos[1] == s[1])
-		    	this.a(64);
-		    
-		    // プレイヤーがフルーツを食べる
-		    if (!this.ghost && this.pos[0] == PacmanGame.v[0]
-		        && (this.pos[1] == PacmanGame.v[1] || this.pos[1] == PacmanGame.v[1] + 8))
-		        g.eatFruit(this.id);
-		}
-	
-		// posの値がtilePosと一致(pos が8の倍数)したときに呼び出される
-		void u() {
-		    this.n();
-		    if (this.ghost) this.i(false); // モンスターの交差点/行き止まりでの進行方向決定
-		    PathElement b =
-		    	g.playfield.get(Integer.valueOf((int) this.pos[0]))
-		    				.get(Integer.valueOf((int) this.pos[1]));
-		    if (b.intersection) // 行き止まり/交差点にて
-		    	if (this.nextDir != 0 && (this.nextDir & b.allowedDir) != 0) { // nextDirで指定された方向へ移動可能
-			        if (this.dir != 0) this.lastActiveDir = this.dir;
-			        this.dir = this.nextDir;
-			        this.nextDir = 0;
-			        if (!this.ghost) { // 先行入力された移動方向分を更新(メソッドtを参照)
-			        	this.pos[0] += this.posDelta[0];
-				        this.pos[1] += this.posDelta[1];
-				        this.posDelta = new float[] {0, 0};
-			        }
-		    } else if ((this.dir & b.allowedDir) == 0) { // nextDirもdirも移動不可だったら、停止
-		    	if (this.dir != 0) this.lastActiveDir = this.dir;
-		    	this.nextDir = this.dir = 0;
-		    	this.c(0);
-		    }
-		}
-
-		void o() {
-		    float b = this.pos[0] / 8;
-		    float c = this.pos[1] / 8;
-		    int[] d = { Math.round(b) * 8, Math.round(c) * 8};
-		    if (d[0] != this.tilePos[0] || d[1] != this.tilePos[1]) // tileが切り替わる
-		    	this.p(d); // tilePosの更新
-		    else {
-		    	float[] tPoses =
-		    		new float[] {
-			    			FloatMath.floor(b) * 8,
-			    			FloatMath.floor(c) * 8
-		    		};
-		    	if (this.pos[1] == tPoses[1] && this.pos[0] == tPoses[0])
-		    		this.u(); // posの値がtilePosと一致(pos が8の倍数)
-		    }
-		    PathElement pe =
-		    	g.playfield.get(Integer.valueOf(d[0]))
-		    				.get(Integer.valueOf(d[1]));
-		    if (!this.ghost
-		    		&& this.nextDir != 0
-		    		&& pe.intersection
-		    		&& (this.nextDir & pe.allowedDir) != 0)
-		    		this.t();
-		}
-		// ターゲットポジションを決定
-		void B() {
-		    if (this.id == g.playerCount
-		    		&& g.dotsRemaining < g.levels.elroyDotsLeftPart1
-		    		&& this.mode == 2
-		    		&& (!g.lostLifeOnThisLevel || g.actors[g.playerCount + 3].mode != 16)) {
-		    	E b = g.actors[this.targetPlayerId];
-		    	this.targetPos = new float[] { b.tilePos[0], b.tilePos[1] };
-		    } else if (this.ghost && this.mode == 1) {
-		    	E b = g.actors[this.targetPlayerId];
-	    		Direction c = PacmanGame.l.get(Integer.valueOf(b.dir));
-		    	if (this.id == g.playerCount) {
-		    		this.targetPos = new float[] { b.tilePos[0], b.tilePos[1] };
-		    	} else if (this.id == g.playerCount + 1) {
-		    		this.targetPos = new float[] { b.tilePos[0], b.tilePos[1] };
-		    		this.targetPos[c.axis] += 32 * c.increment;
-		    		if (b.dir == 1) this.targetPos[1] -= 32;
-		    	} else if (this.id == g.playerCount + 2) {
-		    		E d = g.actors[g.playerCount];
-		    		float[] f = new float[] { b.tilePos[0], b.tilePos[1] };
-		    		f[c.axis] += 16 * c.increment;
-		    		if (b.dir == 1) f[1] -= 16;
-		    		this.targetPos[0] = f[0] * 2 - d.tilePos[0];
-		    		this.targetPos[1] = f[1] * 2 - d.tilePos[1];
-		    	} else if (this.id == g.playerCount + 3) {
-		    		float distance = g.getDistance(b.tilePos, this.tilePos);
-		    		this.targetPos = distance > 64 ? new float[] { b.tilePos[0], b.tilePos[1] } : this.scatterPos;
-		    	}
-		    }
-		}
-		// モンスターの巣の中/巣から出る挙動を管理(モンスター個別のモード管理)
-		void v() {
-		    this.routineMoveId++;
-		    if (this.routineMoveId == A.get(Integer.valueOf(this.routineToFollow)).length) // ルーチンの最後に到達
-		    	if (this.mode == 16 && this.freeToLeavePen && !g.ghostExitingPenNow) { // 外に出る条件が満たされた
-		    		if (this.eatenInThisFrightMode) this.a(128);
-		    		else this.a(32);
-		    		return;
-		    	} else if (this.mode == 32 || this.mode == 128) { // 将に外に出むとす
-		    	    this.pos = new float[] { s[0], s[1] + 4 };
-		    	    this.dir = this.modeChangedWhileInPen ? 8 : 4;
-		    	    int b = g.mainGhostMode;
-		    	    if (this.mode == 128 && b == 4) b = g.lastMainGhostMode;
-		    	    this.a(b);
-		    	    return;
-		    	} else if (this.mode == 64) { // 食べられて巣に入る
-		    	    if (this.id == g.playerCount || this.freeToLeavePen) this.a(128); // アカベエはすぐに巣から出てくる
-		    	    else {
-		    		    this.eatenInThisFrightMode = true;
-  		    		    this.a(16);
-		    	    }
-		    	    return;
-		        } else // 外にでる条件が満たされなければ、ルーチンを繰り返す
-		    	    this.routineMoveId = 0;
-		
-		    MoveInPen mv = A.get(Integer.valueOf(this.routineToFollow))[this.routineMoveId];
-		    this.pos[0] = mv.y * 8;
-		    this.pos[1] = mv.x * 8;
-		    this.dir = mv.dir;
-		    this.physicalSpeed = 0;
-		    this.speedIntervals = g.getSpeedIntervals(mv.speed);
-		    this.proceedToNextRoutineMove = false;
-		    this.b();
-		}
-		// モンスターの巣の中/巣から出る挙動を管理(表示画像決定&位置移動)
-		void m() {
-			
-		    MoveInPen b = null;
-		    MoveInPen[] mvs = A.get(Integer.valueOf(this.routineToFollow));
-		    
-		    if (0 <= this.routineMoveId && this.routineMoveId < mvs.length)
-		    	b = A.get(Integer.valueOf(this.routineToFollow))[this.routineMoveId];
-		    
-		    if (b != null)
-		    	if (this.speedIntervals[g.intervalTime]) {
-		    		Direction c = PacmanGame.l.get(Integer.valueOf(this.dir));
-		    		this.pos[c.axis] += c.increment;
-			        switch (this.dir) {
-			        case 1:
-			        case 4:
-			        	if (this.pos[c.axis] < b.dest * 8) {
-			        		this.pos[c.axis] = b.dest * 8;
-			        		this.proceedToNextRoutineMove = true;
-			        	}
-			            break;
-			        case 2:
-			        case 8:
-			        	if (this.pos[c.axis] > b.dest * 8) {
-				            this.pos[c.axis] = b.dest * 8;
-				            this.proceedToNextRoutineMove = true;
-			        	}
-			        	break;
-			        }
-			        this.b();
-		    	}
-		}
-		// モンスターの巣の中/巣から出る挙動を管理
-		void j() {
-		    if (this.routineMoveId == -1 || this.proceedToNextRoutineMove)
-		    	this.v();
-		    
-		    this.m();
-		}
-		// Actorの速度設定(currentSpeedプロパティを利用)
-		void d() {
-			float b = 0;
-		    switch (this.currentSpeed) {
-		    case 0:
-		    	b = this.id == g.playerCount && (this.mode == 2 || this.mode == 1)
-		    			? g.cruiseElroySpeed
-		    			: this.fullSpeed;
-			    break;
-		    case 1:
-		    	b = this.dotEatingSpeed;
-		    	break;
-		    case 2:
-		    	b = this.tunnelSpeed;
-		    	break;
-		    }
-		    if (this.physicalSpeed != b) {
-		      this.physicalSpeed = b;
-		      this.speedIntervals = g.getSpeedIntervals(this.physicalSpeed);
-		    }
-		}
-		// Actorの速度設定変更
-		void c(int b) {
-		    this.currentSpeed = b;
-		    this.d();
-		}
-		// Actorの移動(ルーチン以外)
-		void e() {
-		    if (this.dir != 0)
-		    	if (this.speedIntervals[g.intervalTime]) { // この判定で速度を表現
-		    		Direction b = PacmanGame.l.get(Integer.valueOf(this.dir));
-		    		this.pos[b.axis] += b.increment;
-		    		this.o();
-		    		this.b();
-		    	}
-		}
-	
-		void move() {
-		    if (g.gameplayMode == 0 || this.ghost && g.gameplayMode == 1 && (this.mode == 8 || this.mode == 64)) {
-		    	if (this.requestedDir != 0) {
-		    		this.z(this.requestedDir);
-		    		this.requestedDir = 0;
-		    	}
-		    	if (this.followingRoutine) {
-		    		this.j();
-		    		if (this.mode == 64) this.j();
-		    	} else {
-		    		this.e();
-		    		if (this.mode == 8) this.e();
-		    	}
-		    }
-		}
-		// 位置移動
-		void k() {
-		    float b = g.getPlayfieldX(this.pos[1] + this.posDelta[1]);
-		    float c = g.getPlayfieldY(this.pos[0] + this.posDelta[0]);
-		    if (this.elPos[0] != c || this.elPos[1] != b) {
-		    	this.elPos[0] = c;
-		    	this.elPos[1] = b;
-		    	this.el.left = b;
-		    	this.el.top = c;
-		    }
-		}
-		// Pacman, Ms.Pacman表示画像決定(アニメーション対応)
-		int[] s() {
-		    int b = 0;
-		    int c = 0;
-		    int d = this.dir;
-		    if (d == 0) d = this.lastActiveDir;
-		    if (g.gameplayMode == 1 && this.id == g.playerEatingGhostId) { // モンスターを食べたとき。画像なし
-		    	b = 3;
-		    	c = 0;
-		    } else if ((g.gameplayMode == 9 || g.gameplayMode == 10) && this.id == 0) { // レベルクリア。Pacmanは丸まる
-		    	b = 2;
-		    	c = 0;
-		    } else if (g.gameplayMode == 4 || g.gameplayMode == 5 || g.gameplayMode == 7) { // ゲーム開始直後の表示画像決定
-		    	b = this.id == 0 ? 2 : 4;
-		    	c = 0;
-		    } else if (g.gameplayMode == 3) // プレイヤーが死んだ時の画像決定.
-		    	if (this.id == g.playerDyingId) { // 死んだ方
-		    		d = 20 - (int) FloatMath.floor(g.gameplayModeTime / g.timing[4] * 21);
-			        if (this.id == 0) { // Pacman
-			        	b = d - 1;
-			        	switch (b) {
-			        	case -1:
-			        		b = 0;
-			        		break;
-			        	case 11:
-			        		b = 10;
-			        		break;
-				          case 12:
-				          case 13:
-				          case 14:
-				          case 15:
-				          case 16:
-				          case 17:
-				          case 18:
-				          case 19:
-				          case 20:
-				        	  b = 11;
-				        	  break;
-			        	}
-			        	c = 12;
-			        } else // Ms.Pacman
-			        	switch (d) {
-			        	case 0:
-				        case 1:
-				        case 2:
-				        case 6:
-				        case 10:
-				            b = 4;
-					        c = 3;
-					        break;
-				        case 3:
-				        case 7:
-				        case 11:
-				        	b = 4;
-				        	c = 0;
-				        	break;
-				        case 4:
-				        case 8:
-				        case 12:
-				        case 13:
-				        case 14:
-				        case 15:
-				        case 16:
-				        case 17:
-				        case 18:
-				        case 19:
-				        case 20:
-				        	b = 4;
-				        	c = 2;
-				        	break;
-				        case 5:
-				        case 9:
-				        	b = 4;
-				        	c = 1;
-				        	break;
-			        	}
-			    	} else { // 死んでない方のプレーヤーの画像は非表示
-				        b = 3;
-				        c = 0;
-			    	}
-		    else if ("pcm-bpcm".equals(this.el.id)) { // Cutscene
-		    	b = 14;
-		    	c = 0;
-		    	d = (int) (Math.floor(g.globalTime * 0.2) % 4);
-		    	if (d == 3) d = 1;
-		    	c += 2 * d;
-		    	// BigPacMan
-		    	this.el.width = 32;
-		    	this.el.height = 32;
-		    } else { // 通常時のプレイヤー画像決定
-		    	switch (d) {
-		    	case 4:
-		    		c = 0;
-		    		break;
-		    	case 8:
-		    		c = 1;
-		    		break;
-		    	case 1:
-		    		c = 2;
-		    		break;
-		    	case 2:
-		    		c = 3;
-		    		break;
-		    	}
-		    	if (g.gameplayMode != 2) b = (int) (Math.floor(g.globalTime * 0.3) % 4);
-		    	if (b == 3 && this.dir == 0) b = 0;
-		    	if (b == 2 && this.id == 0) b = 0;
-		    	if (b == 3) {
-		    		b = 2;
-		    		if (this.id == 0) c = 0;
-		    	}
-		    	if (this.id == 1) b += 4;
-		    }
-		    return new int[] { c, b };
-		}
-		// モンスターの表示画像決定
-		int[] r() {
-		    int b = 0;
-		    int c = 0;
-		    if (g.gameplayMode == 10 || g.gameplayMode == 4 || g.gameplayMode == 3) {
-		    	// Pacman or Ms.Pacmanが死んだ直後。モンスターの姿は消える 
-		    	b = 3;
-		    	c = 0;
-		    } else if (g.gameplayMode == 1 && this.id == g.ghostBeingEatenId) {
-		    	switch (g.modeScoreMultiplier) {// モンスターが食べられたときに表示させるスコアを決定
-		    	case 2:
-		    		b = 0;
-		    		break;
-		    	case 4:
-		    		b = 1;
-		    		break;
-		    	case 8:
-		    		b = 2;
-		    		break;
-		    	case 16:
-		    		b = 3;
-		    		break;
-		    	}
-		    	c = 11;
-//		      	this.el.className = "pcm-ac pcm-n"
-		    } else if (this.mode == 4
-		              || (this.mode == 16 || this.mode == 32)
-		                  && g.mainGhostMode == 4
-		                  && !this.eatenInThisFrightMode) {
-		    	// ブルーモード.ただし、食べられてはいない
-		    	b = 0;
-		    	c = 8;
-		    	// ブルーモード時間切れ間近の青白明滅
-		    	if (g.frightModeTime < g.levels.frightTotalTime - g.levels.frightTime
-		    			&& FloatMath.floor(g.frightModeTime / g.timing[1]) % 2 == 0)
-		    		b += 2;
-		
-		    	b += (int) (Math.floor(g.globalTime / 16) % 2); // ブルーモードの画像切り替え
-		    } else if (this.mode == 8 || this.mode == 64) { // 食べられて目玉だけ
-		    	int ndir = this.nextDir;
-		    	if (ndir != 0) ndir = this.dir;
-		    	switch (ndir) {
-		    	case 4:
-		    		b = 2;
-		    		break;
-		    	case 8:
-		    		b = 3;
-		    		break;
-		    	case 1:
-		    		b = 0;
-		    		break;
-		    	case 2:
-		    		b = 1;
-		    		break;
-		    	}
-		    	c = 10;
-		    } else if ("pcm-ghin".equals(this.el.id)) {
-		    	b = 6;
-		    	c = 8;
-		    	b += (int) (Math.floor(g.globalTime / 16) % 2);
-		    } else if ("pcm-gbug".equals(this.el.id)) {
-		    	b = 6;
-		    	c = 9;
-		    	c += (int) (Math.floor(g.globalTime / 16) % 2);
-		    } else if ("pcm-ghfa".equals(this.el.id)) {
-		    	b = g.cutsceneSequenceId == 3 ? 6 : 7;
-		    	c = 11;
-		    } else if ("pcm-stck".equals(this.el.id)) {
-		    	b = g.cutsceneSequenceId == 1
-		            ? g.cutsceneTime > 60
-		                ? 1
-		                : g.cutsceneTime > 45
-		                    ? 2
-		                    : 3
-		            : g.cutsceneSequenceId == 2
-		                ? 3
-		                : g.cutsceneSequenceId == 3 || g.cutsceneSequenceId == 4
-		                    ? 4
-		                    : 0;
-		        c = 13;
-		    } else { // 通常時の画像表示
-		    	int ndir = this.nextDir;
-		    	if (ndir == 0
-		    		|| g.playfield.get(Integer.valueOf(this.tilePos[0]))
-		    						.get(Integer.valueOf(this.tilePos[1]))
-		    						.tunnel)
-		    		ndir = this.dir;
-		    	
-  			        switch (ndir) {
-  			        case 4:
-  			        	b = 4;
-  			        	break;
-  			        case 8:
-  			        	b = 6;
-  			        	break;
-  			        case 1:
-  			        	b = 0;
-  			        	break;
-  			        case 2:
-  			        	b = 2;
-  			        	break;
-  			        }
-  			        c = 4 + this.id - g.playerCount;
-  			        if (this.speed > 0 || g.gameplayMode != 13)
-  			        	b += (int) (Math.floor(g.globalTime / 16) % 2);
-		    }
-		    return new int[] { c, b };
-		}
-  
-		// Actor表示画像切り替え(アニメーション対応)&位置移動
-		void b() {
-		    this.k(); //位置移動 
-		    int[] b = { 0, 0 };
-		    b = g.gameplayMode == 8 || g.gameplayMode == 14
-		    		? new int[] { 0, 3 }
-		    		: this.ghost
-		    			? this.r()
-		    			: this.s();
-		    if (this.elBackgroundPos[0] != b[0] || this.elBackgroundPos[1] != b[1]) {
-		    	this.elBackgroundPos[0] = b[0];
-		    	this.elBackgroundPos[1] = b[1];
-		    	b[0] *= 16;
-		    	b[1] *= 16;
-		    	g.changeElementBkPos(this.el, b[1], b[0], true);
-		    }
-		}
-		
-		void draw(Bitmap sourceImage, Canvas c) {
-			if (!el.visibility) return;
-			
-			el.drawBitmap(sourceImage, c);
-
-		}
-	}
     
 	private static final String TAG = "PacmanGame";
 	private static final int DEFAULT_KILL_SCREEN_LEVEL = 256;
@@ -1082,9 +48,13 @@ public class PacmanGame {
     	l = Collections.unmodifiableMap(ds);
     }
 
-    static final int[] v = {80, 312}; // フルーツ出現位置
+    private static final int[] v = {80, 312}; // フルーツ出現位置
     
-    // レベル再開後、一定数のエサが食べられるとモンスターが巣から出てくる
+    public static int[] getV() {
+		return v;
+	}
+
+	// レベル再開後、一定数のエサが食べられるとモンスターが巣から出てくる
     // そのしきい値をモンスター毎に設定
     private static final int[] m = {0, 7, 17, 32};
 
@@ -1197,13 +167,19 @@ public class PacmanGame {
     	Path.createHorizontalPath(39, 15, 2),
     };
 
-    private static class Position {
+    public static class Position {
     	final int x;
     	final int y;
     	Position(int x, int y) {
     		this.x = x;
     		this.y = y;
     	}
+		public int getX() {
+			return x;
+		}
+		public int getY() {
+			return y;
+		}
     }
 
     // パワーエサ
@@ -1215,13 +191,17 @@ public class PacmanGame {
     	new Position(60, 15),
     };
     
-    // ワープトンネル
+	// ワープトンネル
     private static final Position[] q = {
     	new Position(2, 8),
     	new Position(63, 8),
     };
+    
+    public static Position[] getQ() {
+		return q;
+	}
 
-    private static class LevelConfig {
+	public static class LevelConfig {
         private final float ghostSpeed;
         private final float ghostTunnelSpeed;
         private final float playerSpeed;
@@ -1392,6 +372,35 @@ public class PacmanGame {
             this.penLeavingLimits = builder.penLeavingLimits;
             this.cutsceneId = builder.cutsceneId;
     	}
+
+		public float getGhostSpeed() {
+			return ghostSpeed;
+		}
+
+		public float getGhostTunnelSpeed() {
+			return ghostTunnelSpeed;
+		}
+
+		public float getGhostFrightSpeed() {
+			return ghostFrightSpeed;
+		}
+
+		public int getElroyDotsLeftPart1() {
+			return elroyDotsLeftPart1;
+		}
+
+		public int getElroyDotsLeftPart2() {
+			return elroyDotsLeftPart2;
+		}
+
+		public int getFrightTime() {
+			return frightTime;
+		}
+
+		public int getFrightTotalTime() {
+			return frightTotalTime;
+		}
+
     }
 
     // ゲームレベル毎の設定
@@ -1990,14 +999,14 @@ public class PacmanGame {
 	private Map<Integer, Map<Integer, PathElement>> playfield;
 	private int dotsRemaining;
 	private int dotsEaten;
-	PacManCanvas canvasEl;
+	private PacManCanvas canvasEl;
 	private PlayField playfieldEl;
 	private CutsceneCanvas cutsceneCanvasEl;
 	private Fruit fruitEl;
 	private Door doorEl;
 	private Sound soundEl;
 	private int playerCount;
-	E[] actors;
+	private E[] actors;
 	
 	private float touchDX;
 	private float touchDY;
@@ -2087,7 +1096,7 @@ public class PacmanGame {
     }
 
 
-	float rand() {
+	public float rand() {
 		long b = 4294967296L;
 		long c = 134775813L;
 		c = c * randSeed + 1;
@@ -2098,19 +1107,19 @@ public class PacmanGame {
 		this.randSeed = b;
 	}
 
-	float getDistance(int [] b, int [] c) {
+	public static float getDistance(int [] b, int [] c) {
 		return FloatMath.sqrt((c[1] - b[1]) * (c[1] - b[1]) + (c[0] - b[0]) * (c[0] - b[0]));
 	}
 
-	float getDistance(float[] b, float[] c) {
+	public static float getDistance(float[] b, float[] c) {
 		return FloatMath.sqrt((c[1] - b[1]) * (c[1] - b[1]) + (c[0] - b[0]) * (c[0] - b[0]));
 	}
   
-	float getPlayfieldX(float b) {
+	public static float getPlayfieldX(float b) {
 		return b + -32;
 	}
   
-	float getPlayfieldY(float b) {
+	public static float getPlayfieldY(float b) {
 		return b + 0;
 	}
   
@@ -2127,25 +1136,25 @@ public class PacmanGame {
 		Presentation b = presentation;
 		float[] c = { 0, 0 };
 		do {
-			c[0] += b.top;
-			c[1] += b.left;
-		} while ((b = b.parent) != null);
+			c[0] += b.getTop();
+			c[1] += b.getLeft();
+		} while ((b = b.getParent()) != null);
 		return c;
 	}
 	
-	void prepareElement(Presentation b, int c, int d) {
+	public void prepareElement(Presentation b, int c, int d) {
 		c = getCorrectedSpritePos(c);
 		d = getCorrectedSpritePos(d);
-		b.bgPosX = c;
-		b.bgPosY = d;
+		b.setBgPosX(c);
+		b.setBgPosY(d);
 	}
-	void changeElementBkPos(Presentation b, int c, int d, boolean f) {
+	public void changeElementBkPos(Presentation b, int c, int d, boolean f) {
 		if (f) {
 			c = getCorrectedSpritePos(c);
 			d = getCorrectedSpritePos(d);
 		}
-		b.bgPosX = c;
-		b.bgPosY = d;
+		b.setBgPosX(c);
+		b.setBgPosY(d);
 	}
 	void determinePlayfieldDimensions() {
 		playfieldWidth = 0;
@@ -2167,9 +1176,9 @@ public class PacmanGame {
 	    	Map<Integer, PathElement> row = new HashMap<Integer, PathElement>();
 	    	for (int c = -2; c <= playfieldWidth + 1; c++) {
 	    		PathElement p = new PathElement();
-	    		p.path = false;
-	    		p.dot = 0;
-	    		p.intersection = false;
+	    		p.setPath(false);
+	    		p.setDot(0);
+	    		p.setIntersection(false);
 	    		row.put(Integer.valueOf(c * 8), p);
 	    	}
 	    	playfield.put(Integer.valueOf(b * 8), row);
@@ -2182,40 +1191,40 @@ public class PacmanGame {
 				int f = c.y * 8;
 				for (int h = c.x * 8; h <= (c.x + c.w - 1) * 8; h += 8) {
 					PathElement pe = playfield.get(Integer.valueOf(f)).get(Integer.valueOf(h));
-					pe.path = true;
-					if (pe.dot == 0) {
-						pe.dot = 1;
+					pe.setPath(true);
+					if (pe.getDot() == 0) {
+						pe.setDot(1);
 						dotsRemaining++;
 					}
-					pe.tunnel = !d || h != c.x * 8 && h != (c.x + c.w - 1) * 8 ? d : false;
+					pe.setTunnel(!d || h != c.x * 8 && h != (c.x + c.w - 1) * 8 ? d : false);
 				}	
-				playfield.get(Integer.valueOf(f)).get(Integer.valueOf(c.x * 8)).intersection = true;
-				playfield.get(Integer.valueOf(f)).get(Integer.valueOf((c.x + c.w - 1) * 8)).intersection = true;
+				playfield.get(Integer.valueOf(f)).get(Integer.valueOf(c.x * 8)).setIntersection(true);
+				playfield.get(Integer.valueOf(f)).get(Integer.valueOf((c.x + c.w - 1) * 8)).setIntersection(true);
 			} else {
 				int h = c.x * 8;
 				for (int f = c.y * 8; f <= (c.y + c.h - 1) * 8; f += 8) {
 					PathElement pe = playfield.get(Integer.valueOf(f)).get(Integer.valueOf(h));		        	
-					if (pe.path) pe.intersection = true;
-					pe.path = true;
-					if (pe.dot == 0) {
-						pe.dot = 1;
+					if (pe.isPath()) pe.setIntersection(true);
+					pe.setPath(true);
+					if (pe.getDot() == 0) {
+						pe.setDot(1);
 						dotsRemaining++;
 					}
-					pe.tunnel = !d || f != c.y * 8 && f != (c.y + c.h - 1) * 8 ? d : false;
+					pe.setTunnel(!d || f != c.y * 8 && f != (c.y + c.h - 1) * 8 ? d : false);
 				}
-				playfield.get(Integer.valueOf(c.y * 8)).get(Integer.valueOf(h)).intersection = true;
-				playfield.get(Integer.valueOf((c.y + c.h - 1) * 8)).get(Integer.valueOf(h)).intersection = true;
+				playfield.get(Integer.valueOf(c.y * 8)).get(Integer.valueOf(h)).setIntersection(true);
+				playfield.get(Integer.valueOf((c.y + c.h - 1) * 8)).get(Integer.valueOf(h)).setIntersection(true);
 			}
 	    }
 	    for (Path p : o)
 	    	if (p.w != 0)
 	    		for (int h = p.x * 8; h <= (p.x + p.w - 1) * 8; h += 8) {
-	    			playfield.get(Integer.valueOf(p.y * 8)).get(Integer.valueOf(h)).dot = 0;
+	    			playfield.get(Integer.valueOf(p.y * 8)).get(Integer.valueOf(h)).setDot(0);
 	    			dotsRemaining--;
 	    		}
 	    	else
 	    		for (int f = p.y * 8; f <= (p.y + p.h - 1) * 8; f += 8) {
-	    			playfield.get(Integer.valueOf(f)).get(Integer.valueOf(p.x * 8)).dot = 0;
+	    			playfield.get(Integer.valueOf(f)).get(Integer.valueOf(p.x * 8)).setDot(0);
 	    			dotsRemaining--;
 	    		}
 	}
@@ -2224,28 +1233,28 @@ public class PacmanGame {
 	    for (int b = 8; b <= playfieldHeight * 8; b += 8)
 	    	for (int c = 8; c <= playfieldWidth * 8; c += 8) {
 	    		PathElement pe = playfield.get(Integer.valueOf(b)).get(Integer.valueOf(c));
-	    		pe.allowedDir = 0;
-	    		if (playfield.get(Integer.valueOf(b - 8)).get(Integer.valueOf(c)).path) pe.allowedDir += 1;
-	    		if (playfield.get(Integer.valueOf(b + 8)).get(Integer.valueOf(c)).path) pe.allowedDir += 2;
-	    		if (playfield.get(Integer.valueOf(b)).get(Integer.valueOf(c - 8)).path) pe.allowedDir += 4;
-	    		if (playfield.get(Integer.valueOf(b)).get(Integer.valueOf(c + 8)).path) pe.allowedDir += 8;
+	    		pe.setAllowedDir(0);
+	    		if (playfield.get(Integer.valueOf(b - 8)).get(Integer.valueOf(c)).isPath()) pe.setAllowedDir(pe.getAllowedDir() + 1);
+	    		if (playfield.get(Integer.valueOf(b + 8)).get(Integer.valueOf(c)).isPath()) pe.setAllowedDir(pe.getAllowedDir() + 2);
+	    		if (playfield.get(Integer.valueOf(b)).get(Integer.valueOf(c - 8)).isPath()) pe.setAllowedDir(pe.getAllowedDir() + 4);
+	    		if (playfield.get(Integer.valueOf(b)).get(Integer.valueOf(c + 8)).isPath()) pe.setAllowedDir(pe.getAllowedDir() + 8);
 	    	}
 	}
 	// エサを作成
 	void createDotElements() {
-		playfieldEl.foods.clear();
+		playfieldEl.clearFoods();
 	    for (int b = 8; b <= playfieldHeight * 8; b += 8)
 	    	for (int c = 8; c <= playfieldWidth * 8; c += 8)
-	    		if (playfield.get(Integer.valueOf(b)).get(Integer.valueOf(c)).dot != 0) {
+	    		if (playfield.get(Integer.valueOf(b)).get(Integer.valueOf(c)).getDot() != 0) {
 	    			Food food = new Food();
-	    			food.presentation.id = getDotElementId(b, c);
-	          		food.presentation.left = c + -32 + 3; // margin-left: 3
-	          		food.presentation.top = b + 0 + 3; // margint-top: 3
-	          		food.presentation.width = 2;
-	          		food.presentation.height = 2;
-	          		food.presentation.bgColor = 0xf8b090;
-	          		food.presentation.parent = playfieldEl.presentation;
-	          		playfieldEl.foods.add(food);
+	    			food.getPresentation().setId(getDotElementId(b, c));
+	          		food.getPresentation().setLeft(c + -32 + 3); // margin-left: 3
+	          		food.getPresentation().setTop(b + 0 + 3); // margint-top: 3
+	          		food.getPresentation().setWidth(2);
+	          		food.getPresentation().setHeight(2);
+	          		food.getPresentation().setBgColor(0xf8b090);
+	          		food.getPresentation().setParent(playfieldEl.getPresentation());
+	          		playfieldEl.addFood(food);
 	    		}
 	}
 	
@@ -2256,18 +1265,18 @@ public class PacmanGame {
 	      	Food f = getDotElement(d);
 	      	if (f == null) continue;
 //		      	document.getElementById(d).className = "pcm-e";
-	      	f.presentation.left -= 3;
-	      	f.presentation.top -= 3;
-	      	f.presentation.width = 8;
-	      	f.presentation.height = 8;
-	      	prepareElement(f.presentation, 0, 144);
-	    	playfield.get(Integer.valueOf(c.y * 8)).get(Integer.valueOf(c.x * 8)).dot = 2;
+	      	f.getPresentation().setLeft(f.getPresentation().getLeft() - 3);
+	      	f.getPresentation().setTop(f.getPresentation().getTop() - 3);
+	      	f.getPresentation().setWidth(8);
+	      	f.getPresentation().setHeight(8);
+	      	prepareElement(f.getPresentation(), 0, 144);
+	    	playfield.get(Integer.valueOf(c.y * 8)).get(Integer.valueOf(c.x * 8)).setDot(2);
 	    }
 	}
 	
 	private Food getDotElement(String id) {
-		for (Food f : playfieldEl.foods) {
-			if (f.presentation.id.equals(id)) {
+		for (Food f : playfieldEl.getFoods()) {
+			if (f.getPresentation().getId().equals(id)) {
 				return f;
 			}
 		}
@@ -2277,27 +1286,27 @@ public class PacmanGame {
 	
 	void createFruitElement() {
 		fruitEl = new Fruit();
-	    fruitEl.presentation.id = "pcm-f";
-	    fruitEl.presentation.width = 32;
-	    fruitEl.presentation.height = 16;
-	    fruitEl.presentation.left = getPlayfieldX(v[1]) - 8;
-	    fruitEl.presentation.top = getPlayfieldY(v[0]) - 4;
-	    prepareElement(fruitEl.presentation, -32, -16);
-	    fruitEl.presentation.parent = playfieldEl.presentation;
-	    playfieldEl.fruit = fruitEl;
+	    fruitEl.getPresentation().setId("pcm-f");
+	    fruitEl.getPresentation().setWidth(32);
+	    fruitEl.getPresentation().setHeight(16);
+	    fruitEl.getPresentation().setLeft(getPlayfieldX(v[1]) - 8);
+	    fruitEl.getPresentation().setTop(getPlayfieldY(v[0]) - 4);
+	    prepareElement(fruitEl.getPresentation(), -32, -16);
+	    fruitEl.getPresentation().setParent(playfieldEl.getPresentation());
+	    playfieldEl.setFruit(fruitEl);
 	}
 	
 	void createPlayfieldElements() {
 		doorEl = new Door();
-		doorEl.presentation.id = "pcm-do";
-		doorEl.presentation.width = 19;
-		doorEl.presentation.height = 2;
-		doorEl.presentation.left = 279;
-		doorEl.presentation.top = 46;
-		doorEl.presentation.bgColor = 0xffaaa5;
-		doorEl.presentation.visibility = false;
-		doorEl.presentation.parent = playfieldEl.presentation;
-		playfieldEl.door = doorEl;
+		doorEl.getPresentation().setId("pcm-do");
+		doorEl.getPresentation().setWidth(19);
+		doorEl.getPresentation().setHeight(2);
+		doorEl.getPresentation().setLeft(279);
+		doorEl.getPresentation().setTop(46);
+		doorEl.getPresentation().setBgColor(0xffaaa5);
+		doorEl.getPresentation().setVisibility(false);
+		doorEl.getPresentation().setParent(playfieldEl.getPresentation());
+		playfieldEl.setDoor(doorEl);
 		createDotElements();
 		createEnergizerElements();
 		createFruitElement();
@@ -2308,10 +1317,10 @@ public class PacmanGame {
   		for (int b = 0; b < playerCount + 4; b++) {
   			E actor = new E(b, this);
   			if (b < playerCount) {
-  				actor.ghost = false;
-  				actor.mode = 1;
+  				actor.setGhost(false);
+  				actor.setMode(1);
   			} else {
-  				actor.ghost = true;
+  				actor.setGhost(true);
   			}
   			as.add(actor);	
 	  	}
@@ -2330,18 +1339,19 @@ public class PacmanGame {
 
 	void createPlayfield() {
 	    playfieldEl = new PlayField();
-	    playfieldEl.presentation.id = "pcm-p";
-	    playfieldEl.presentation.left = 45;
-	    playfieldEl.presentation.width = 464;
-	    playfieldEl.presentation.height = 136;
-	    playfieldEl.presentation.parent = canvasEl.presentation;
-	    canvasEl.playfield = playfieldEl;
+	    Presentation p = playfieldEl.getPresentation();
+	    p.setId("pcm-p");
+	    p.setLeft(45);
+	    p.setWidth(464);
+	    p.setHeight(136);
+	    p.setParent(canvasEl.getPresentation());
+	    canvasEl.setPlayfield(playfieldEl);
 	}
 	
     void resetPlayfield() {
 	    dotsRemaining = 0;
 	    dotsEaten = 0;
-	    prepareElement(playfieldEl.presentation, 256, 0);
+	    prepareElement(playfieldEl.getPresentation(), 256, 0);
 	    determinePlayfieldDimensions();
 	    preparePlayfield();
 	    preparePaths();
@@ -2410,16 +1420,16 @@ public class PacmanGame {
 			return;
 		}
 		
-	    float[] d = getAbsoluteElPos(canvasEl.presentation);
+	    float[] d = getAbsoluteElPos(canvasEl.getPresentation());
 	    b -= d[1] - -32;
 	    c -= d[0] - 0;
 	    E player = actors[0];
-	    float f = getPlayfieldX(player.pos[1] + player.posDelta[1]) + 16;
-	    float h = getPlayfieldY(player.pos[0] + player.posDelta[0]) + 32;
+	    float f = getPlayfieldX(player.getPos()[1] + player.getPosDelta()[1]) + 16;
+	    float h = getPlayfieldY(player.getPos()[0] + player.getPosDelta()[0]) + 32;
 	    float j = Math.abs(b - f);
 	    float k = Math.abs(c - h);
-	    if (j > 8 && k < j) player.requestedDir = b > f ? 8 : 4;
-	    else if (k > 8 && j < k) player.requestedDir = c > h ? 2 : 1;
+	    if (j > 8 && k < j) player.setRequestedDir(b > f ? 8 : 4);
+	    else if (k > 8 && j < k) player.setRequestedDir(c > h ? 2 : 1);
 	}
 	
 	boolean handleSoundIconClick(float b, float c) {
@@ -2427,7 +1437,7 @@ public class PacmanGame {
 		// タイトル画面とゲーム画面で別々のViewを用意し、タイトル画面でサウンドまわりの初期化を行えば解決しそう
 		if (!soundAvailable) return false;
 		
-		float[] d = getAbsoluteElPos(soundEl.presentation);
+		float[] d = getAbsoluteElPos(soundEl.getPresentation());
 		if (d[1] <= b && b <= d[1] + 12) {
 			if (d[0] <= c && c <= d[0] + 12) {
 				toggleSound();
@@ -2475,8 +1485,8 @@ public class PacmanGame {
     	float c = Math.abs(touchDX);
     	float d = Math.abs(touchDY);
     	if (c < 8 && d < 8) canvasClicked(touchStartX, touchStartY);
-    	else if (c > 15 && d < c * 2 / 3) actors[0].requestedDir = touchDX > 0 ? 8 : 4;
-    	else if (d > 15 && c < d * 2 / 3) actors[0].requestedDir = touchDY > 0 ? 2 : 1;
+    	else if (c > 15 && d < c * 2 / 3) actors[0].setRequestedDir(touchDX > 0 ? 8 : 4);
+    	else if (d > 15 && c < d * 2 / 3) actors[0].setRequestedDir(touchDY > 0 ? 2 : 1);
 	    cancelTouch();
     }
     
@@ -2555,27 +1565,27 @@ public class PacmanGame {
 	void createKillScreenElement(int b, int c, int d, int f, boolean h) {
 //		    var j = document.createElement("div");
 		KillScreenTile j = new KillScreenTile();
-		j.presentation.left = b; // j.style.left = b + "px";
-		j.presentation.top = c; // j.style.top = c + "px";
-		j.presentation.width = d; // j.style.width = d + "px";
-		j.presentation.height = f; // j.style.height = f + "px";
+		j.getPresentation().setLeft(b); // j.style.left = b + "px";
+		j.getPresentation().setTop(c); // j.style.top = c + "px";
+		j.getPresentation().setWidth(d); // j.style.width = d + "px";
+		j.getPresentation().setHeight(f); // j.style.height = f + "px";
 //		    j.style.zIndex = 119;
 	    if (h) {
 //		      	j.style.background = "url(src/pacman10-hp-sprite-2.png) -" + killScreenTileX + "px -" + killScreenTileY + "px no-repeat";
-	    	j.presentation.bgPosX = killScreenTileX;
-	    	j.presentation.bgPosY = killScreenTileY;
+	    	j.getPresentation().setBgPosX(killScreenTileX);
+	    	j.getPresentation().setBgPosY(killScreenTileY);
 	    	killScreenTileY += 8;
 	    } else {
-	    	j.presentation.bgColor = 0x000000; // j.style.background = "black";
+	    	j.getPresentation().setBgColor(0x000000); // j.style.background = "black";
 	    }
-	    playfieldEl.killScreenTiles.add(j);
-	    j.presentation.parent = playfieldEl.presentation; // playfieldEl.appendChild(j)
-		}
+	    playfieldEl.addKillScreenTile(j);
+	    j.getPresentation().setParent(playfieldEl.getPresentation()); // playfieldEl.appendChild(j)
+	}
   
-		void killScreen() {
-		    seed(0);
-//		    canvasEl.style.visibility = "";
-	    canvasEl.presentation.visibility = true;
+	void killScreen() {
+	    seed(0);
+//	    canvasEl.style.visibility = "";
+	    canvasEl.getPresentation().setVisibility(true);
 	    createKillScreenElement(272, 0, 200, 80, false);
 	    createKillScreenElement(280, 80, 192, 56, false);
 	    killScreenTileX = 80;
@@ -2600,7 +1610,7 @@ public class PacmanGame {
 	    	levels.frightTime = Math.round(levels.frightTime * D); // z 配列を定義する際にこの処理を行っておくべきでは?
 	    // end issue 14
 	    levels.frightTotalTime = levels.frightTime + ((int) timing[1]) * (levels.frightBlinkCount * 2 - 1);
-	    for (E actor : actors) actor.dotCount = 0;
+	    for (E actor : actors) actor.setDotCount(0);
 	    alternatePenLeavingScheme = false;
 	    lostLifeOnThisLevel = false;
 	    updateChrome();
@@ -2625,7 +1635,7 @@ public class PacmanGame {
 	void switchMainGhostMode(int b, boolean c) {
 	    if (b == 4 && levels.frightTime == 0)
 	    	for (E actor : actors) {
-	    		if (actor.ghost) actor.reverseDirectionsNext = true; // frightTimeが0なら、ブルーモードになってもモンスターは反対に向きを変えるだけ
+	    		if (actor.isGhost()) actor.setReverseDirectionsNext(true); // frightTimeが0なら、ブルーモードになってもモンスターは反対に向きを変えるだけ
 	    	}
 	    else {
 	    	int f = mainGhostMode;
@@ -2646,19 +1656,19 @@ public class PacmanGame {
 	    		break;
 	    	}
 	    	for (E actor : actors) {
-	    		if (actor.ghost) {
-		        	if (b != 64 && !c) actor.modeChangedWhileInPen = true; // b(Main Ghost Modeは1, 2, 4。 64になるケースは存在しないように思える.)
-		        	if (b == 4) actor.eatenInThisFrightMode = false;
-		        	if (actor.mode != 8 && actor.mode != 16 && actor.mode != 32 && actor.mode != 128 && actor.mode != 64 || c) {
+	    		if (actor.isGhost()) {
+		        	if (b != 64 && !c) actor.setModeChangedWhileInPen(true); // b(Main Ghost Modeは1, 2, 4。 64になるケースは存在しないように思える.)
+		        	if (b == 4) actor.setEatenInThisFrightMode(false);
+		        	if (actor.getMode() != 8 && actor.getMode() != 16 && actor.getMode() != 32 && actor.getMode() != 128 && actor.getMode() != 64 || c) {
 			        	// ゲーム再開直後(c:true)以外では, モンスターのモードが8, 16, 36, 64, 128ならモード更新対象とならない
 			        	// ゲーム再開直後以外でブルーモード(4)以外から異なるモード[追跡モード(1), Scatterモード(2), ブルーモード(4)]への切り替え時が行われるとき、反対に向きを変える 
-			        	if (!c && actor.mode != 4 && actor.mode != b) actor.reverseDirectionsNext = true;
+			        	if (!c && actor.getMode() != 4 && actor.getMode() != b) actor.setReverseDirectionsNext(true);
 			        	actor.a(b);
 		        	}
 		        } else {
-		        	actor.fullSpeed = currentPlayerSpeed;
-		        	actor.dotEatingSpeed = currentDotEatingSpeed;
-		        	actor.tunnelSpeed = currentPlayerSpeed;
+		        	actor.setFullSpeed(currentPlayerSpeed);
+		        	actor.setDotEatingSpeed(currentDotEatingSpeed);
+		        	actor.setTunnelSpeed(currentPlayerSpeed);
 		        	actor.d();
 		        }
 	    	}
@@ -2669,21 +1679,24 @@ public class PacmanGame {
 	    if (alternatePenLeavingScheme) { // レベル再開後のみ食べられたエサの数によりモンスターが出撃するタイミングを管理
 	    	alternateDotCount++;
 	    	if (alternateDotCount == m[1])
-	    		actors[playerCount + 1].freeToLeavePen = true;
+	    		actors[playerCount + 1].setFreeToLeavePen(true);
 	    	else if (alternateDotCount == m[2])
-	    		actors[playerCount + 2].freeToLeavePen = true;
+	    		actors[playerCount + 2].setFreeToLeavePen(true);
 	    	else if (alternateDotCount == m[3])
-	    		if (actors[playerCount + 3].mode == 16)
+	    		if (actors[playerCount + 3].getMode() == 16)
 	    			alternatePenLeavingScheme = false;
-	    } else if (actors[playerCount + 1].mode == 16 || actors[playerCount + 1].mode == 8) {
-	    	actors[playerCount + 1].dotCount++;
-	    	if (actors[playerCount + 1].dotCount >= levels.penLeavingLimits[1]) actors[playerCount + 1].freeToLeavePen = true;
-	    } else if (actors[playerCount + 2].mode == 16 || actors[playerCount + 2].mode == 8) {
-	    	actors[playerCount + 2].dotCount++;
-	    	if (actors[playerCount + 2].dotCount >= levels.penLeavingLimits[2]) actors[playerCount + 2].freeToLeavePen = true;
-	    } else if (actors[playerCount + 3].mode == 16 || actors[playerCount + 3].mode == 8) {
-	    	actors[playerCount + 3].dotCount++;
-	    	if (actors[playerCount + 3].dotCount >= levels.penLeavingLimits[3]) actors[playerCount + 3].freeToLeavePen = true;
+	    } else if (actors[playerCount + 1].getMode() == 16 || actors[playerCount + 1].getMode() == 8) {
+	    	actors[playerCount + 1].incrementDotCount();
+	    	if (actors[playerCount + 1].getDotCount() >= levels.penLeavingLimits[1])
+	    		actors[playerCount + 1].setFreeToLeavePen(true);
+	    } else if (actors[playerCount + 2].getMode() == 16 || actors[playerCount + 2].getMode() == 8) {
+	    	actors[playerCount + 2].incrementDotCount();
+	    	if (actors[playerCount + 2].getDotCount() >= levels.penLeavingLimits[2])
+	    		actors[playerCount + 2].setFreeToLeavePen(true);
+	    } else if (actors[playerCount + 3].getMode() == 16 || actors[playerCount + 3].getMode() == 8) {
+	    	actors[playerCount + 3].incrementDotCount();
+	    	if (actors[playerCount + 3].getDotCount() >= levels.penLeavingLimits[3])
+	    		actors[playerCount + 3].setFreeToLeavePen(true);
 	    }
 	}
 	
@@ -2691,21 +1704,21 @@ public class PacmanGame {
 	    forcePenLeaveTime = levels.penForceTime * D;
 	}
 	
-	void dotEaten(int b, int[] c) {
+	public void dotEaten(int b, int[] c) {
 	    dotsRemaining--;
 	    dotsEaten++;
 	    actors[b].c(1);
 	    playDotEatingSound(b);
-	    if (playfield.get(Integer.valueOf(c[0])).get(Integer.valueOf(c[1])).dot == 2) { // パワーエサを食べたとき
+	    if (playfield.get(Integer.valueOf(c[0])).get(Integer.valueOf(c[1])).getDot() == 2) { // パワーエサを食べたとき
 	    	switchMainGhostMode(4, false);
 	    	addToScore(50, b);
 	    } else addToScore(10, b); // 普通のエサ
 	    
 	    Food d = getDotElement(getDotElementId(c[0], c[1]));
 //		    d.style.display = "none";
-	    d.eaten = true;
-	    d.presentation.visibility = false;
-	    playfield.get(Integer.valueOf(c[0])).get(Integer.valueOf(c[1])).dot = 0;
+	    d.setEaten(true);
+	    d.getPresentation().setVisibility(false);
+	    playfield.get(Integer.valueOf(c[0])).get(Integer.valueOf(c[1])).setDot(0);
 	    updateCruiseElroySpeed();
 	    resetForcePenLeaveTime();
 	    figureOutPenLeaving();
@@ -2728,22 +1741,22 @@ public class PacmanGame {
 		
 	void hideFruit() {
 		fruitShown = false;
-		changeElementBkPos(fruitEl.presentation, 32, 16, true);
+		changeElementBkPos(fruitEl.getPresentation(), 32, 16, true);
 	}
 	
 	void showFruit() {
 		fruitShown = true;
 		int[] b = getFruitSprite(levels.fruit);
-		changeElementBkPos(fruitEl.presentation, b[0], b[1], true);
+		changeElementBkPos(fruitEl.getPresentation(), b[0], b[1], true);
 		fruitTime = (int) timing[15] + (int) ((timing[16] - timing[15]) * rand());
 	}
 	
-	void eatFruit(int b) {
+	public void eatFruit(int b) {
 	    if (fruitShown) {
 	    	playSound("fruit", 0);
 	    	fruitShown = false;
 	    	int[] c = getFruitScoreSprite(levels.fruit);
-	    	changeElementBkPos(fruitEl.presentation, c[0], c[1], true);
+	    	changeElementBkPos(fruitEl.getPresentation(), c[0], c[1], true);
 	    	fruitTime = (int) timing[14];
 	    	addToScore(levels.fruitScore, b);
 	    }
@@ -2775,21 +1788,21 @@ public class PacmanGame {
 		    tilesChanged = false;
 		    for (int b = playerCount; b < playerCount + 4; b++)
 		    	for (int c = 0; c < playerCount; c++)
-		    		if (actors[b].tilePos[0] == actors[c].tilePos[0]
-		    		        && actors[b].tilePos[1] == actors[c].tilePos[1])
-		    			if (actors[b].mode == 4) {
+		    		if (actors[b].getTilePos()[0] == actors[c].getTilePos()[0]
+		    		        && actors[b].getTilePos()[1] == actors[c].getTilePos()[1])
+		    			if (actors[b].getMode() == 4) {
 		    				ghostDies(b, c);
 		    				return;
 		    			} else
-		    				if (actors[b].mode != 8 && actors[b].mode != 16
-		    					&& actors[b].mode != 32 && actors[b].mode != 128
-		    					&& actors[b].mode != 64)
+		    				if (actors[b].getMode() != 8 && actors[b].getMode() != 16
+		    					&& actors[b].getMode() != 32 && actors[b].getMode() != 128
+		    					&& actors[b].getMode() != 64)
 		    					playerDies(c);
 		  }
 
-		void updateCruiseElroySpeed() {
+		public void updateCruiseElroySpeed() {
 			float b = levels.ghostSpeed * 0.8f;
-			if (!lostLifeOnThisLevel || actors[playerCount + 3].mode != 16) {
+			if (!lostLifeOnThisLevel || actors[playerCount + 3].getMode() != 16) {
 				LevelConfig c = levels;
 				if (dotsRemaining < c.elroyDotsLeftPart2) b = c.elroySpeedPart2 * 0.8f;
 				else if (dotsRemaining < c.elroyDotsLeftPart1) b = c.elroySpeedPart1 * 0.8f;
@@ -2802,7 +1815,7 @@ public class PacmanGame {
 	
 	// speed: intervalTimeをインデックスに対応させた配列。あるintervalTimeでキャラの移動処理が必要かどうかが配列の要素(true/false)
 	// ex) 0.64: [false, true, false, true, false, true, ...]
-	Boolean[] getSpeedIntervals(float b){
+	public Boolean[] getSpeedIntervals(float b){
 		Float speed = Float.valueOf(b);
 	    if (!speedIntervals.containsKey(speed)) {
 	    	float c = 0;
@@ -2847,39 +1860,39 @@ public class PacmanGame {
 	    	gameplayModeTime = timing[4];
 	    	break;
 	    case 6:
-	    	canvasEl.presentation.visibility = false;
+	    	canvasEl.getPresentation().setVisibility(false);
 	    	gameplayModeTime = timing[5];
 	    	break;
 	    case 7:
 	    	stopAllAudio();
 //		    	canvasEl.style.visibility = "";
-	    	canvasEl.presentation.visibility = true;
+	    	canvasEl.getPresentation().setVisibility(true);
 //		    	doorEl.style.display = "block";
-	    	doorEl.presentation.visibility = true;
+	    	doorEl.getPresentation().setVisibility(true);
 	    	Ready m7_ready = new Ready();
-	      	m7_ready.presentation.id = "pcm-re";
-	      	m7_ready.presentation.width = 48;
-	      	m7_ready.presentation.height = 8;
-	      	m7_ready.presentation.left = 264;
-	      	m7_ready.presentation.top = 80;
-	      	prepareElement(m7_ready.presentation, 160, 0);
-	      	m7_ready.presentation.parent = playfieldEl.presentation;
-	      	playfieldEl.ready = m7_ready;
+	      	m7_ready.getPresentation().setId("pcm-re");
+	      	m7_ready.getPresentation().setWidth(48);
+	      	m7_ready.getPresentation().setHeight(8);
+	      	m7_ready.getPresentation().setLeft(264);
+	      	m7_ready.getPresentation().setTop(80);
+	      	prepareElement(m7_ready.getPresentation(), 160, 0);
+	      	m7_ready.getPresentation().setParent(playfieldEl.getPresentation());
+	      	playfieldEl.setReady(m7_ready);
 	    	gameplayModeTime = timing[6];
 	    	break;
 	    case 4:
 //		    	doorEl.style.display = "block";
-	    	doorEl.presentation.visibility = true;
+	    	doorEl.getPresentation().setVisibility(true);
 	    	
 	    	Ready m4_ready = new Ready();
-	      	m4_ready.presentation.id = "pcm-re";
-	      	m4_ready.presentation.width = 48;
-	      	m4_ready.presentation.height = 8;
-	      	m4_ready.presentation.left = 264;
-	      	m4_ready.presentation.top = 80;
-	      	prepareElement(m4_ready.presentation, 160, 0);
-	      	m4_ready.presentation.parent = playfieldEl.presentation;
-	      	playfieldEl.ready = m4_ready;
+	      	m4_ready.getPresentation().setId("pcm-re");
+	      	m4_ready.getPresentation().setWidth(48);
+	      	m4_ready.getPresentation().setHeight(8);
+	      	m4_ready.getPresentation().setLeft(264);
+	      	m4_ready.getPresentation().setTop(80);
+	      	prepareElement(m4_ready.getPresentation(), 160, 0);
+	      	m4_ready.getPresentation().setParent(playfieldEl.getPresentation());
+	      	playfieldEl.setReady(m4_ready);
 		    gameplayModeTime = timing[7];
 		    stopAllAudio();
 		    
@@ -2896,17 +1909,17 @@ public class PacmanGame {
 	    case 14:
 //		    	Object ready = document.getElementById("pcm-re");
 //			    google.dom.remove(ready);
-	    	playfieldEl.ready = null;
+	    	playfieldEl.setReady(null);
 		    stopAllAudio();
 		    GameOver go = new GameOver();
-		    go.presentation.id = "pcm-go";
-		    go.presentation.width = 80;
-		    go.presentation.height = 8;
-		    go.presentation.left = 248;
-		    go.presentation.top = 80;
-		    prepareElement(go.presentation, 8, 152);
-		    go.presentation.parent = playfieldEl.presentation;
-		    playfieldEl.gameover = go;
+		    go.getPresentation().setId("pcm-go");
+		    go.getPresentation().setWidth(80);
+		    go.getPresentation().setHeight(8);
+		    go.getPresentation().setLeft(248);
+		    go.getPresentation().setTop(80);
+		    prepareElement(go.getPresentation(), 8, 152);
+		    go.getPresentation().setParent(playfieldEl.getPresentation());
+		    playfieldEl.setGameover(go);
 		    gameplayModeTime = timing[9];
 		    break;
 	    case 9:
@@ -2915,17 +1928,17 @@ public class PacmanGame {
 	    	break;
 	    case 10:
 //		    	doorEl.style.display = "none";
-	    	doorEl.presentation.visibility = false;
+	    	doorEl.getPresentation().setVisibility(false);
 	    	gameplayModeTime = timing[11];
 	    	break;
 	    case 11:
 //		    	canvasEl.style.visibility = "hidden";
-	    	canvasEl.presentation.visibility = false;
+	    	canvasEl.getPresentation().setVisibility(false);
 	    	gameplayModeTime = timing[12];
 	    	break;
 	    case 12:
 //		    	playfieldEl.style.visibility = "hidden";
-	    	playfieldEl.presentation.visibility = false;
+	    	playfieldEl.getPresentation().setVisibility(false);
 	    	gameplayModeTime = timing[13];
 	    	break;
 	    case 1:
@@ -2939,22 +1952,22 @@ public class PacmanGame {
 
 	void showChrome(boolean b) {
 	    if (scoreLabelEl[0] != null)
-	    	scoreLabelEl[0].presentation.visibility = b; // showElementById("pcm-sc-1-l", b);
+	    	scoreLabelEl[0].getPresentation().setVisibility(b); // showElementById("pcm-sc-1-l", b);
 	    
 	    if (scoreLabelEl[1] != null)
-	    	scoreLabelEl[1].presentation.visibility = b; // showElementById("pcm-sc-2-l", b);
+	    	scoreLabelEl[1].getPresentation().setVisibility(b); // showElementById("pcm-sc-2-l", b);
 	    
 	    if (scoreEl[0] != null)
-	    	scoreEl[0].presentation.visibility = b; //showElementById("pcm-sc-1", b);
+	    	scoreEl[0].getPresentation().setVisibility(b); //showElementById("pcm-sc-1", b);
 	    
 	    if (scoreEl[1] != null)
-	    	scoreEl[1].presentation.visibility = b; // showElementById("pcm-sc-2", b);
+	    	scoreEl[1].getPresentation().setVisibility(b); // showElementById("pcm-sc-2", b);
 	    
 	    if (livesEl != null)
-	    	livesEl.presentation.visibility = b;// showElementById("pcm-li", b);
+	    	livesEl.getPresentation().setVisibility(b);// showElementById("pcm-li", b);
 	    
 	    if (soundEl != null)
-	    	soundEl.presentation.visibility = b;// showElementById("pcm-so", b);
+	    	soundEl.getPresentation().setVisibility(b);// showElementById("pcm-so", b);
 	}
 	
 	boolean toggleSound() { // 元は引数b
@@ -2973,25 +1986,25 @@ public class PacmanGame {
 	    return false;
 	}
 
-	void updateSoundIcon() {
+	public void updateSoundIcon() {
 		if (soundEl != null)
-			if (pacManSound) changeElementBkPos(soundEl.presentation, 216, 105, false);
-			else changeElementBkPos(soundEl.presentation, 236, 105, false);
+			if (pacManSound) changeElementBkPos(soundEl.getPresentation(), 216, 105, false);
+			else changeElementBkPos(soundEl.getPresentation(), 236, 105, false);
 	}
 	
 	void startCutscene() {
 //			playfieldEl.style.visibility = "hidden";
-		playfieldEl.presentation.visibility = false;
+		playfieldEl.getPresentation().setVisibility(false);
 //		    canvasEl.style.visibility = "";
-		canvasEl.presentation.visibility = true;
+		canvasEl.getPresentation().setVisibility(true);
 	    showChrome(false);
 	    cutsceneCanvasEl = new CutsceneCanvas();
-	    cutsceneCanvasEl.presentation.id = "pcm-cc";
-	    cutsceneCanvasEl.presentation.left = 45;
-	    cutsceneCanvasEl.presentation.width = 464;
-	    cutsceneCanvasEl.presentation.height = 136;
-	    cutsceneCanvasEl.presentation.parent = canvasEl.presentation;
-	    canvasEl.cutsceneCanvas = cutsceneCanvasEl;
+	    cutsceneCanvasEl.getPresentation().setId("pcm-cc");
+	    cutsceneCanvasEl.getPresentation().setLeft(45);
+	    cutsceneCanvasEl.getPresentation().setWidth(464);
+	    cutsceneCanvasEl.getPresentation().setHeight(136);
+	    cutsceneCanvasEl.getPresentation().setParent(canvasEl.getPresentation());
+	    canvasEl.setCutsceneCanvas(cutsceneCanvasEl);
 	    cutscene = B.get(Integer.valueOf(cutsceneId));
 	    cutsceneSequenceId = -1;
 	    frightModeTime = levels.frightTotalTime;
@@ -3002,16 +2015,16 @@ public class PacmanGame {
 
 	    	E actor = new E(c, this);
 //		    	d.className = "pcm-ac";
-    		actor.el.width = 16;
-    		actor.el.height = 16;
-    		actor.el.id = "actor" + c;
-	    	prepareElement(actor.el, 0, 0);
-	    	actor.elBackgroundPos = new int[] { 0, 0 };
-	    	actor.elPos = new float[] { 0, 0 };
-	    	actor.pos = new float[] { ca.y * 8, ca.x * 8 };
-	    	actor.posDelta = new float[] { 0, 0 };
-	    	actor.ghost = ca.ghost;
-	    	cutsceneCanvasEl.actors.add(actor);
+    		actor.getEl().setWidth(16);
+    		actor.getEl().setHeight(16);
+    		actor.getEl().setId("actor" + c);
+	    	prepareElement(actor.getEl(), 0, 0);
+	    	actor.setElBackgroundPos(new int[] { 0, 0 });
+	    	actor.setElPos(new float[] { 0, 0 });
+	    	actor.setPos(new float[] { ca.y * 8, ca.x * 8 });
+	    	actor.setPosDelta(new float[] { 0, 0 });
+	    	actor.setGhost(ca.ghost);
+	    	cutsceneCanvasEl.addActor(actor);
 	    	cas.add(actor);
 	    }
 	    cutsceneActors = cas.toArray(new E[0]); 
@@ -3024,8 +2037,8 @@ public class PacmanGame {
 	void stopCutscene() {
 		stopCutsceneTrack();
 //		    playfieldEl.style.visibility = "";
-	    playfieldEl.presentation.visibility = true;
-	    canvasEl.cutsceneCanvas = null;
+	    playfieldEl.getPresentation().setVisibility(true);
+	    canvasEl.setCutsceneCanvas(null);
 	    showChrome(true);
 	    newLevel(false);
 	}
@@ -3038,10 +2051,10 @@ public class PacmanGame {
 	    	cutsceneTime = b.time * D;
 	    	for (int c = 0; c < cutsceneActors.length; c++) {
 	    		E d = cutsceneActors[c];
-	    		d.dir = b.moves[c].dir;
-	    		d.speed = b.moves[c].speed;
-	        	if (b.moves[c].elId != null) d.el.id = b.moves[c].elId;
-	    		if (b.moves[c].mode != 0) d.mode = b.moves[c].mode;
+	    		d.setDir(b.moves[c].dir);
+	    		d.setSpeed(b.moves[c].speed);
+	        	if (b.moves[c].elId != null) d.getEl().setId(b.moves[c].elId);
+	    		if (b.moves[c].mode != 0) d.setMode(b.moves[c].mode);
 	    		d.b();
 	    	}
 	    }
@@ -3053,8 +2066,8 @@ public class PacmanGame {
 	
 	void advanceCutscene() {
 	    for (E actor : cutsceneActors) {
-	      Direction d = l.get(actor.dir);
-	      actor.pos[d.axis] += d.increment * actor.speed;
+	      Direction d = l.get(actor.getDir());
+	      actor.getPos()[d.getAxis()] += d.getIncrement() * actor.getSpeed();
 	      actor.b();
 	    }
 	    cutsceneTime--;
@@ -3076,34 +2089,34 @@ public class PacmanGame {
 	    case 11:
 	    case 12:
 //		      	playfieldEl.className = "";
-	    	for (Food f : playfieldEl.foods) {
-	    		if (f.presentation.hasBackground()) {
-	    			f.presentation.visibility = true;
+	    	for (Food f : playfieldEl.getFoods()) {
+	    		if (f.getPresentation().hasBackground()) {
+	    			f.getPresentation().setVisibility(true);
 	    		}
 	    	}
 	    	break;
 	    case 8:
 	    case 14:
 //		    	playfieldEl.className = "blk";
-	    	for (Food f : playfieldEl.foods) {
-	    		if (f.presentation.hasBackground()) {
-	    			f.presentation.visibility = false;
+	    	for (Food f : playfieldEl.getFoods()) {
+	    		if (f.getPresentation().hasBackground()) {
+	    			f.getPresentation().setVisibility(false);
 	    		}
 	    	}
 	    	break;
 	    default:
 	    	if (globalTime % (timing[0] * 2) == 0) {
 	    		// playfieldEl.className = "";
-		    	for (Food f : playfieldEl.foods) {
-		    		if (f.presentation.hasBackground()) {
-		    			f.presentation.visibility = true;
+		    	for (Food f : playfieldEl.getFoods()) {
+		    		if (f.getPresentation().hasBackground()) {
+		    			f.getPresentation().setVisibility(true);
 		    		}
 		    	}
 	    	} else if (globalTime % (timing[0] * 2) == timing[0]) {
 	    		// playfieldEl.className = "blk";
-		    	for (Food f : playfieldEl.foods) {
-		    		if (f.presentation.hasBackground()) {
-		    			f.presentation.visibility = false;
+		    	for (Food f : playfieldEl.getFoods()) {
+		    		if (f.getPresentation().hasBackground()) {
+		    			f.getPresentation().setVisibility(false);
 		    		}
 		    	}
 	    	}
@@ -3125,7 +2138,7 @@ public class PacmanGame {
 	    	
 	    	if (modify)
 	    		for (int c = 0; c < playerCount; c++)
-	    			scoreLabelEl[c].presentation.visibility = b;
+	    			scoreLabelEl[c].getPresentation().setVisibility(b);
 	    }
 	}
 	
@@ -3143,9 +2156,9 @@ public class PacmanGame {
 	    		break;
 	    	case 10:
 	    		if (FloatMath.floor(gameplayModeTime / (timing[11] / 8)) % 2 == 0)
-	    			changeElementBkPos(playfieldEl.presentation, 322, 2, false);
+	    			changeElementBkPos(playfieldEl.getPresentation(), 322, 2, false);
 	    		else
-	    			changeElementBkPos(playfieldEl.presentation, 322, 138, false);
+	    			changeElementBkPos(playfieldEl.getPresentation(), 322, 138, false);
 	    	}
 	    	
 	    	if (gameplayModeTime <= 0) {
@@ -3159,9 +2172,9 @@ public class PacmanGame {
 		        	actors[ghostBeingEatenId].a(8);
 		        	boolean c = false;
 		        	for (int b = playerCount; b < playerCount + 4; b++)
-		            if (actors[b].mode == 4
-		                || (actors[b].mode == 16 || actors[b].mode == 128)
-		                    && !actors[b].eatenInThisFrightMode) {
+		            if (actors[b].getMode() == 4
+		                || (actors[b].getMode() == 16 || actors[b].getMode() == 128)
+		                    && !actors[b].isEatenInThisFrightMode()) {
 		            	c = true;
 		            	break;
 		            }
@@ -3183,13 +2196,13 @@ public class PacmanGame {
 		        case 5:
 //		        	document.getElementById("pcm-re");
 //		        	google.dom.remove(b);
-		        	playfieldEl.ready = null;
+		        	playfieldEl.setReady(null);
 		        	changeGameplayMode(0);
 		        	break;
 		        case 8:
 //		        	b = document.getElementById("pcm-go");
 //		        	google.dom.remove(b);
-		        	playfieldEl.gameover = null;
+		        	playfieldEl.setGameover(null);
 //		        	google.pacManQuery && google.pacManQuery(); // google.pacManQueryというfunctionは存在しない
 		        	break;
 		        case 9:
@@ -3204,15 +2217,15 @@ public class PacmanGame {
 		        		changeGameplayMode(13);
 		        	} else {
 //		        		canvasEl.style.visibility = "";
-		        		canvasEl.presentation.visibility = true;
+		        		canvasEl.getPresentation().setVisibility(true);
 		        		newLevel(false);
 		        	}
 		        	break;
 		        case 12:
 //		        	playfieldEl.style.visibility = "";
-		        	playfieldEl.presentation.visibility = true;
+		        	playfieldEl.getPresentation().setVisibility(true);
 //		        	canvasEl.style.visibility = "";
-		        	canvasEl.presentation.visibility = true;
+		        	canvasEl.getPresentation().setVisibility(true);
 		        	switchToDoubleMode();
 		        	break;
 		        }
@@ -3259,8 +2272,8 @@ public class PacmanGame {
 	    	forcePenLeaveTime--;
 	    	if (forcePenLeaveTime <= 0) {
 	    		for (int b = 1; b <= 3; b++)
-	    			if (actors[playerCount + b].mode == 16) {
-	    				actors[playerCount + b].freeToLeavePen = true;
+	    			if (actors[playerCount + b].getMode() == 16) {
+	    				actors[playerCount + b].setFreeToLeavePen(true);
 	    				break;
 	    			}
 	
@@ -3343,44 +2356,44 @@ public class PacmanGame {
 	    String c = String.valueOf(score[b]);
 	    if (c.length() > scoreDigits) c = c.substring(c.length() - scoreDigits);
 	    for (int d = 0; d < scoreDigits; d++) {
-	    	Score.Number f = scoreEl[b].numbers.get(d);
+	    	Score.Number f = scoreEl[b].getNumber(d);
 	    	String h = null;
 	    	if (d < c.length()) h = c.substring(d, d + 1);
 	        if (h != null)
-	        	changeElementBkPos(f.presentation, 8 + 8 * Integer.parseInt(h, 10), 144, true);
+	        	changeElementBkPos(f.getPresentation(), 8 + 8 * Integer.parseInt(h, 10), 144, true);
 	        else
-	        	changeElementBkPos(f.presentation, 48, 0, true);
+	        	changeElementBkPos(f.getPresentation(), 48, 0, true);
 	    }
 	}
 	
 	void updateChromeLives() {
-		livesEl.lives.clear();
+		livesEl.clearLives();
 	    for (int b = 0; b < lives; b++) {
 	    	Lives.Life life = new Lives.Life();
-	    	prepareElement(life.presentation, 64, 129);
+	    	prepareElement(life.getPresentation(), 64, 129);
 //		    	c.className = "pcm-lif";
-	    	life.presentation.width = 16;
-	    	life.presentation.height = 12;
-	    	life.presentation.top = b * 15; // margin-bottom: 3px
-	    	life.presentation.parent = livesEl.presentation;
-	    	livesEl.lives.add(life);
+	    	life.getPresentation().setWidth(16);
+	    	life.getPresentation().setHeight(12);
+	    	life.getPresentation().setTop(b * 15); // margin-bottom: 3px
+	    	life.getPresentation().setParent(livesEl.getPresentation());
+	    	livesEl.addLife(life);
 	    }
 	}
 	
 	void updateChromeLevel() {
-		levelEl.fruits.clear();
+		levelEl.clearFruits();
 	    int top = (4 - Math.min(level, 4)) * 16 - 16;
 	    for (int b = level; b >= Math.max(level - 4 + 1, 1); b--) {
 	    	int c = b >= z.length ? z[z.length - 1].fruit : z[b].fruit;
 	    	Fruit d = new Fruit();
 	    	int[] fs = getFruitSprite(c);
-	    	prepareElement(d.presentation, fs[0], fs[1]);
-	    	d.presentation.width = 32;
-	    	d.presentation.height = 16;
+	    	prepareElement(d.getPresentation(), fs[0], fs[1]);
+	    	d.getPresentation().setWidth(32);
+	    	d.getPresentation().setHeight(16);
 	    	top += 16;
-	    	d.presentation.top = top;
-	    	d.presentation.parent = levelEl.presentation;
-	    	levelEl.fruits.add(d);
+	    	d.getPresentation().setTop(top);
+	    	d.getPresentation().setParent(levelEl.getPresentation());
+	    	levelEl.addFruit(d);
 	    }
 	}
 
@@ -3390,92 +2403,92 @@ public class PacmanGame {
 	    scoreDigits = playerCount == 1 ? 10 : 5;
 	    scoreLabelEl = new ScoreLabel[2];
 	    scoreLabelEl[0] = new ScoreLabel();
-	    scoreLabelEl[0].presentation.id = "pcm-sc-1-l";
-	    scoreLabelEl[0].presentation.left = -2;
-	    scoreLabelEl[0].presentation.top = 0;
-	    scoreLabelEl[0].presentation.width = 48;
-	    scoreLabelEl[0].presentation.height = 8;
-	    prepareElement(scoreLabelEl[0].presentation, 160, 56);
-	    scoreLabelEl[0].presentation.parent = canvasEl.presentation;
-	    canvasEl.scoreLabels[0] = scoreLabelEl[0];
+	    scoreLabelEl[0].getPresentation().setId("pcm-sc-1-l");
+	    scoreLabelEl[0].getPresentation().setLeft(-2);
+	    scoreLabelEl[0].getPresentation().setTop(0);
+	    scoreLabelEl[0].getPresentation().setWidth(48);
+	    scoreLabelEl[0].getPresentation().setHeight(8);
+	    prepareElement(scoreLabelEl[0].getPresentation(), 160, 56);
+	    scoreLabelEl[0].getPresentation().setParent(canvasEl.getPresentation());
+	    canvasEl.getScoreLabels()[0] = scoreLabelEl[0];
 	    scoreEl = new Score[2];
 	    scoreEl[0] = new Score();
-	    scoreEl[0].presentation.id = "pcm-sc-1";
-	    scoreEl[0].presentation.left = 18;
-	    scoreEl[0].presentation.top = 16;
-	    scoreEl[0].presentation.width = 8;
-	    scoreEl[0].presentation.height = 56;
-	    scoreEl[0].presentation.parent = canvasEl.presentation;
+	    scoreEl[0].getPresentation().setId("pcm-sc-1");
+	    scoreEl[0].getPresentation().setLeft(18);
+	    scoreEl[0].getPresentation().setTop(16);
+	    scoreEl[0].getPresentation().setWidth(8);
+	    scoreEl[0].getPresentation().setHeight(56);
+	    scoreEl[0].getPresentation().setParent(canvasEl.getPresentation());
 	    
 	    for (int b = 0; b < scoreDigits; b++) {
 	    	Score.Number c = new Score.Number();
-	    	c.presentation.id = "pcm-sc-1-" + b;
-	    	c.presentation.top = b * 8;
-	    	c.presentation.left = 0;
-	    	c.presentation.width = 8;
-	    	c.presentation.height = 8;
-	    	prepareElement(c.presentation, 48, 0);
-	    	c.presentation.parent = scoreEl[0].presentation;
-	    	scoreEl[0].numbers.add(c);
+	    	c.getPresentation().setId("pcm-sc-1-" + b);
+	    	c.getPresentation().setTop(b * 8);
+	    	c.getPresentation().setLeft(0);
+	    	c.getPresentation().setWidth(8);
+	    	c.getPresentation().setHeight(8);
+	    	prepareElement(c.getPresentation(), 48, 0);
+	    	c.getPresentation().setParent(scoreEl[0].getPresentation());
+	    	scoreEl[0].addNumber(c);
 	    }
-	    canvasEl.scores[0] = scoreEl[0];
+	    canvasEl.getScores()[0] = scoreEl[0];
 	    livesEl = new Lives();
-	    livesEl.presentation.id = "pcm-li";
-	    livesEl.presentation.left = 523;
-	    livesEl.presentation.top = 0;
-	    livesEl.presentation.height = 80;
-	    livesEl.presentation.width = 16;
-	    livesEl.presentation.parent = canvasEl.presentation;
-	    canvasEl.lives = livesEl;
+	    livesEl.getPresentation().setId("pcm-li");
+	    livesEl.getPresentation().setLeft(523);
+	    livesEl.getPresentation().setTop(0);
+	    livesEl.getPresentation().setHeight(80);
+	    livesEl.getPresentation().setWidth(16);
+	    livesEl.getPresentation().setParent(canvasEl.getPresentation());
+	    canvasEl.setLives(livesEl);
 	    levelEl = new Level();
-	    levelEl.presentation.id = "pcm-le";
-	    levelEl.presentation.left = 515;
-	    levelEl.presentation.top = 74;
-	    levelEl.presentation.height = 64;
-	    levelEl.presentation.width = 32;
-	    levelEl.presentation.parent = canvasEl.presentation;
-	    canvasEl.level = levelEl;
+	    levelEl.getPresentation().setId("pcm-le");
+	    levelEl.getPresentation().setLeft(515);
+	    levelEl.getPresentation().setTop(74);
+	    levelEl.getPresentation().setHeight(64);
+	    levelEl.getPresentation().setWidth(32);
+	    levelEl.getPresentation().setParent(canvasEl.getPresentation());
+	    canvasEl.setLevel(levelEl);
 	    if (playerCount == 2) {
 	    	scoreLabelEl[1] = new ScoreLabel();
-	    	scoreLabelEl[1].presentation.id = "pcm-sc-2-l";
-		    scoreLabelEl[1].presentation.left = -2;
-		    scoreLabelEl[1].presentation.top = 64;
-		    scoreLabelEl[1].presentation.width = 48;
-		    scoreLabelEl[1].presentation.height = 8;
-	    	prepareElement(scoreLabelEl[1].presentation, 160, 64);
-		    scoreLabelEl[1].presentation.parent = canvasEl.presentation;
-	    	canvasEl.scoreLabels[1] = scoreLabelEl[1];
+	    	scoreLabelEl[1].getPresentation().setId("pcm-sc-2-l");
+		    scoreLabelEl[1].getPresentation().setLeft(-2);
+		    scoreLabelEl[1].getPresentation().setTop(64);
+		    scoreLabelEl[1].getPresentation().setWidth(48);
+		    scoreLabelEl[1].getPresentation().setHeight(8);
+	    	prepareElement(scoreLabelEl[1].getPresentation(), 160, 64);
+		    scoreLabelEl[1].getPresentation().setParent(canvasEl.getPresentation());
+	    	canvasEl.getScoreLabels()[1] = scoreLabelEl[1];
 	    	scoreEl[1] = new Score();
-	    	scoreEl[1].presentation.id = "pcm-sc-2";
-	    	scoreEl[1].presentation.left = 18;
-	    	scoreEl[1].presentation.top = 80;
-	    	scoreEl[1].presentation.width = 8;
-	    	scoreEl[1].presentation.height = 56;
-		    scoreEl[1].presentation.parent = canvasEl.presentation;		    	
+	    	scoreEl[1].getPresentation().setId("pcm-sc-2");
+	    	scoreEl[1].getPresentation().setLeft(18);
+	    	scoreEl[1].getPresentation().setTop(80);
+	    	scoreEl[1].getPresentation().setWidth(8);
+	    	scoreEl[1].getPresentation().setHeight(56);
+		    scoreEl[1].getPresentation().setParent(canvasEl.getPresentation());		    	
 	    	for (int b = 0; b < scoreDigits; b++) {
 	    		Score.Number c = new Score.Number();
-	    		c.presentation.id = "pcm-sc-2-" + b;
-	    		c.presentation.top = b * 8;
-	    		c.presentation.left = 0;
-	    		c.presentation.width = 8;
-	    		c.presentation.height = 8;
-	    		prepareElement(c.presentation, 48, 0);
-		    	c.presentation.parent = scoreEl[1].presentation;
-	    		scoreEl[1].numbers.add(c);
+	    		c.getPresentation().setId("pcm-sc-2-" + b);
+	    		c.getPresentation().setTop(b * 8);
+	    		c.getPresentation().setLeft(0);
+	    		c.getPresentation().setWidth(8);
+	    		c.getPresentation().setHeight(8);
+	    		prepareElement(c.getPresentation(), 48, 0);
+		    	c.getPresentation().setParent(scoreEl[1].getPresentation());
+	    		scoreEl[1].addNumber(c);
 	    	}
-	    	canvasEl.scores[1] = scoreEl[1];
+	    	canvasEl.getScores()[1] = scoreEl[1];
 	    
 	    }
 	    if (soundAvailable) {
 	    	soundEl = new Sound();
-	    	soundEl.presentation.id = "pcm-so";
-	    	soundEl.presentation.left = 15; // 7 + 8
-	    	soundEl.presentation.top = 124; // 116 + 8
-	    	soundEl.presentation.width = 12;
-	    	soundEl.presentation.height = 12;
-	    	prepareElement(soundEl.presentation, -32, -16);
-	    	soundEl.presentation.parent = canvasEl.presentation;
-		    canvasEl.sound = soundEl;
+	    	soundEl.getPresentation().setId("pcm-so");
+	    	soundEl.getPresentation().setLeft(15); // 7 + 8
+	    	soundEl.getPresentation().setTop(124); // 116 + 8
+	    	soundEl.getPresentation().setWidth(12);
+	    	soundEl.getPresentation().setHeight(12);
+	    	prepareElement(soundEl.getPresentation(), -32, -16);
+	    	soundEl.getPresentation().setParent(canvasEl.getPresentation());
+		    canvasEl.setSound(soundEl);
 //			    soundEl.onclick = toggleSound;
 		    updateSoundIcon();
 	    }
@@ -3563,7 +2576,7 @@ public class PacmanGame {
 		repeatDotEatingSound(1);
 	}
 	
-	void playAmbientSound() {
+	public void playAmbientSound() {
 	    if (soundAvailable && pacManSound) {
 	    	String b = null;
 	    	if (gameplayMode == 0 || gameplayMode == 1)
@@ -3630,10 +2643,10 @@ public class PacmanGame {
     
 	void createCanvasElement() {
 		canvasEl = new PacManCanvas();
-	    canvasEl.presentation.id = "pcm-c";
-	    canvasEl.presentation.width = 554;
-	    canvasEl.presentation.height = 136;
-	    canvasEl.presentation.bgColor = 0x000000;
+	    canvasEl.getPresentation().setId("pcm-c");
+	    canvasEl.getPresentation().setWidth(554);
+	    canvasEl.getPresentation().setHeight(136);
+	    canvasEl.getPresentation().setBgColor(0x000000);
 //		    canvasEl.hideFocus = a;
 //		    document.getElementById("logo").appendChild(canvasEl);
 //		    canvasEl.tabIndex = 0;
@@ -3722,4 +2735,141 @@ public class PacmanGame {
 		soundPlayer.destroy();
 		cutsceneAudioClip.destroy();
 	}
+
+	public Map<Integer, Integer> getOppositeDirections() {
+		return oppositeDirections;
+	}
+
+	public int getPlayerCount() {
+		return playerCount;
+	}
+
+	public Map<Integer, Map<Integer, PathElement>> getPlayfield() {
+		return playfield;
+	}
+
+	public PlayField getPlayfieldEl() {
+		return playfieldEl;
+	}
+
+	public PacManCanvas getCanvasEl() {
+		return canvasEl;
+	}
+
+	public boolean isPacManSound() {
+		return pacManSound;
+	}
+
+	public void setPacManSound(boolean pacManSound) {
+		this.pacManSound = pacManSound;
+	}
+
+	public LevelConfig getLevels() {
+		return levels;
+	}
+
+	public E[] getActors() {
+		return actors;
+	}
+
+	public long getGlobalTime() {
+		return globalTime;
+	}
+
+	public int getFrightModeTime() {
+		return frightModeTime;
+	}
+
+	public int getIntervalTime() {
+		return intervalTime;
+	}
+	
+	public float getGameplayModeTime() {
+		return gameplayModeTime;
+	}
+
+	public float[] getTiming() {
+		return timing;
+	}
+
+	public int getGameplayMode() {
+		return gameplayMode;
+	}
+	
+	public int getMainGhostMode() {
+		return mainGhostMode;
+	}
+	
+	public int getLastMainGhostMode() {
+		return lastMainGhostMode;
+	}
+
+	public int getGhostBeingEatenId() {
+		return ghostBeingEatenId;
+	}
+
+	public int getPlayerEatingGhostId() {
+		return playerEatingGhostId;
+	}
+	
+	public int getPlayerDyingId() {
+		return playerDyingId;
+	}
+	
+	public int getModeScoreMultiplier() {
+		return modeScoreMultiplier;
+	}
+
+	public boolean isLostLifeOnThisLevel() {
+		return lostLifeOnThisLevel;
+	}
+
+	public boolean isGhostExitingPenNow() {
+		return ghostExitingPenNow;
+	}
+	
+	public boolean setGhostExitingPenNow(boolean ghostExitingPenNow) {
+		return this.ghostExitingPenNow = ghostExitingPenNow;
+	}
+
+	public int getGhostEyesCount() {
+		return ghostEyesCount;
+	}
+	
+	public void incrementGhostEyesCount() {
+		ghostEyesCount++;
+	}
+	
+	public void decrementGhostEyesCount() {
+		ghostEyesCount--;
+	}
+
+	public boolean isUserDisabledSound() {
+		return userDisabledSound;
+	}
+
+	public boolean isTilesChanged() {
+		return tilesChanged;
+	}
+
+	public int getCutsceneSequenceId() {
+		return cutsceneSequenceId;
+	}
+
+	public float getCutsceneTime() {
+		return cutsceneTime;
+	}
+
+	public void setTilesChanged(boolean tilesChanged) {
+		this.tilesChanged = tilesChanged;
+	}
+
+	public int getDotsRemaining() {
+		return dotsRemaining;
+	}
+
+	public float getCruiseElroySpeed() {
+		return cruiseElroySpeed;
+	}
+	
 }

@@ -6,26 +6,26 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
 
-class Presentation {
-	String id;
-	int width;
-	int height;
-	float left;
-	float top;
-	float bgPosX = Float.NaN;
-	float bgPosY = Float.NaN;
-	int bgColor;
-	boolean visibility = true;
-	Rect src = new Rect();
-	RectF dest = new RectF();
-	Paint paint = new Paint();
-	Presentation parent;
+public class Presentation {
+	private String id;
+	private int width;
+	private int height;
+	private float left;
+	private float top;
+	private float bgPosX = Float.NaN;
+	private float bgPosY = Float.NaN;
+	private int bgColor;
+	private boolean visibility = true;
+	private Rect src = new Rect();
+	private RectF dest = new RectF();
+	private Paint paint = new Paint();
+	private Presentation parent;
 	
-	boolean hasBackground() {
+	public boolean hasBackground() {
 		return !Float.isNaN(bgPosX) && !Float.isNaN(bgPosY);
 	}
 	
-	void drawBitmap(Bitmap sourceImage, Canvas c) {
+	public void drawBitmap(Bitmap sourceImage, Canvas c) {
 		float top = 0;
 		float left = 0;
 		Presentation p = this;
@@ -48,7 +48,7 @@ class Presentation {
 		c.drawBitmap(sourceImage, src, dest, null);
 	}
 	
-	void drawRectShape(Canvas c) {
+	public void drawRectShape(Canvas c) {
 		float top = 0;
 		float left = 0;
 		Presentation p = this;
@@ -68,5 +68,111 @@ class Presentation {
 		
 		c.drawRect(dest, paint);
 	}
+
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+
+	public int getWidth() {
+		return width;
+	}
+
+	public void setWidth(int width) {
+		this.width = width;
+	}
+
+	public int getHeight() {
+		return height;
+	}
+
+	public void setHeight(int height) {
+		this.height = height;
+	}
+
+	public float getLeft() {
+		return left;
+	}
+
+	public void setLeft(float left) {
+		this.left = left;
+	}
+
+	public float getTop() {
+		return top;
+	}
+
+	public void setTop(float top) {
+		this.top = top;
+	}
+
+	public float getBgPosX() {
+		return bgPosX;
+	}
+
+	public void setBgPosX(float bgPosX) {
+		this.bgPosX = bgPosX;
+	}
+
+	public float getBgPosY() {
+		return bgPosY;
+	}
+
+	public void setBgPosY(float bgPosY) {
+		this.bgPosY = bgPosY;
+	}
+
+	public int getBgColor() {
+		return bgColor;
+	}
+
+	public void setBgColor(int bgColor) {
+		this.bgColor = bgColor;
+	}
+
+	public boolean isVisible() {
+		return visibility;
+	}
+
+	public void setVisibility(boolean visibility) {
+		this.visibility = visibility;
+	}
+
+	public Rect getSrc() {
+		return src;
+	}
+
+	public void setSrc(Rect src) {
+		this.src = src;
+	}
+
+	public RectF getDest() {
+		return dest;
+	}
+
+	public void setDest(RectF dest) {
+		this.dest = dest;
+	}
+
+	public Paint getPaint() {
+		return paint;
+	}
+
+	public void setPaint(Paint paint) {
+		this.paint = paint;
+	}
+
+	public Presentation getParent() {
+		return parent;
+	}
+
+	public void setParent(Presentation parent) {
+		this.parent = parent;
+	}
+	
+	
 
 }
