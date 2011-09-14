@@ -8,6 +8,7 @@ import android.graphics.RectF;
 
 public class Presentation {
 	private String id;
+	private int index;
 	private int width;
 	private int height;
 	private float left;
@@ -72,9 +73,17 @@ public class Presentation {
 	public String getId() {
 		return id;
 	}
-
+	
 	public void setId(String id) {
 		this.id = id;
+	}
+	
+	public int getIndex() {
+		return index;
+	}
+
+	public void setIndex(int index) {
+		this.index = index;
 	}
 
 	public int getWidth() {

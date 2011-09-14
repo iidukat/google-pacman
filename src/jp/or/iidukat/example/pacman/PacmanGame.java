@@ -1127,8 +1127,8 @@ public class PacmanGame {
 		return b / 8 * 10 + 2;
 	}
   
-	String getDotElementId(int b, int c) {
-		return "pcm-d" + b + "-" + c;
+	int getDotElementIndex(int b, int c) {
+		return 1000 * b + c;
 	}
   
 	float[] getAbsoluteElPos(Presentation presentation) {
@@ -1247,7 +1247,7 @@ public class PacmanGame {
 	    	for (int c = 8; c <= playfieldWidth * 8; c += 8)
 	    		if (playfield.get(Integer.valueOf(b)).get(Integer.valueOf(c)).getDot() != 0) {
 	    			Food food = new Food();
-	    			food.getPresentation().setId(getDotElementId(b, c));
+	    			food.getPresentation().setIndex(getDotElementIndex(b, c));
 	          		food.getPresentation().setLeft(c + -32 + 3); // margin-left: 3
 	          		food.getPresentation().setTop(b + 0 + 3); // margint-top: 3
 	          		food.getPresentation().setWidth(2);
@@ -1261,7 +1261,7 @@ public class PacmanGame {
 	// パワーエサを作成
 	void createEnergizerElements() {
 	    for (Position c : p) {
-	      	String d = getDotElementId(c.y * 8, c.x * 8);
+	      	int d = getDotElementIndex(c.y * 8, c.x * 8);
 	      	Food f = getDotElement(d);
 	      	if (f == null) continue;
 //		      	document.getElementById(d).className = "pcm-e";
@@ -1274,9 +1274,9 @@ public class PacmanGame {
 	    }
 	}
 	
-	private Food getDotElement(String id) {
+	private Food getDotElement(int index) {
 		for (Food f : playfieldEl.getFoods()) {
-			if (f.getPresentation().getId().equals(id)) {
+			if (f.getPresentation().getIndex() == index) {
 				return f;
 			}
 		}
@@ -1714,7 +1714,7 @@ public class PacmanGame {
 	    	addToScore(50, b);
 	    } else addToScore(10, b); // 普通のエサ
 	    
-	    Food d = getDotElement(getDotElementId(c[0], c[1]));
+	    Food d = getDotElement(getDotElementIndex(c[0], c[1]));
 //		    d.style.display = "none";
 	    d.setEaten(true);
 	    d.getPresentation().setVisibility(false);
