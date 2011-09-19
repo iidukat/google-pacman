@@ -1,17 +1,19 @@
 package jp.or.iidukat.example.pacman;
 
+import java.util.EnumSet;
+
 public class PathElement {
     private boolean path;
     private int dot;
     private boolean intersection;
     private boolean tunnel;
-    private int allowedDir;
+    private EnumSet<Direction> allowedDir;
     
-	public int getAllowedDir() {
+	public EnumSet<Direction> getAllowedDir() {
 		return allowedDir;
 	}
 	
-	public void setAllowedDir(int allowedDir) {
+	public void setAllowedDir(EnumSet<Direction> allowedDir) {
 		this.allowedDir = allowedDir;
 	}
 	

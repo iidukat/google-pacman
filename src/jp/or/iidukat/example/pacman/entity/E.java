@@ -5,6 +5,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import jp.or.iidukat.example.pacman.Direction;
+import jp.or.iidukat.example.pacman.CurrentSpeed;
+import jp.or.iidukat.example.pacman.GameplayMode;
+import jp.or.iidukat.example.pacman.GhostMode;
+import jp.or.iidukat.example.pacman.Move;
 import jp.or.iidukat.example.pacman.PacmanGame;
 import jp.or.iidukat.example.pacman.PathElement;
 import jp.or.iidukat.example.pacman.Presentation;
@@ -17,20 +21,18 @@ import android.util.FloatMath;
 
 public class E {
 
-    private static final int[] i = {1, 4, 2, 8};
-    
     private static class InitPosition {
     	final float x;
     	final float y;
-    	final int dir;
+    	final Direction dir;
     	final float scatterX;
     	final float scatterY;
 
-    	InitPosition(float x, float y, int dir) {
+    	InitPosition(float x, float y, Direction dir) {
     		this(x, y, dir, 0, 0);
     	}
     	
-    	InitPosition(float x, float y, int dir, float scatterX, float scatterY) {
+    	InitPosition(float x, float y, Direction dir, float scatterX, float scatterY) {
     		this.x = x;
     		this.y = y;
     		this.dir = dir;
@@ -38,11 +40,11 @@ public class E {
     		this.scatterY = scatterY;
     	}
     	
-    	static InitPosition createPlayerInitPosition(float x, float y, int dir) {
+    	static InitPosition createPlayerInitPosition(float x, float y, Direction dir) {
     		return new InitPosition(x, y, dir);
     	}
     	
-    	static InitPosition createGhostInitPosition(float x, float y, int dir,
+    	static InitPosition createGhostInitPosition(float x, float y, Direction dir,
     											float scatterX, float scatterY) {
     		return new InitPosition(x, y, dir, scatterX, scatterY);
     	}
@@ -55,21 +57,21 @@ public class E {
     	ps.put(
     		Integer.valueOf(1),
     		new InitPosition[] {
-    			InitPosition.createPlayerInitPosition(39.5f, 15, 4), // Pacman
-    			InitPosition.createGhostInitPosition(39.5f, 4, 4, 57, -4), // アカベエ
-    			InitPosition.createGhostInitPosition(39.5f, 7, 2, 0, -4), // ピンキー
-    			InitPosition.createGhostInitPosition(37.625f, 7, 1, 57, 20), // アオスケ
-    			InitPosition.createGhostInitPosition(41.375f, 7, 1, 0, 20), // グズタ
+    			InitPosition.createPlayerInitPosition(39.5f, 15, Direction.LEFT), // Pacman
+    			InitPosition.createGhostInitPosition(39.5f, 4, Direction.LEFT, 57, -4), // アカベエ
+    			InitPosition.createGhostInitPosition(39.5f, 7, Direction.DOWN, 0, -4), // ピンキー
+    			InitPosition.createGhostInitPosition(37.625f, 7, Direction.UP, 57, 20), // アオスケ
+    			InitPosition.createGhostInitPosition(41.375f, 7, Direction.UP, 0, 20), // グズタ
     		});
     	ps.put(
        		Integer.valueOf(2),
        		new InitPosition[] {
-       			InitPosition.createPlayerInitPosition(40.25f, 15, 8), // Pacman
-       			InitPosition.createPlayerInitPosition(38.75f, 15, 4), // Ms.Pacman
-       			InitPosition.createGhostInitPosition(39.5f, 4, 4, 57, -4), // アカベエ
-       			InitPosition.createGhostInitPosition(39.5f, 7, 2, 0, -4), // ピンキー
-       			InitPosition.createGhostInitPosition(37.625f, 7, 1, 57, 20), // アオスケ
-       			InitPosition.createGhostInitPosition(41.375f, 7, 1, 0, 20), // グズタ
+       			InitPosition.createPlayerInitPosition(40.25f, 15, Direction.RIGHT), // Pacman
+       			InitPosition.createPlayerInitPosition(38.75f, 15, Direction.LEFT), // Ms.Pacman
+       			InitPosition.createGhostInitPosition(39.5f, 4, Direction.LEFT, 57, -4), // アカベエ
+       			InitPosition.createGhostInitPosition(39.5f, 7, Direction.DOWN, 0, -4), // ピンキー
+       			InitPosition.createGhostInitPosition(37.625f, 7, Direction.UP, 57, 20), // アオスケ
+       			InitPosition.createGhostInitPosition(41.375f, 7, Direction.UP, 0, 20), // グズタ
        		});
     	
     	r = Collections.unmodifiableMap(ps);
@@ -80,10 +82,10 @@ public class E {
     private static class MoveInPen {
     	final float x;
     	final float y;
-    	final int dir;
+    	final Direction dir;
     	final float dest;
     	final float speed;
-    	MoveInPen(float x, float y, int dir, float dest, float speed) {
+    	MoveInPen(float x, float y, Direction dir, float dest, float speed) {
     		this.x = x;
     		this.y = y;
     		this.dir = dir;
@@ -102,68 +104,68 @@ public class E {
     	mvs.put(
     		Integer.valueOf(1),
     		new MoveInPen[] {
-    			new MoveInPen(37.6f, 7, 1, 6.375f, 0.48f),
-    			new MoveInPen(37.6f, 6.375f, 2, 7.625f, 0.48f),
-    			new MoveInPen(37.6f, 7.625f, 1, 7, 0.48f),
+    			new MoveInPen(37.6f, 7, Direction.UP, 6.375f, 0.48f),
+    			new MoveInPen(37.6f, 6.375f, Direction.DOWN, 7.625f, 0.48f),
+    			new MoveInPen(37.6f, 7.625f, Direction.UP, 7, 0.48f),
     		});
     	mvs.put(
     		Integer.valueOf(2),
     		new MoveInPen[] {
-    			new MoveInPen(39.5f, 7, 2, 7.625f, 0.48f),
-    			new MoveInPen(39.5f, 7.625f, 1, 6.375f, 0.48f),
-    			new MoveInPen(39.5f, 6.375f, 2, 7, 0.48f),
+    			new MoveInPen(39.5f, 7, Direction.DOWN, 7.625f, 0.48f),
+    			new MoveInPen(39.5f, 7.625f, Direction.UP, 6.375f, 0.48f),
+    			new MoveInPen(39.5f, 6.375f, Direction.DOWN, 7, 0.48f),
     		});
     	mvs.put(
     		Integer.valueOf(3),
     		new MoveInPen[] {
-    			new MoveInPen(41.4f, 7, 1, 6.375f, 0.48f),
-    			new MoveInPen(41.4f, 6.375f, 2, 7.625f, 0.48f),
-    			new MoveInPen(41.4f, 7.625f, 1, 7, 0.48f),
+    			new MoveInPen(41.4f, 7, Direction.UP, 6.375f, 0.48f),
+    			new MoveInPen(41.4f, 6.375f, Direction.DOWN, 7.625f, 0.48f),
+    			new MoveInPen(41.4f, 7.625f, Direction.UP, 7, 0.48f),
     		});
     	mvs.put(
     		Integer.valueOf(4),
     		new MoveInPen[] {
-    			new MoveInPen(37.6f, 7, 8, 39.5f, y),
-    			new MoveInPen(39.5f, 7, 1, 4, y),
+    			new MoveInPen(37.6f, 7, Direction.RIGHT, 39.5f, y),
+    			new MoveInPen(39.5f, 7, Direction.UP, 4, y),
     		});
     	mvs.put(
     		Integer.valueOf(5),
-    		new MoveInPen[] { new MoveInPen(39.5f, 7, 1, 4, y) });
+    		new MoveInPen[] { new MoveInPen(39.5f, 7, Direction.UP, 4, y) });
     	mvs.put(
         	Integer.valueOf(6),
         	new MoveInPen[] {
-        		new MoveInPen(41.4f, 7, 4, 39.5f, y),
-        		new MoveInPen(39.5f, 7, 1, 4, y),
+        		new MoveInPen(41.4f, 7, Direction.LEFT, 39.5f, y),
+        		new MoveInPen(39.5f, 7, Direction.UP, 4, y),
         	});
     	mvs.put(
            	Integer.valueOf(7),
            	new MoveInPen[] {
-           		new MoveInPen(39.5f, 4, 2, 7, 1.6f),
-           		new MoveInPen(39.5f, 7, 4, 37.625f, 1.6f),
+           		new MoveInPen(39.5f, 4, Direction.DOWN, 7, 1.6f),
+           		new MoveInPen(39.5f, 7, Direction.LEFT, 37.625f, 1.6f),
            	});
     	mvs.put(
        		Integer.valueOf(8),
-       		new MoveInPen[] { new MoveInPen(39.5f, 4, 2, 7, 1.6f) });
+       		new MoveInPen[] { new MoveInPen(39.5f, 4, Direction.DOWN, 7, 1.6f) });
     	mvs.put(
            	Integer.valueOf(9),
            	new MoveInPen[] {
-           		new MoveInPen(39.5f, 4, 2, 7, 1.6f),
-           		new MoveInPen(39.5f, 7, 8, 41.375f, 1.6f),
+           		new MoveInPen(39.5f, 4, Direction.DOWN, 7, 1.6f),
+           		new MoveInPen(39.5f, 7, Direction.RIGHT, 41.375f, 1.6f),
            	});
     	mvs.put(
            	Integer.valueOf(10),
            	new MoveInPen[] {
-           		new MoveInPen(37.6f, 7, 8, 39.5f, y),
-           		new MoveInPen(39.5f, 7, 1, 4, y),
+           		new MoveInPen(37.6f, 7, Direction.RIGHT, 39.5f, y),
+           		new MoveInPen(39.5f, 7, Direction.UP, 4, y),
            	});
     	mvs.put(
        		Integer.valueOf(11),
-       		new MoveInPen[] { new MoveInPen(39.5f, 7, 1, 4, y) });
+       		new MoveInPen[] { new MoveInPen(39.5f, 7, Direction.UP, 4, y) });
     	mvs.put(
             Integer.valueOf(12),
             new MoveInPen[] {
-            	new MoveInPen(41.4f, 7, 4, 39.5f, y),
-            	new MoveInPen(39.5f, 7, 1, 4, y),
+            	new MoveInPen(41.4f, 7, Direction.LEFT, 39.5f, y),
+            	new MoveInPen(39.5f, 7, Direction.UP, 4, y),
             });
     	A = Collections.unmodifiableMap(mvs);
     }
@@ -171,7 +173,7 @@ public class E {
 	private final int id;
 	private final PacmanGame g;
 	private boolean ghost;
-	private int mode;
+	private GhostMode mode = GhostMode.NONE;
 	private float[] pos;
 	private float[] posDelta;
 	private int[] tilePos;
@@ -180,12 +182,12 @@ public class E {
 	private int[] elBackgroundPos;
 	private float[] targetPos;
 	private float[] scatterPos;
-	private int dir;
-	private int lastActiveDir;
+	private Direction dir;
+	private Direction lastActiveDir;
 	private float speed;
 	private float physicalSpeed;
-	private int requestedDir;
-	private int nextDir;
+	private Direction requestedDir;
+	private Direction nextDir;
 	private boolean reverseDirectionsNext;
 	private boolean freeToLeavePen;
 	private boolean modeChangedWhileInPen;
@@ -195,7 +197,7 @@ public class E {
 	private int routineToFollow;
 	private int routineMoveId;
 	private int targetPlayerId;
-	private int currentSpeed;
+	private CurrentSpeed currentSpeed = CurrentSpeed.NONE;
 	private float fullSpeed;
 	private float dotEatingSpeed;
 	private float tunnelSpeed;
@@ -291,8 +293,8 @@ public class E {
 	    this.scatterPos = new float[] {b.scatterY * 8, b.scatterX * 8};
 	    this.lastActiveDir = this.dir = b.dir;
 	    this.physicalSpeed = 0;
-	    this.requestedDir = this.nextDir = 0;
-	    this.c(0);
+	    this.requestedDir = this.nextDir = Direction.NONE;
+	    this.c(CurrentSpeed.NORMAL);
 	    this.reverseDirectionsNext = this.freeToLeavePen = this.modeChangedWhileInPen = this.eatenInThisFrightMode = false;
 	    this.l();
 	}
@@ -310,42 +312,44 @@ public class E {
 		this.elBackgroundPos = new int[] {0, 0};
 	}
 	// モンスターのモード設定
-	public void a(int b) {
-		int c = this.mode;
+	public void a(GhostMode b) {
+		GhostMode c = this.mode;
 		this.mode = b;
-		if (this.id == g.getPlayerCount() + 3 && (b == 16 || c == 16)) g.updateCruiseElroySpeed();
+		if (this.id == g.getPlayerCount() + 3
+				&& (b == GhostMode.IN_PEN || c == GhostMode.IN_PEN))
+			g.updateCruiseElroySpeed();
 		switch (c) {
-		case 32:
+		case EXITING_FROM_PEN:
 			g.setGhostExitingPenNow(false);
 			break;
-		case 8:
+		case EATEN:
 			if (g.getGhostEyesCount() > 0) g.decrementGhostEyesCount();
 			if (g.getGhostEyesCount() == 0) g.playAmbientSound();
 			break;
 		}
 	    switch (b) {
-	    case 4:
+	    case FRIGHTENED:
 	    	this.fullSpeed = g.getLevels().getGhostFrightSpeed() * 0.8f;
 	    	this.tunnelSpeed = g.getLevels().getGhostTunnelSpeed() * 0.8f;
 	    	this.followingRoutine = false;
 	    	break;
-	    case 1:
+	    case CHASE:
 	    	this.fullSpeed = g.getLevels().getGhostSpeed() * 0.8f;
 	    	this.tunnelSpeed = g.getLevels().getGhostTunnelSpeed() * 0.8f;
 	    	this.followingRoutine = false;
 	    	break;
-	    case 2:
+	    case SCATTER:
 	    	this.targetPos = this.scatterPos;
 	    	this.fullSpeed = g.getLevels().getGhostSpeed() * 0.8f;
 	    	this.tunnelSpeed = g.getLevels().getGhostTunnelSpeed() * 0.8f;
 	    	this.followingRoutine = false;
 	    	break;
-	    case 8:
+	    case EATEN:
 	    	this.tunnelSpeed = this.fullSpeed = 1.6f;
 	    	this.targetPos = new float[] {s[0], s[1]};
 	    	this.freeToLeavePen = this.followingRoutine = false;
 	    	break;
-	    case 16:
+	    case IN_PEN:
 	    	this.l();
 	    	this.followingRoutine = true;
 	    	this.routineMoveId = -1;
@@ -357,7 +361,7 @@ public class E {
 		        this.routineToFollow = 3;
 
 	    	break;
-	    case 32:
+	    case EXITING_FROM_PEN:
 	    	this.followingRoutine = true;
 	    	this.routineMoveId = -1;
 	    	if (this.id == g.getPlayerCount() + 1)
@@ -369,7 +373,7 @@ public class E {
 
 	    	g.setGhostExitingPenNow(true);
 	    	break;
-	    case 64:
+	    case ENTERING_PEN:
 	    	this.followingRoutine = true;
 	    	this.routineMoveId = -1;
 	    	
@@ -381,7 +385,7 @@ public class E {
 	    		this.routineToFollow = 9;
 	    	
 	    	break;
-	    case 128:
+	    case RE_EXITING_FROM_PEN:
 	    	this.followingRoutine = true;
 	    	this.routineMoveId = -1;
 	    	
@@ -403,28 +407,28 @@ public class E {
 	}
 
 	// 位置, 速度の決定
-	void z(int b) {
+	void z(Direction b) {
 	    if (!g.isUserDisabledSound()) { // サウンドアイコンの更新
 	    	g.setPacManSound(true);
 	    	g.updateSoundIcon();
 	    }
-	    if (this.dir == g.getOppositeDirections().get(Integer.valueOf(b)).intValue()) {
+	    if (this.dir == b.getOpposite()) {
 	    	this.dir = b;
 	    	this.posDelta = new float[] {0, 0};
-	    	if (this.currentSpeed != 2) this.c(0);
-	    	if (this.dir != 0) this.lastActiveDir = this.dir;
-	    	this.nextDir = 0;
+	    	if (this.currentSpeed != CurrentSpeed.PASSING_TUNNEL) this.c(CurrentSpeed.NORMAL);
+	    	if (this.dir != Direction.NONE) this.lastActiveDir = this.dir;
+	    	this.nextDir = Direction.NONE;
 	    } else if (this.dir != b)
-	    	if (this.dir == 0) {
-	    		if ((g.getPlayfield().get(Integer.valueOf((int) this.pos[0]))
-	    						.get(Integer.valueOf((int) this.pos[1]))
-	    						.getAllowedDir() & b) != 0)
+	    	if (this.dir == Direction.NONE) {
+	    		if (g.getPlayfield().get(Integer.valueOf((int) this.pos[0]))
+	    							.get(Integer.valueOf((int) this.pos[1]))
+	    							.getAllowedDir().contains(b))
 	    			this.dir = b;
 	    	} else {
 	    		PathElement p = g.getPlayfield().get(Integer.valueOf(this.tilePos[0])).get(Integer.valueOf(this.tilePos[1]));
-	    		if (p != null && (p.getAllowedDir() & b) != 0) { // 移動可能な方向が入力された場合
+	    		if (p != null && p.getAllowedDir().contains(b)) { // 移動可能な方向が入力された場合
 	    			// 	遅延ぎみに方向入力されたかどうか判定
-	    			Direction c = PacmanGame.l.get(this.dir);
+	    			Move c = this.dir.getMove();
 	    			float[] d = new float[] {this.pos[0], this.pos[1]};
 	    			d[c.getAxis()] -= c.getIncrement();
 	    			int f = 0;
@@ -440,7 +444,7 @@ public class E {
 	    				this.dir = b;
 	    				this.pos[0] = this.tilePos[0];
 	    				this.pos[1] = this.tilePos[1];
-	    				c = PacmanGame.l.get(this.dir);
+	    				c = this.dir.getMove();
 	    				this.pos[c.getAxis()] += c.getIncrement() * f;
 	    				return;
 	    			}
@@ -454,54 +458,54 @@ public class E {
 	// 	b: 反転済みフラグ
 	void i(boolean b) {
 		int[] c = this.tilePos;
-		Direction d = PacmanGame.l.get(Integer.valueOf(this.dir));
+		Move d = this.dir.getMove();
 		int[] f = new int[] {c[0], c[1]};
 		f[d.getAxis()] += d.getIncrement() * 8; // 進行方向へ1マス先取り
-		PathElement h =
-			g.getPlayfield().get(Integer.valueOf(f[0]))
-						.get(Integer.valueOf(f[1]));
+		PathElement h = g.getPlayfield().get(Integer.valueOf(f[0]))
+										.get(Integer.valueOf(f[1]));
 		if (b && !h.isIntersection())
 			h = g.getPlayfield().get(Integer.valueOf(c[0]))
-							.get(Integer.valueOf(c[1])); // 交差点/行き止まり でなければ現在位置に戻る(反転済みの場合)
+								.get(Integer.valueOf(c[1])); // 交差点/行き止まり でなければ現在位置に戻る(反転済みの場合)
 		
 	    if (h.isIntersection())
 	    	switch (this.mode) {
-	    	case 2: // Scatter
-	    	case 1: // 追跡
-	    	case 8: // プレイヤーに食べられる
-	    		int nDir = 0;
-		        if ((this.dir & h.getAllowedDir()) == 0
-		        		&& h.getAllowedDir() == g.getOppositeDirections().get(Integer.valueOf(this.dir)).intValue()) // 反対向きしか通れないなら反対向きを選ぶ
-		        	this.nextDir = g.getOppositeDirections().get(Integer.valueOf(this.dir)).intValue();
+	    	case SCATTER: // Scatter
+	    	case CHASE: // 追跡
+	    	case EATEN: // プレイヤーに食べられる
+		        if (!h.getAllowedDir().contains(this.dir)
+		        		&& h.getAllowedDir().contains(this.dir.getOpposite())
+		        		&& h.getAllowedDir().size() == 1)// 反対向きしか通れないなら反対向きを選ぶ
+		        	this.nextDir = this.dir.getOpposite();
 		        else { // 反対向き以外を選択可能なら、目的地に最も近い方向を選択する
 		        	float max = 99999999999f;
 		        	float distance = 0;
-		        	for (int k : i) {
-		        		if ((h.getAllowedDir() & k) != 0
-		        				&& this.dir != g.getOppositeDirections().get(Integer.valueOf(k)).intValue()) {
-		        			d = PacmanGame.l.get(k);
+		    		Direction nDir = Direction.NONE;
+		        	for (Direction k : Direction.getAllMoves()) {
+		        		if (h.getAllowedDir().contains(k) && this.dir != k.getOpposite()) {
+		        			d = k.getMove();
 		        			float[] x = new float[] {(float) f[0], (float) f[1]};
 		        			x[d.getAxis()] += d.getIncrement();
-		        			distance = g.getDistance(x, new float[] {this.targetPos[0], this.targetPos[1]});
+		        			distance = PacmanGame.getDistance(x, new float[] {this.targetPos[0], this.targetPos[1]});
 		        			if (distance < max) {
 		        				max = distance;
 		        				nDir = k;
 		        			}
 		        		}
 		        	}
-		        	if (nDir != 0) this.nextDir = nDir;
+		        	if (nDir != Direction.NONE) this.nextDir = nDir;
 		        }
 		        break;
-	    	case 4: // ブルーモード
-		        if ((this.dir & h.getAllowedDir()) == 0
-		        		&& h.getAllowedDir() == g.getOppositeDirections().get(Integer.valueOf(this.dir)).intValue()) // 反対向きしか通れないなら反対向きを選ぶ
-		        	this.nextDir = g.getOppositeDirections().get(Integer.valueOf(this.dir)).intValue();
+	    	case FRIGHTENED: // ブルーモード
+		        if (!h.getAllowedDir().contains(this.dir)
+		        		&& h.getAllowedDir().contains(this.dir.getOpposite())
+		        		&& h.getAllowedDir().size() == 1) // 反対向きしか通れないなら反対向きを選ぶ
+		        	this.nextDir = this.dir.getOpposite();
 		        else { // 移動可能な方向のうち反対向き以外を選択
-		        	int ndir = 0;
-		        	do ndir = i[(int) FloatMath.floor(g.rand() * 4)];
-		        	while ((ndir & h.getAllowedDir()) == 0
-		        				|| ndir == g.getOppositeDirections().get(Integer.valueOf(this.dir)).intValue());
-		        	this.nextDir = ndir;
+		        	Direction nDir = Direction.NONE;
+		        	do nDir = Direction.getAllMoves().get((int) FloatMath.floor(g.rand() * Direction.getAllMoves().size()));
+		        	while (!h.getAllowedDir().contains(nDir)
+		        				|| nDir == this.dir.getOpposite());
+		        	this.nextDir = nDir;
 		        }
 		        break;
 	      }
@@ -510,8 +514,8 @@ public class E {
 	void p(int[] b) {
 	    g.setTilesChanged(true);
 	    if (this.reverseDirectionsNext) { // 方向を反転する(この判定がtrueになるのはモンスターのみ)
-	    	this.dir = g.getOppositeDirections().get(Integer.valueOf(this.dir)).intValue();
-	    	this.nextDir = 0;
+	    	this.dir = this.dir.getOpposite();
+	    	this.nextDir = Direction.NONE;
 	    	this.reverseDirectionsNext = false;
 	    	this.i(true);
 	    }
@@ -524,7 +528,7 @@ public class E {
 		    this.pos[1] = this.lastGoodTilePos[1];
 		    b[0] = this.lastGoodTilePos[0];
 		    b[1] = this.lastGoodTilePos[1];
-		    this.dir = 0;
+		    this.dir = Direction.NONE;
 	    } else // モンスターの移動 or プレイヤーがパスであるところへ移動
 	    	this.lastGoodTilePos = new int[] {b[0], b[1]};
 	
@@ -532,10 +536,10 @@ public class E {
 	    if (g.getPlayfield().get(Integer.valueOf(b[0]))
 	    					.get(Integer.valueOf(b[1]))
 	    					.isTunnel()
-	    		&& this.mode != 8)
-	    	this.c(2);
+	    		&& this.mode != GhostMode.EATEN)
+	    	this.c(CurrentSpeed.PASSING_TUNNEL);
 	    else
-	    	this.c(0);
+	    	this.c(CurrentSpeed.NORMAL);
 	    
 	    // プレイヤーがエサを食べる
 	    if (!this.ghost
@@ -554,19 +558,19 @@ public class E {
 	    float[] c;
 	    float[] d;
 	    switch (this.dir) {
-	    case 1:
+	    case UP:
 	    	c = new float[] { b[0], b[1] };
 	        d = new float[] { b[0] + 3.6f, b[1] };
 	        break;
-	    case 2:
+	    case DOWN:
 	    	c = new float[] { b[0] - 4, b[1] };
 	    	d = new float[] { b[0], b[1] };
 	    	break;
-	    case 4:
+	    case LEFT:
 	    	c = new float[] { b[0], b[1] };
 	    	d = new float[] { b[0], b[1] + 3.6f };
 	    	break;
-	    case 8:
+	    case RIGHT:
 	    	c = new float[] { b[0], b[1] - 4 };
 	    	d = new float[] { b[0], b[1] };
 	    	break;
@@ -580,7 +584,7 @@ public class E {
 	        && this.pos[0] <= d[0]
 	        && this.pos[1] >= c[1]
 	        && this.pos[1] <= d[1]) {
-	    	Direction dir = PacmanGame.l.get(Integer.valueOf(this.nextDir));
+	    	Move dir = this.nextDir.getMove();
 	    	this.posDelta[dir.getAxis()] += dir.getIncrement();
 	    }
 	}
@@ -596,10 +600,10 @@ public class E {
 	        this.pos[1] = (PacmanGame.getQ()[0].getX() + 1) * 8;
 	    }
 	    // モンスターが巣に入る
-	    if (this.mode == 8
+	    if (this.mode == GhostMode.EATEN
 	    		&& this.pos[0] == s[0]
 	    		&& this.pos[1] == s[1])
-	    	this.a(64);
+	    	this.a(GhostMode.ENTERING_PEN);
 	    
 	    // プレイヤーがフルーツを食べる
 	    if (!this.ghost && this.pos[0] == PacmanGame.getV()[0]
@@ -615,19 +619,19 @@ public class E {
 	    	g.getPlayfield().get(Integer.valueOf((int) this.pos[0]))
 	    					.get(Integer.valueOf((int) this.pos[1]));
 	    if (b.isIntersection()) // 行き止まり/交差点にて
-	    	if (this.nextDir != 0 && (this.nextDir & b.getAllowedDir()) != 0) { // nextDirで指定された方向へ移動可能
-		        if (this.dir != 0) this.lastActiveDir = this.dir;
+	    	if (this.nextDir != Direction.NONE && b.getAllowedDir().contains(this.nextDir)) { // nextDirで指定された方向へ移動可能
+		        if (this.dir != Direction.NONE) this.lastActiveDir = this.dir;
 		        this.dir = this.nextDir;
-		        this.nextDir = 0;
+		        this.nextDir = Direction.NONE;
 		        if (!this.ghost) { // 先行入力された移動方向分を更新(メソッドtを参照)
 		        	this.pos[0] += this.posDelta[0];
 			        this.pos[1] += this.posDelta[1];
 			        this.posDelta = new float[] {0, 0};
 		        }
-	    } else if ((this.dir & b.getAllowedDir()) == 0) { // nextDirもdirも移動不可だったら、停止
-	    	if (this.dir != 0) this.lastActiveDir = this.dir;
-	    	this.nextDir = this.dir = 0;
-	    	this.c(0);
+	    } else if (!b.getAllowedDir().contains(this.dir)) { // nextDirもdirも移動不可だったら、停止
+	    	if (this.dir != Direction.NONE) this.lastActiveDir = this.dir;
+	    	this.nextDir = this.dir = Direction.NONE;
+	    	this.c(CurrentSpeed.NORMAL);
 	    }
 	}
 
@@ -650,33 +654,33 @@ public class E {
 	    	g.getPlayfield().get(Integer.valueOf(d[0]))
 	    					.get(Integer.valueOf(d[1]));
 	    if (!this.ghost
-	    		&& this.nextDir != 0
+	    		&& this.nextDir != Direction.NONE
 	    		&& pe.isIntersection()
-	    		&& (this.nextDir & pe.getAllowedDir()) != 0)
+	    		&& pe.getAllowedDir().contains(this.nextDir))
 	    		this.t();
 	}
 	// ターゲットポジションを決定
 	public void B() {
 	    if (this.id == g.getPlayerCount()
 	    		&& g.getDotsRemaining() < g.getLevels().getElroyDotsLeftPart1()
-	    		&& this.mode == 2
-	    		&& (!g.isLostLifeOnThisLevel() || g.getActors()[g.getPlayerCount() + 3].mode != 16)) {
+	    		&& this.mode == GhostMode.SCATTER
+	    		&& (!g.isLostLifeOnThisLevel() || g.getActors()[g.getPlayerCount() + 3].mode != GhostMode.IN_PEN)) {
 	    	E b = g.getActors()[this.targetPlayerId];
 	    	this.targetPos = new float[] { b.tilePos[0], b.tilePos[1] };
-	    } else if (this.ghost && this.mode == 1) {
+	    } else if (this.ghost && this.mode == GhostMode.CHASE) {
 	    	E b = g.getActors()[this.targetPlayerId];
-    		Direction c = PacmanGame.l.get(Integer.valueOf(b.dir));
+    		Move c = b.dir.getMove();
 	    	if (this.id == g.getPlayerCount()) {
 	    		this.targetPos = new float[] { b.tilePos[0], b.tilePos[1] };
 	    	} else if (this.id == g.getPlayerCount() + 1) {
 	    		this.targetPos = new float[] { b.tilePos[0], b.tilePos[1] };
 	    		this.targetPos[c.getAxis()] += 32 * c.getIncrement();
-	    		if (b.dir == 1) this.targetPos[1] -= 32;
+	    		if (b.dir == Direction.UP) this.targetPos[1] -= 32;
 	    	} else if (this.id == g.getPlayerCount() + 2) {
 	    		E d = g.getActors()[g.getPlayerCount()];
 	    		float[] f = new float[] { b.tilePos[0], b.tilePos[1] };
 	    		f[c.getAxis()] += 16 * c.getIncrement();
-	    		if (b.dir == 1) f[1] -= 16;
+	    		if (b.dir == Direction.UP) f[1] -= 16;
 	    		this.targetPos[0] = f[0] * 2 - d.tilePos[0];
 	    		this.targetPos[1] = f[1] * 2 - d.tilePos[1];
 	    	} else if (this.id == g.getPlayerCount() + 3) {
@@ -689,22 +693,26 @@ public class E {
 	void v() {
 	    this.routineMoveId++;
 	    if (this.routineMoveId == A.get(Integer.valueOf(this.routineToFollow)).length) // ルーチンの最後に到達
-	    	if (this.mode == 16 && this.freeToLeavePen && !g.isGhostExitingPenNow()) { // 外に出る条件が満たされた
-	    		if (this.eatenInThisFrightMode) this.a(128);
-	    		else this.a(32);
+	    	if (this.mode == GhostMode.IN_PEN && this.freeToLeavePen && !g.isGhostExitingPenNow()) { // 外に出る条件が満たされた
+	    		if (this.eatenInThisFrightMode) this.a(GhostMode.RE_EXITING_FROM_PEN);
+	    		else this.a(GhostMode.EXITING_FROM_PEN);
 	    		return;
-	    	} else if (this.mode == 32 || this.mode == 128) { // 将に外に出むとす
+	    	} else if (this.mode == GhostMode.EXITING_FROM_PEN
+	    				|| this.mode == GhostMode.RE_EXITING_FROM_PEN) { // 将に外に出むとす
 	    	    this.pos = new float[] { s[0], s[1] + 4 };
-	    	    this.dir = this.modeChangedWhileInPen ? 8 : 4;
-	    	    int b = g.getMainGhostMode();
-	    	    if (this.mode == 128 && b == 4) b = g.getLastMainGhostMode();
+	    	    this.dir = this.modeChangedWhileInPen ? Direction.RIGHT : Direction.LEFT;
+	    	    GhostMode b = g.getMainGhostMode();
+	    	    if (this.mode == GhostMode.RE_EXITING_FROM_PEN
+	    	    		&& b == GhostMode.FRIGHTENED)
+	    	    	b = g.getLastMainGhostMode();
 	    	    this.a(b);
 	    	    return;
-	    	} else if (this.mode == 64) { // 食べられて巣に入る
-	    	    if (this.id == g.getPlayerCount() || this.freeToLeavePen) this.a(128); // アカベエはすぐに巣から出てくる
+	    	} else if (this.mode == GhostMode.ENTERING_PEN) { // 食べられて巣に入る
+	    	    if (this.id == g.getPlayerCount() || this.freeToLeavePen)
+	    	    	this.a(GhostMode.RE_EXITING_FROM_PEN); // アカベエはすぐに巣から出てくる
 	    	    else {
 	    		    this.eatenInThisFrightMode = true;
-		    		    this.a(16);
+		    		this.a(GhostMode.IN_PEN);
 	    	    }
 	    	    return;
 	        } else // 外にでる条件が満たされなければ、ルーチンを繰り返す
@@ -730,18 +738,18 @@ public class E {
 	    
 	    if (b != null)
 	    	if (this.speedIntervals[g.getIntervalTime()]) {
-	    		Direction c = PacmanGame.l.get(Integer.valueOf(this.dir));
+	    		Move c = this.dir.getMove();
 	    		this.pos[c.getAxis()] += c.getIncrement();
 		        switch (this.dir) {
-		        case 1:
-		        case 4:
+		        case UP:
+		        case LEFT:
 		        	if (this.pos[c.getAxis()] < b.dest * 8) {
 		        		this.pos[c.getAxis()] = b.dest * 8;
 		        		this.proceedToNextRoutineMove = true;
 		        	}
 		            break;
-		        case 2:
-		        case 8:
+		        case DOWN:
+		        case RIGHT:
 		        	if (this.pos[c.getAxis()] > b.dest * 8) {
 			            this.pos[c.getAxis()] = b.dest * 8;
 			            this.proceedToNextRoutineMove = true;
@@ -762,15 +770,16 @@ public class E {
 	public void d() {
 		float b = 0;
 	    switch (this.currentSpeed) {
-	    case 0:
-	    	b = this.id == g.getPlayerCount() && (this.mode == 2 || this.mode == 1)
+	    case NORMAL:
+	    	b = this.id == g.getPlayerCount()
+	    			&& (this.mode == GhostMode.SCATTER || this.mode == GhostMode.CHASE)
 	    			? g.getCruiseElroySpeed()
 	    			: this.fullSpeed;
 		    break;
-	    case 1:
+	    case PACMAN_EATING_DOT:
 	    	b = this.dotEatingSpeed;
 	    	break;
-	    case 2:
+	    case PASSING_TUNNEL:
 	    	b = this.tunnelSpeed;
 	    	break;
 	    }
@@ -780,15 +789,15 @@ public class E {
 	    }
 	}
 	// Actorの速度設定変更
-	public void c(int b) {
+	public void c(CurrentSpeed b) {
 	    this.currentSpeed = b;
 	    this.d();
 	}
 	// Actorの移動(ルーチン以外)
 	void e() {
-	    if (this.dir != 0)
+	    if (this.dir != Direction.NONE)
 	    	if (this.speedIntervals[g.getIntervalTime()]) { // この判定で速度を表現
-	    		Direction b = PacmanGame.l.get(Integer.valueOf(this.dir));
+	    		Move b = this.dir.getMove();
 	    		this.pos[b.getAxis()] += b.getIncrement();
 	    		this.o();
 	    		this.b();
@@ -796,17 +805,20 @@ public class E {
 	}
 
 	public void move() {
-	    if (g.getGameplayMode() == 0 || this.ghost && g.getGameplayMode() == 1 && (this.mode == 8 || this.mode == 64)) {
-	    	if (this.requestedDir != 0) {
+	    if (g.getGameplayMode() == GameplayMode.ORDINARY_PLAYING
+	    		|| this.ghost && g.getGameplayMode() == GameplayMode.GHOST_DIED
+	    			&& (this.mode == GhostMode.EATEN
+	    					|| this.mode == GhostMode.ENTERING_PEN)) {
+	    	if (this.requestedDir != Direction.NONE) {
 	    		this.z(this.requestedDir);
-	    		this.requestedDir = 0;
+	    		this.requestedDir = Direction.NONE;
 	    	}
 	    	if (this.followingRoutine) {
 	    		this.j();
-	    		if (this.mode == 64) this.j();
+	    		if (this.mode == GhostMode.ENTERING_PEN) this.j();
 	    	} else {
 	    		this.e();
-	    		if (this.mode == 8) this.e();
+	    		if (this.mode == GhostMode.EATEN) this.e();
 	    	}
 	    }
 	}
@@ -825,22 +837,26 @@ public class E {
 	int[] s() {
 	    int b = 0;
 	    int c = 0;
-	    int d = this.dir;
-	    if (d == 0) d = this.lastActiveDir;
-	    if (g.getGameplayMode() == 1 && this.id == g.getPlayerEatingGhostId()) { // モンスターを食べたとき。画像なし
+	    Direction d = this.dir;
+	    if (d == Direction.NONE) d = this.lastActiveDir;
+	    if (g.getGameplayMode() == GameplayMode.GHOST_DIED && this.id == g.getPlayerEatingGhostId()) { // モンスターを食べたとき。画像なし
 	    	b = 3;
 	    	c = 0;
-	    } else if ((g.getGameplayMode() == 9 || g.getGameplayMode() == 10) && this.id == 0) { // レベルクリア。Pacmanは丸まる
+	    } else if ((g.getGameplayMode() == GameplayMode.LEVEL_BEING_COMPLETED
+	    					|| g.getGameplayMode() == GameplayMode.LEVEL_COMPLETED)
+	    				&& this.id == 0) { // レベルクリア。Pacmanは丸まる
 	    	b = 2;
 	    	c = 0;
-	    } else if (g.getGameplayMode() == 4 || g.getGameplayMode() == 5 || g.getGameplayMode() == 7) { // ゲーム開始直後の表示画像決定
+	    } else if (g.getGameplayMode() == GameplayMode.NEWGAME_STARTING
+	    				|| g.getGameplayMode() == GameplayMode.NEWGAME_STARTED
+	    				|| g.getGameplayMode() == GameplayMode.GAME_RESTARTED) { // ゲーム開始直後の表示画像決定
 	    	b = this.id == 0 ? 2 : 4;
 	    	c = 0;
-	    } else if (g.getGameplayMode() == 3) // プレイヤーが死んだ時の画像決定.
+	    } else if (g.getGameplayMode() == GameplayMode.PLAYER_DIED) // プレイヤーが死んだ時の画像決定.
 	    	if (this.id == g.getPlayerDyingId()) { // 死んだ方
-	    		d = 20 - (int) FloatMath.floor(g.getGameplayModeTime() / g.getTiming()[4] * 21);
+	    		int t = 20 - (int) FloatMath.floor(g.getGameplayModeTime() / g.getTiming()[4] * 21);
 		        if (this.id == 0) { // Pacman
-		        	b = d - 1;
+		        	b = t - 1;
 		        	switch (b) {
 		        	case -1:
 		        		b = 0;
@@ -862,7 +878,7 @@ public class E {
 		        	}
 		        	c = 12;
 		        } else // Ms.Pacman
-		        	switch (d) {
+		        	switch (t) {
 		        	case 0:
 			        case 1:
 			        case 2:
@@ -904,29 +920,29 @@ public class E {
 	    else if ("pcm-bpcm".equals(this.el.getId())) { // Cutscene
 	    	b = 14;
 	    	c = 0;
-	    	d = (int) (Math.floor(g.getGlobalTime() * 0.2) % 4);
-	    	if (d == 3) d = 1;
-	    	c += 2 * d;
+	    	int t = (int) (Math.floor(g.getGlobalTime() * 0.2) % 4);
+	    	if (t == 3) t = 1;
+	    	c += 2 * t;
 	    	// BigPacMan
 	    	this.el.setWidth(32);
 	    	this.el.setHeight(32);
 	    } else { // 通常時のプレイヤー画像決定
 	    	switch (d) {
-	    	case 4:
+	    	case LEFT:
 	    		c = 0;
 	    		break;
-	    	case 8:
+	    	case RIGHT:
 	    		c = 1;
 	    		break;
-	    	case 1:
+	    	case UP:
 	    		c = 2;
 	    		break;
-	    	case 2:
+	    	case DOWN:
 	    		c = 3;
 	    		break;
 	    	}
-	    	if (g.getGameplayMode() != 2) b = (int) (Math.floor(g.getGlobalTime() * 0.3) % 4);
-	    	if (b == 3 && this.dir == 0) b = 0;
+	    	if (g.getGameplayMode() != GameplayMode.PLAYER_DYING) b = (int) (Math.floor(g.getGlobalTime() * 0.3) % 4);
+	    	if (b == 3 && this.dir == Direction.NONE) b = 0;
 	    	if (b == 2 && this.id == 0) b = 0;
 	    	if (b == 3) {
 	    		b = 2;
@@ -940,11 +956,13 @@ public class E {
 	int[] r() {
 	    int b = 0;
 	    int c = 0;
-	    if (g.getGameplayMode() == 10 || g.getGameplayMode() == 4 || g.getGameplayMode() == 3) {
+	    if (g.getGameplayMode() == GameplayMode.LEVEL_COMPLETED
+	    		|| g.getGameplayMode() == GameplayMode.NEWGAME_STARTING
+	    		|| g.getGameplayMode() == GameplayMode.PLAYER_DIED) {
 	    	// Pacman or Ms.Pacmanが死んだ直後。モンスターの姿は消える 
 	    	b = 3;
 	    	c = 0;
-	    } else if (g.getGameplayMode() == 1 && this.id == g.getGhostBeingEatenId()) {
+	    } else if (g.getGameplayMode() == GameplayMode.GHOST_DIED && this.id == g.getGhostBeingEatenId()) {
 	    	switch (g.getModeScoreMultiplier()) {// モンスターが食べられたときに表示させるスコアを決定
 	    	case 2:
 	    		b = 0;
@@ -961,10 +979,10 @@ public class E {
 	    	}
 	    	c = 11;
 //	      	this.el.className = "pcm-ac pcm-n"
-	    } else if (this.mode == 4
-	              || (this.mode == 16 || this.mode == 32)
-	                  && g.getMainGhostMode() == 4
-	                  && !this.eatenInThisFrightMode) {
+	    } else if (this.mode == GhostMode.FRIGHTENED
+	              	|| (this.mode == GhostMode.IN_PEN || this.mode == GhostMode.EXITING_FROM_PEN)
+	              		&& g.getMainGhostMode() == GhostMode.FRIGHTENED
+	              		&& !this.eatenInThisFrightMode) {
 	    	// ブルーモード.ただし、食べられてはいない
 	    	b = 0;
 	    	c = 8;
@@ -974,20 +992,20 @@ public class E {
 	    		b += 2;
 	
 	    	b += (int) (Math.floor(g.getGlobalTime() / 16) % 2); // ブルーモードの画像切り替え
-	    } else if (this.mode == 8 || this.mode == 64) { // 食べられて目玉だけ
-	    	int ndir = this.nextDir;
-	    	if (ndir != 0) ndir = this.dir;
+	    } else if (this.mode == GhostMode.EATEN || this.mode == GhostMode.ENTERING_PEN) { // 食べられて目玉だけ
+	    	Direction ndir = this.nextDir;
+	    	if (ndir != Direction.NONE) ndir = this.dir;
 	    	switch (ndir) {
-	    	case 4:
+	    	case LEFT:
 	    		b = 2;
 	    		break;
-	    	case 8:
+	    	case RIGHT:
 	    		b = 3;
 	    		break;
-	    	case 1:
+	    	case UP:
 	    		b = 0;
 	    		break;
-	    	case 2:
+	    	case DOWN:
 	    		b = 1;
 	    		break;
 	    	}
@@ -1017,30 +1035,31 @@ public class E {
 	                    : 0;
 	        c = 13;
 	    } else { // 通常時の画像表示
-	    	int ndir = this.nextDir;
-	    	if (ndir == 0
+	    	Direction ndir = this.nextDir;
+	    	if (ndir == Direction.NONE
 	    		|| g.getPlayfield().get(Integer.valueOf(this.tilePos[0]))
 	    							.get(Integer.valueOf(this.tilePos[1]))
-	    							.isTunnel())
+	    							.isTunnel()) {
 	    		ndir = this.dir;
+	    	}
 	    	
-			        switch (ndir) {
-			        case 4:
-			        	b = 4;
-			        	break;
-			        case 8:
-			        	b = 6;
-			        	break;
-			        case 1:
-			        	b = 0;
-			        	break;
-			        case 2:
-			        	b = 2;
-			        	break;
-			        }
-			        c = 4 + this.id - g.getPlayerCount();
-			        if (this.speed > 0 || g.getGameplayMode() != 13)
-			        	b += (int) (Math.floor(g.getGlobalTime() / 16) % 2);
+	        switch (ndir) {
+	        case LEFT:
+	        	b = 4;
+	        	break;
+	        case RIGHT:
+	        	b = 6;
+	        	break;
+	        case UP:
+	        	b = 0;
+	        	break;
+	        case DOWN:
+	        	b = 2;
+	        	break;
+	        }
+	        c = 4 + this.id - g.getPlayerCount();
+	        if (this.speed > 0 || g.getGameplayMode() != GameplayMode.CUTSCENE)
+	        	b += (int) (Math.floor(g.getGlobalTime() / 16) % 2);
 	    }
 	    return new int[] { c, b };
 	}
@@ -1049,7 +1068,8 @@ public class E {
 	public void b() {
 	    this.k(); //位置移動 
 	    int[] b = { 0, 0 };
-	    b = g.getGameplayMode() == 8 || g.getGameplayMode() == 14
+	    b = g.getGameplayMode() == GameplayMode.GAMEOVER
+	    	|| g.getGameplayMode() == GameplayMode.KILL_SCREEN
 	    		? new int[] { 0, 3 }
 	    		: this.ghost
 	    			? this.r()
@@ -1079,11 +1099,11 @@ public class E {
 		this.ghost = ghost;
 	}
 
-	public int getMode() {
+	public GhostMode getMode() {
 		return mode;
 	}
 
-	public void setMode(int mode) {
+	public void setMode(GhostMode mode) {
 		this.mode = mode;
 	}
 
@@ -1091,11 +1111,11 @@ public class E {
 		return tilePos;
 	}
 
-	public int getRequestedDir() {
+	public Direction getRequestedDir() {
 		return requestedDir;
 	}
 	
-	public void setRequestedDir(int requestedDir) {
+	public void setRequestedDir(Direction requestedDir) {
 		this.requestedDir = requestedDir;
 	}
 
@@ -1167,11 +1187,11 @@ public class E {
 		this.tunnelSpeed = tunnelSpeed;
 	}
 
-	public int getDir() {
+	public Direction getDir() {
 		return dir;
 	}
 
-	public void setDir(int dir) {
+	public void setDir(Direction dir) {
 		this.dir = dir;
 	}
 	

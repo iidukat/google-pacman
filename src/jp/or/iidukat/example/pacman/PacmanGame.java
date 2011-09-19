@@ -3,6 +3,7 @@ package jp.or.iidukat.example.pacman;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,27 +27,10 @@ import android.util.FloatMath;
 import android.view.MotionEvent;
 
 
-/**
- * @author iidukat
- *
- */
 public class PacmanGame {
 	
-    // Class for Actor(Pacman, Ms.Pacman, Ghost)
-    
 	private static final String TAG = "PacmanGame";
 	private static final int DEFAULT_KILL_SCREEN_LEVEL = 256;
-
-    public static final Map<Integer, Direction> l;
-    static {
-    	Map<Integer, Direction> ds = new HashMap<Integer, Direction>();
-    	ds.put(Integer.valueOf(0), new Direction(0, 0));
-    	ds.put(Integer.valueOf(1), new Direction(0, -1)); // Up
-    	ds.put(Integer.valueOf(2), new Direction(0, 1)); // Down
-    	ds.put(Integer.valueOf(4), new Direction(1, -1)); // Left
-    	ds.put(Integer.valueOf(8), new Direction(1, 1)); // Right
-    	l = Collections.unmodifiableMap(ds);
-    }
 
     private static final int[] v = {80, 312}; // フルーツ出現位置
     
@@ -863,20 +847,20 @@ public class PacmanGame {
     	}
     }
     private static class MoveInCutscene {
-    	final int dir;
+    	final Direction dir;
     	final float speed;
     	final String elId;
-    	final int mode;
-    	MoveInCutscene(int dir, float speed) {
-    		this(dir, speed, null, -1);
+    	final GhostMode mode;
+    	MoveInCutscene(Direction dir, float speed) {
+    		this(dir, speed, null, null);
 		}
-    	MoveInCutscene(int dir, float speed, String elId) {
-    		this(dir, speed, elId, -1);
+    	MoveInCutscene(Direction dir, float speed, String elId) {
+    		this(dir, speed, elId, null);
     	}
-    	MoveInCutscene(int dir, float speed, int mode) {
+    	MoveInCutscene(Direction dir, float speed, GhostMode mode) {
     		this(dir, speed, null, mode);
     	}
-    	MoveInCutscene(int dir, float speed, String elId, int mode) {
+    	MoveInCutscene(Direction dir, float speed, String elId, GhostMode mode) {
     		this.dir = dir;
     		this.speed = speed;
     		this.elId = elId;
@@ -898,20 +882,20 @@ public class PacmanGame {
     				new CutsceneSequence(
     					5.5f,
 	    				new MoveInCutscene[] {
-	        				new MoveInCutscene(4, 0.75f * 0.8f * 2),
-	    					new MoveInCutscene(4, 0.78f * 0.8f * 2),
+	        				new MoveInCutscene(Direction.LEFT, 0.75f * 0.8f * 2),
+	    					new MoveInCutscene(Direction.LEFT, 0.78f * 0.8f * 2),
     					}),
     				new CutsceneSequence(
     					0.1f,
 	    				new MoveInCutscene[] {
-	        				new MoveInCutscene(4, 32),
-	    					new MoveInCutscene(4, 0),
+	        				new MoveInCutscene(Direction.LEFT, 32),
+	    					new MoveInCutscene(Direction.LEFT, 0),
     					}),
     				new CutsceneSequence(
        					9,
    	    				new MoveInCutscene[] {
-   	        				new MoveInCutscene(8, 0.75f * 0.8f * 2, "pcm-bpcm"),
-   	    					new MoveInCutscene(8, 0.8f, 4),
+   	        				new MoveInCutscene(Direction.RIGHT, 0.75f * 0.8f * 2, "pcm-bpcm"),
+   	    					new MoveInCutscene(Direction.RIGHT, 0.8f, GhostMode.FRIGHTENED),
        					}),
     			}));
     	
@@ -927,37 +911,37 @@ public class PacmanGame {
     				new CutsceneSequence(
     					2.7f,
     					new MoveInCutscene[] {
-    						new MoveInCutscene(4, 0.75f * 0.8f * 2),
-    						new MoveInCutscene(4, 0.78f * 0.8f * 2),
-    						new MoveInCutscene(0, 0, "pcm-stck"),
+    						new MoveInCutscene(Direction.LEFT, 0.75f * 0.8f * 2),
+    						new MoveInCutscene(Direction.LEFT, 0.78f * 0.8f * 2),
+    						new MoveInCutscene(Direction.NONE, 0, "pcm-stck"),
     					}),
        				new CutsceneSequence(
        					1,
        					new MoveInCutscene[] {
-       						new MoveInCutscene(4, 0.75f * 0.8f * 2),
-       						new MoveInCutscene(4, 0.1f * 0.8f),
-       						new MoveInCutscene(0, 0, "pcm-stck"),
+       						new MoveInCutscene(Direction.LEFT, 0.75f * 0.8f * 2),
+       						new MoveInCutscene(Direction.LEFT, 0.1f * 0.8f),
+       						new MoveInCutscene(Direction.NONE, 0, "pcm-stck"),
        					}),
        				new CutsceneSequence(
        					1.3f,
        					new MoveInCutscene[] {
-       						new MoveInCutscene(4, 0.75f * 0.8f * 2),
-       						new MoveInCutscene(4, 0),
-       						new MoveInCutscene(0, 0, "pcm-stck"),
+       						new MoveInCutscene(Direction.LEFT, 0.75f * 0.8f * 2),
+       						new MoveInCutscene(Direction.LEFT, 0),
+       						new MoveInCutscene(Direction.NONE, 0, "pcm-stck"),
        					}),
        				new CutsceneSequence(
        					1,
        					new MoveInCutscene[] {
-       						new MoveInCutscene(4, 0.75f * 0.8f * 2),
-      						new MoveInCutscene(4, 0, "pcm-ghfa"),
-       						new MoveInCutscene(0, 0, "pcm-stck"),
+       						new MoveInCutscene(Direction.LEFT, 0.75f * 0.8f * 2),
+      						new MoveInCutscene(Direction.LEFT, 0, "pcm-ghfa"),
+       						new MoveInCutscene(Direction.NONE, 0, "pcm-stck"),
        					}),
        				new CutsceneSequence(
        					2.5f,
        					new MoveInCutscene[] {
-       						new MoveInCutscene(4, 0.75f * 0.8f * 2),
-      						new MoveInCutscene(4, 0, "pcm-ghfa"),
-       						new MoveInCutscene(0, 0, "pcm-stck"),
+       						new MoveInCutscene(Direction.LEFT, 0.75f * 0.8f * 2),
+      						new MoveInCutscene(Direction.LEFT, 0, "pcm-ghfa"),
+       						new MoveInCutscene(Direction.NONE, 0, "pcm-stck"),
        					}),
     			}));
     	css.put(
@@ -971,14 +955,14 @@ public class PacmanGame {
     				new CutsceneSequence(
     					5.3f,
     					new MoveInCutscene[] {
-        					new MoveInCutscene(4, 0.75f * 0.8f * 2),
-    						new MoveInCutscene(4, 0.78f * 0.8f * 2, "pcm-ghin"),
+        					new MoveInCutscene(Direction.LEFT, 0.75f * 0.8f * 2),
+    						new MoveInCutscene(Direction.LEFT, 0.78f * 0.8f * 2, "pcm-ghin"),
     					}),
     				new CutsceneSequence(
        					5.3f,
        					new MoveInCutscene[] {
-           					new MoveInCutscene(4, 0),
-       						new MoveInCutscene(8, 0.78f * 0.8f * 2, "pcm-gbug"),
+           					new MoveInCutscene(Direction.LEFT, 0),
+       						new MoveInCutscene(Direction.RIGHT, 0.78f * 0.8f * 2, "pcm-gbug"),
        					}),
     			}));
     	B = Collections.unmodifiableMap(css);
@@ -1036,7 +1020,7 @@ public class PacmanGame {
     private int[] dotEatingChannel;
     private int[] dotEatingSoundPart;
     
-    private int gameplayMode;
+    private GameplayMode gameplayMode;
     
     private int killScreenTileX;
     private int killScreenTileY;
@@ -1046,14 +1030,13 @@ public class PacmanGame {
     private int alternateDotCount;
     private boolean lostLifeOnThisLevel;
 
-    private int lastMainGhostMode;
-    private int mainGhostMode;
+    private GhostMode lastMainGhostMode;
+    private GhostMode mainGhostMode;
 
 	private float currentPlayerSpeed;
 	private float currentDotEatingSpeed;
 	private float cruiseElroySpeed;
 	private Map<Float, Boolean[]> speedIntervals;
-	private Map<Integer, Integer> oppositeDirections;
 	
 	private int modeScoreMultiplier;
 	
@@ -1233,11 +1216,12 @@ public class PacmanGame {
 	    for (int b = 8; b <= playfieldHeight * 8; b += 8)
 	    	for (int c = 8; c <= playfieldWidth * 8; c += 8) {
 	    		PathElement pe = playfield.get(Integer.valueOf(b)).get(Integer.valueOf(c));
-	    		pe.setAllowedDir(0);
-	    		if (playfield.get(Integer.valueOf(b - 8)).get(Integer.valueOf(c)).isPath()) pe.setAllowedDir(pe.getAllowedDir() + 1);
-	    		if (playfield.get(Integer.valueOf(b + 8)).get(Integer.valueOf(c)).isPath()) pe.setAllowedDir(pe.getAllowedDir() + 2);
-	    		if (playfield.get(Integer.valueOf(b)).get(Integer.valueOf(c - 8)).isPath()) pe.setAllowedDir(pe.getAllowedDir() + 4);
-	    		if (playfield.get(Integer.valueOf(b)).get(Integer.valueOf(c + 8)).isPath()) pe.setAllowedDir(pe.getAllowedDir() + 8);
+	    		EnumSet<Direction> allowedDir = EnumSet.noneOf(Direction.class);
+	    		if (playfield.get(Integer.valueOf(b - 8)).get(Integer.valueOf(c)).isPath()) allowedDir.add(Direction.UP);
+	    		if (playfield.get(Integer.valueOf(b + 8)).get(Integer.valueOf(c)).isPath()) allowedDir.add(Direction.DOWN);
+	    		if (playfield.get(Integer.valueOf(b)).get(Integer.valueOf(c - 8)).isPath()) allowedDir.add(Direction.LEFT);
+	    		if (playfield.get(Integer.valueOf(b)).get(Integer.valueOf(c + 8)).isPath()) allowedDir.add(Direction.RIGHT);
+	    		pe.setAllowedDir(allowedDir);
 	    	}
 	}
 	// エサを作成
@@ -1318,7 +1302,7 @@ public class PacmanGame {
   			E actor = new E(b, this);
   			if (b < playerCount) {
   				actor.setGhost(false);
-  				actor.setMode(1);
+  				actor.setMode(GhostMode.CHASE);
   			} else {
   				actor.setGhost(true);
   			}
@@ -1428,8 +1412,8 @@ public class PacmanGame {
 	    float h = getPlayfieldY(player.getPos()[0] + player.getPosDelta()[0]) + 32;
 	    float j = Math.abs(b - f);
 	    float k = Math.abs(c - h);
-	    if (j > 8 && k < j) player.setRequestedDir(b > f ? 8 : 4);
-	    else if (k > 8 && j < k) player.setRequestedDir(c > h ? 2 : 1);
+	    if (j > 8 && k < j) player.setRequestedDir(b > f ? Direction.RIGHT : Direction.LEFT);
+	    else if (k > 8 && j < k) player.setRequestedDir(c > h ? Direction.DOWN : Direction.UP);
 	}
 	
 	boolean handleSoundIconClick(float b, float c) {
@@ -1485,8 +1469,8 @@ public class PacmanGame {
     	float c = Math.abs(touchDX);
     	float d = Math.abs(touchDY);
     	if (c < 8 && d < 8) canvasClicked(touchStartX, touchStartY);
-    	else if (c > 15 && d < c * 2 / 3) actors[0].setRequestedDir(touchDX > 0 ? 8 : 4);
-    	else if (d > 15 && c < d * 2 / 3) actors[0].setRequestedDir(touchDY > 0 ? 2 : 1);
+    	else if (c > 15 && d < c * 2 / 3) actors[0].setRequestedDir(touchDX > 0 ? Direction.RIGHT : Direction.LEFT);
+    	else if (d > 15 && c < d * 2 / 3) actors[0].setRequestedDir(touchDY > 0 ? Direction.DOWN : Direction.UP);
 	    cancelTouch();
     }
     
@@ -1523,21 +1507,21 @@ public class PacmanGame {
 	    resetForcePenLeaveTime();
 	    restartActors();
 	    updateActorPositions();
-	    switchMainGhostMode(2, true);
-	    for (int c = playerCount + 1; c < playerCount + 4; c++) actors[c].a(16);
+	    switchMainGhostMode(GhostMode.SCATTER, true);
+	    for (int c = playerCount + 1; c < playerCount + 4; c++) actors[c].a(GhostMode.IN_PEN);
 	    dotEatingChannel = new int[] {0, 0};
 	    dotEatingSoundPart = new int[] {1, 1};
 	    clearDotEatingNow();
 
-	    if (b) changeGameplayMode(4);
-	    else changeGameplayMode(6);
+	    if (b) changeGameplayMode(GameplayMode.NEWGAME_STARTING);
+	    else changeGameplayMode(GameplayMode.GAME_RESTARTING);
 //		    changeGameplayMode(10);
 	}
 
 	void initiateDoubleMode() {
 	    if (playerCount != 2) {
 	    	stopAllAudio();
-	    	changeGameplayMode(12);
+	    	changeGameplayMode(GameplayMode.TWO_PLAYER_PLAY_STARTED);
 	    }
 	}
 	
@@ -1558,8 +1542,11 @@ public class PacmanGame {
 	}
 	
 	void insertCoin() {
-	    if (gameplayMode == 8 || gameplayMode == 14) newGame();
-	    else initiateDoubleMode();
+	    if (gameplayMode == GameplayMode.GAMEOVER
+	    		|| gameplayMode == GameplayMode.KILL_SCREEN)
+	    	newGame();
+	    else
+	    	initiateDoubleMode();
 	}
 
 	void createKillScreenElement(int b, int c, int d, int f, boolean h) {
@@ -1599,7 +1586,7 @@ public class PacmanGame {
 	    		createKillScreenElement(b, c, 8, 8, true);
 	    	}
 	
-	    changeGameplayMode(14);
+	    changeGameplayMode(GameplayMode.KILL_SCREEN);
 	}
 	
 	void newLevel(boolean b) {
@@ -1626,29 +1613,31 @@ public class PacmanGame {
 	    lives--;
 	    updateChromeLives();
 	    
-	    if (lives == -1) changeGameplayMode(8);
+	    if (lives == -1) changeGameplayMode(GameplayMode.GAMEOVER);
 	    else restartGameplay(false);
 	}
 	
 	// MainGhostMode切り替え
 	// b: 切り替え先のモード c: 開始直後フラグ(trueなら開始直後)
-	void switchMainGhostMode(int b, boolean c) {
-	    if (b == 4 && levels.frightTime == 0)
+	void switchMainGhostMode(GhostMode b, boolean c) {
+	    if (b == GhostMode.FRIGHTENED && levels.frightTime == 0)
 	    	for (E actor : actors) {
 	    		if (actor.isGhost()) actor.setReverseDirectionsNext(true); // frightTimeが0なら、ブルーモードになってもモンスターは反対に向きを変えるだけ
 	    	}
 	    else {
-	    	int f = mainGhostMode;
-	    	if (b == 4 && mainGhostMode != 4) lastMainGhostMode = mainGhostMode;
+	    	GhostMode f = mainGhostMode;
+	    	if (b == GhostMode.FRIGHTENED && mainGhostMode != GhostMode.FRIGHTENED) {
+	    		lastMainGhostMode = mainGhostMode;
+	    	}
 	    	mainGhostMode = b;
-	    	if (b == 4 || f == 4) playAmbientSound();
+	    	if (b == GhostMode.FRIGHTENED || f == GhostMode.FRIGHTENED) playAmbientSound();
 	    	switch (b) {
-	    	case 1:
-	    	case 2:
+	    	case CHASE:
+	    	case SCATTER:
 	    		currentPlayerSpeed = levels.playerSpeed * 0.8f;
 	    		currentDotEatingSpeed = levels.dotEatingSpeed * 0.8f;
 	    		break;
-	    	case 4:
+	    	case FRIGHTENED:
 	    		currentPlayerSpeed = levels.playerFrightSpeed * 0.8f;
 	    		currentDotEatingSpeed = levels.dotEatingFrightSpeed * 0.8f;
 	    		frightModeTime = levels.frightTotalTime;
@@ -1657,12 +1646,20 @@ public class PacmanGame {
 	    	}
 	    	for (E actor : actors) {
 	    		if (actor.isGhost()) {
-		        	if (b != 64 && !c) actor.setModeChangedWhileInPen(true); // b(Main Ghost Modeは1, 2, 4。 64になるケースは存在しないように思える.)
-		        	if (b == 4) actor.setEatenInThisFrightMode(false);
-		        	if (actor.getMode() != 8 && actor.getMode() != 16 && actor.getMode() != 32 && actor.getMode() != 128 && actor.getMode() != 64 || c) {
-			        	// ゲーム再開直後(c:true)以外では, モンスターのモードが8, 16, 36, 64, 128ならモード更新対象とならない
+	    			// b(Main Ghost Mode)は1, 2, 4。 64になるケースは存在しないように思える. 巣の中にいるときにGhostMainModeが変わった、という条件にも合致していない
+		        	if (b != GhostMode.ENTERING_PEN && !c) actor.setModeChangedWhileInPen(true); 
+		        	if (b == GhostMode.FRIGHTENED) actor.setEatenInThisFrightMode(false);
+		        	if (actor.getMode() != GhostMode.EATEN
+		        			&& actor.getMode() != GhostMode.IN_PEN
+		        			&& actor.getMode() != GhostMode.EXITING_FROM_PEN
+		        			&& actor.getMode() != GhostMode.RE_EXITING_FROM_PEN
+		        			&& actor.getMode() != GhostMode.ENTERING_PEN || c) {
+			        	// ゲーム再開直後(c:true)以外では, モンスターのモードが8, 16, 32, 64, 128ならモード更新対象とならない
 			        	// ゲーム再開直後以外でブルーモード(4)以外から異なるモード[追跡モード(1), Scatterモード(2), ブルーモード(4)]への切り替え時が行われるとき、反対に向きを変える 
-			        	if (!c && actor.getMode() != 4 && actor.getMode() != b) actor.setReverseDirectionsNext(true);
+			        	if (!c && actor.getMode() != GhostMode.FRIGHTENED
+			        			&& actor.getMode() != b) {
+			        		actor.setReverseDirectionsNext(true);
+			        	}
 			        	actor.a(b);
 		        	}
 		        } else {
@@ -1683,17 +1680,20 @@ public class PacmanGame {
 	    	else if (alternateDotCount == m[2])
 	    		actors[playerCount + 2].setFreeToLeavePen(true);
 	    	else if (alternateDotCount == m[3])
-	    		if (actors[playerCount + 3].getMode() == 16)
+	    		if (actors[playerCount + 3].getMode() == GhostMode.IN_PEN)
 	    			alternatePenLeavingScheme = false;
-	    } else if (actors[playerCount + 1].getMode() == 16 || actors[playerCount + 1].getMode() == 8) {
+	    } else if (actors[playerCount + 1].getMode() == GhostMode.IN_PEN
+	    			|| actors[playerCount + 1].getMode() == GhostMode.EATEN) {
 	    	actors[playerCount + 1].incrementDotCount();
 	    	if (actors[playerCount + 1].getDotCount() >= levels.penLeavingLimits[1])
 	    		actors[playerCount + 1].setFreeToLeavePen(true);
-	    } else if (actors[playerCount + 2].getMode() == 16 || actors[playerCount + 2].getMode() == 8) {
+	    } else if (actors[playerCount + 2].getMode() == GhostMode.IN_PEN
+	    			|| actors[playerCount + 2].getMode() == GhostMode.EATEN) {
 	    	actors[playerCount + 2].incrementDotCount();
 	    	if (actors[playerCount + 2].getDotCount() >= levels.penLeavingLimits[2])
 	    		actors[playerCount + 2].setFreeToLeavePen(true);
-	    } else if (actors[playerCount + 3].getMode() == 16 || actors[playerCount + 3].getMode() == 8) {
+	    } else if (actors[playerCount + 3].getMode() == GhostMode.IN_PEN
+	    			|| actors[playerCount + 3].getMode() == GhostMode.EATEN) {
 	    	actors[playerCount + 3].incrementDotCount();
 	    	if (actors[playerCount + 3].getDotCount() >= levels.penLeavingLimits[3])
 	    		actors[playerCount + 3].setFreeToLeavePen(true);
@@ -1707,10 +1707,10 @@ public class PacmanGame {
 	public void dotEaten(int b, int[] c) {
 	    dotsRemaining--;
 	    dotsEaten++;
-	    actors[b].c(1);
+	    actors[b].c(CurrentSpeed.PACMAN_EATING_DOT);
 	    playDotEatingSound(b);
 	    if (playfield.get(Integer.valueOf(c[0])).get(Integer.valueOf(c[1])).getDot() == 2) { // パワーエサを食べたとき
-	    	switchMainGhostMode(4, false);
+	    	switchMainGhostMode(GhostMode.FRIGHTENED, false);
 	    	addToScore(50, b);
 	    } else addToScore(10, b); // 普通のエサ
 	    
@@ -1776,12 +1776,12 @@ public class PacmanGame {
 		    modeScoreMultiplier *= 2;
 		    ghostBeingEatenId = b;
 		    playerEatingGhostId = c;
-		    changeGameplayMode(1);
+		    changeGameplayMode(GameplayMode.GHOST_DIED);
 		}
 
 		void playerDies(int b) {
 		    playerDyingId = b;
-		    changeGameplayMode(2);
+		    changeGameplayMode(GameplayMode.PLAYER_DYING);
 		}
   
 		void detectCollisions() {
@@ -1790,19 +1790,21 @@ public class PacmanGame {
 		    	for (int c = 0; c < playerCount; c++)
 		    		if (actors[b].getTilePos()[0] == actors[c].getTilePos()[0]
 		    		        && actors[b].getTilePos()[1] == actors[c].getTilePos()[1])
-		    			if (actors[b].getMode() == 4) {
+		    			if (actors[b].getMode() == GhostMode.FRIGHTENED) {
 		    				ghostDies(b, c);
 		    				return;
 		    			} else
-		    				if (actors[b].getMode() != 8 && actors[b].getMode() != 16
-		    					&& actors[b].getMode() != 32 && actors[b].getMode() != 128
-		    					&& actors[b].getMode() != 64)
+		    				if (actors[b].getMode() != GhostMode.EATEN
+		    						&& actors[b].getMode() != GhostMode.IN_PEN
+		    						&& actors[b].getMode() != GhostMode.EXITING_FROM_PEN
+		    						&& actors[b].getMode() != GhostMode.RE_EXITING_FROM_PEN
+		    						&& actors[b].getMode() != GhostMode.ENTERING_PEN)
 		    					playerDies(c);
 		  }
 
 		public void updateCruiseElroySpeed() {
 			float b = levels.ghostSpeed * 0.8f;
-			if (!lostLifeOnThisLevel || actors[playerCount + 3].getMode() != 16) {
+			if (!lostLifeOnThisLevel || actors[playerCount + 3].getMode() != GhostMode.IN_PEN) {
 				LevelConfig c = levels;
 				if (dotsRemaining < c.elroyDotsLeftPart2) b = c.elroySpeedPart2 * 0.8f;
 				else if (dotsRemaining < c.elroyDotsLeftPart1) b = c.elroySpeedPart1 * 0.8f;
@@ -1836,34 +1838,34 @@ public class PacmanGame {
 	}
 	
 	void finishLevel() {
-	    changeGameplayMode(9);
+	    changeGameplayMode(GameplayMode.LEVEL_BEING_COMPLETED);
 	}
 	
-	void changeGameplayMode(int b){
+	void changeGameplayMode(GameplayMode b){
 	    gameplayMode = b;
-	    if (b != 13)
+	    if (b != GameplayMode.CUTSCENE)
 	    	for (int c = 0; c < playerCount + 4; c++)
 	    		actors[c].b();
 	
 	    switch (b) {
-	    case 0:
+	    case ORDINARY_PLAYING:
 	    	playAmbientSound();
 	    	break;
-	    case 2:
+	    case PLAYER_DYING:
 	    	stopAllAudio();
 	    	gameplayModeTime = timing[3];
 	    	break;
-	    case 3:
+	    case PLAYER_DIED:
 	    	if (playerDyingId == 0) playSound("death", 0);
 	    	else playSound("death_double", 0);
 	    	
 	    	gameplayModeTime = timing[4];
 	    	break;
-	    case 6:
+	    case GAME_RESTARTING:
 	    	canvasEl.getPresentation().setVisibility(false);
 	    	gameplayModeTime = timing[5];
 	    	break;
-	    case 7:
+	    case GAME_RESTARTED:
 	    	stopAllAudio();
 //		    	canvasEl.style.visibility = "";
 	    	canvasEl.getPresentation().setVisibility(true);
@@ -1880,7 +1882,7 @@ public class PacmanGame {
 	      	playfieldEl.setReady(m7_ready);
 	    	gameplayModeTime = timing[6];
 	    	break;
-	    case 4:
+	    case NEWGAME_STARTING:
 //		    	doorEl.style.display = "block";
 	    	doorEl.getPresentation().setVisibility(true);
 	    	
@@ -1900,13 +1902,13 @@ public class PacmanGame {
 		    else playSound("start_music", 0, true);
 		    
 		    break;
-	    case 5:
+	    case NEWGAME_STARTED:
 	    	lives--;
 	    	updateChromeLives();
 	    	gameplayModeTime = timing[8];
 	    	break;
-	    case 8:
-	    case 14:
+	    case GAMEOVER:
+	    case KILL_SCREEN:
 //		    	Object ready = document.getElementById("pcm-re");
 //			    google.dom.remove(ready);
 	    	playfieldEl.setReady(null);
@@ -1922,29 +1924,29 @@ public class PacmanGame {
 		    playfieldEl.setGameover(go);
 		    gameplayModeTime = timing[9];
 		    break;
-	    case 9:
+	    case LEVEL_BEING_COMPLETED:
 	    	stopAllAudio();
 	    	gameplayModeTime = timing[10];
 	    	break;
-	    case 10:
+	    case LEVEL_COMPLETED:
 //		    	doorEl.style.display = "none";
 	    	doorEl.getPresentation().setVisibility(false);
 	    	gameplayModeTime = timing[11];
 	    	break;
-	    case 11:
+	    case TRANSITION_INTO_NEXT_SCENE:
 //		    	canvasEl.style.visibility = "hidden";
 	    	canvasEl.getPresentation().setVisibility(false);
 	    	gameplayModeTime = timing[12];
 	    	break;
-	    case 12:
+	    case TWO_PLAYER_PLAY_STARTED:
 //		    	playfieldEl.style.visibility = "hidden";
 	    	playfieldEl.getPresentation().setVisibility(false);
 	    	gameplayModeTime = timing[13];
 	    	break;
-	    case 1:
+	    case GHOST_DIED:
 	    	gameplayModeTime = timing[2];
 	    	break;
-	    case 13:
+	    case CUTSCENE:
 	    	startCutscene();
 	    	break;
 	    }
@@ -2054,7 +2056,7 @@ public class PacmanGame {
 	    		d.setDir(b.moves[c].dir);
 	    		d.setSpeed(b.moves[c].speed);
 	        	if (b.moves[c].elId != null) d.getEl().setId(b.moves[c].elId);
-	    		if (b.moves[c].mode != 0) d.setMode(b.moves[c].mode);
+	    		if (b.moves[c].mode != null) d.setMode(b.moves[c].mode);
 	    		d.b();
 	    	}
 	    }
@@ -2066,7 +2068,7 @@ public class PacmanGame {
 	
 	void advanceCutscene() {
 	    for (E actor : cutsceneActors) {
-	      Direction d = l.get(actor.getDir());
+	      Move d = actor.getDir().getMove();
 	      actor.getPos()[d.getAxis()] += d.getIncrement() * actor.getSpeed();
 	      actor.b();
 	    }
@@ -2080,14 +2082,14 @@ public class PacmanGame {
 	// TODO: パワーエサの取得方法を再考する
 	void blinkEnergizers() {
 	    switch (gameplayMode) {
-	    case 4:
-	    case 5:
-	    case 6:
-	    case 7:
-	    case 9:
-	    case 10:
-	    case 11:
-	    case 12:
+	    case NEWGAME_STARTING:
+	    case NEWGAME_STARTED:
+	    case GAME_RESTARTING:
+	    case GAME_RESTARTED:
+	    case LEVEL_BEING_COMPLETED:
+	    case LEVEL_COMPLETED:
+	    case TRANSITION_INTO_NEXT_SCENE:
+	    case TWO_PLAYER_PLAY_STARTED:
 //		      	playfieldEl.className = "";
 	    	for (Food f : playfieldEl.getFoods()) {
 	    		if (f.getPresentation().hasBackground()) {
@@ -2095,8 +2097,8 @@ public class PacmanGame {
 	    		}
 	    	}
 	    	break;
-	    case 8:
-	    case 14:
+	    case GAMEOVER:
+	    case KILL_SCREEN:
 //		    	playfieldEl.className = "blk";
 	    	for (Food f : playfieldEl.getFoods()) {
 	    		if (f.getPresentation().hasBackground()) {
@@ -2125,7 +2127,7 @@ public class PacmanGame {
 	}
 	
 	void blinkScoreLabels() {
-	    if (gameplayMode != 13) {
+	    if (gameplayMode != GameplayMode.CUTSCENE) {
 	    	boolean modify = true;
 	    	boolean b = false;
 	    	
@@ -2150,11 +2152,11 @@ public class PacmanGame {
 	    if (gameplayModeTime != 0) {
 	    	gameplayModeTime--;
 	    	switch (gameplayMode) {
-	    	case 2:
-	    	case 3:
+	    	case PLAYER_DYING:
+	    	case PLAYER_DIED:
 	    		for (int b = 0; b < playerCount + 4; b++) actors[b].b();
 	    		break;
-	    	case 10:
+	    	case LEVEL_COMPLETED:
 	    		if (FloatMath.floor(gameplayModeTime / (timing[11] / 8)) % 2 == 0)
 	    			changeElementBkPos(playfieldEl.getPresentation(), 322, 2, false);
 	    		else
@@ -2164,64 +2166,66 @@ public class PacmanGame {
 	    	if (gameplayModeTime <= 0) {
 	    		gameplayModeTime = 0;
 	    		switch (gameplayMode) {
-		        case 1:
-		        	changeGameplayMode(0);
+		        case GHOST_DIED:
+		        	changeGameplayMode(GameplayMode.ORDINARY_PLAYING);
 		        	ghostEyesCount++;
 		        	playAmbientSound();
 //		        	actors[ghostBeingEatenId].el.className = "pcm-ac";
-		        	actors[ghostBeingEatenId].a(8);
+		        	actors[ghostBeingEatenId].a(GhostMode.EATEN);
+	        		// ブルーモードのモンスターがいない場合、 ブルーモードを終了させる
 		        	boolean c = false;
 		        	for (int b = playerCount; b < playerCount + 4; b++)
-		            if (actors[b].getMode() == 4
-		                || (actors[b].getMode() == 16 || actors[b].getMode() == 128)
-		                    && !actors[b].isEatenInThisFrightMode()) {
-		            	c = true;
-		            	break;
-		            }
+			            if (actors[b].getMode() == GhostMode.FRIGHTENED
+			            		|| (actors[b].getMode() == GhostMode.IN_PEN
+			            				|| actors[b].getMode() == GhostMode.RE_EXITING_FROM_PEN)
+			            				&& !actors[b].isEatenInThisFrightMode()) {
+			            	c = true;
+			            	break;
+			            }
 		        	if (!c) finishFrightMode();
 		        	break;
-		        case 2:
-		        	changeGameplayMode(3);
+		        case PLAYER_DYING:
+		        	changeGameplayMode(GameplayMode.PLAYER_DIED);
 		        	break;
-		        case 3:
+		        case PLAYER_DIED:
 		        	newLife();
 		        	break;
-		        case 4:
-		        	changeGameplayMode(5);
+		        case NEWGAME_STARTING:
+		        	changeGameplayMode(GameplayMode.NEWGAME_STARTED);
 		        	break;
-		        case 6:
-		        	changeGameplayMode(7);
+		        case GAME_RESTARTING:
+		        	changeGameplayMode(GameplayMode.GAME_RESTARTED);
 		        	break;
-		        case 7:
-		        case 5:
+		        case GAME_RESTARTED:
+		        case NEWGAME_STARTED:
 //		        	document.getElementById("pcm-re");
 //		        	google.dom.remove(b);
 		        	playfieldEl.setReady(null);
-		        	changeGameplayMode(0);
+		        	changeGameplayMode(GameplayMode.ORDINARY_PLAYING);
 		        	break;
-		        case 8:
+		        case GAMEOVER:
 //		        	b = document.getElementById("pcm-go");
 //		        	google.dom.remove(b);
 		        	playfieldEl.setGameover(null);
 //		        	google.pacManQuery && google.pacManQuery(); // google.pacManQueryというfunctionは存在しない
 		        	break;
-		        case 9:
-		        	changeGameplayMode(10);
+		        case LEVEL_BEING_COMPLETED:
+		        	changeGameplayMode(GameplayMode.LEVEL_COMPLETED);
 		        	break;
-		        case 10:
-		        	changeGameplayMode(11);
+		        case LEVEL_COMPLETED:
+		        	changeGameplayMode(GameplayMode.TRANSITION_INTO_NEXT_SCENE);
 		        	break;
-		        case 11:
+		        case TRANSITION_INTO_NEXT_SCENE:
 		        	if (levels.cutsceneId != 0) {
 		        		cutsceneId = levels.cutsceneId;
-		        		changeGameplayMode(13);
+		        		changeGameplayMode(GameplayMode.CUTSCENE);
 		        	} else {
 //		        		canvasEl.style.visibility = "";
 		        		canvasEl.getPresentation().setVisibility(true);
 		        		newLevel(false);
 		        	}
 		        	break;
-		        case 12:
+		        case TWO_PLAYER_PLAY_STARTED:
 //		        	playfieldEl.style.visibility = "";
 		        	playfieldEl.getPresentation().setVisibility(true);
 //		        	canvasEl.style.visibility = "";
@@ -2255,11 +2259,11 @@ public class PacmanGame {
 		    	if (ghostModeSwitchPos < levels.ghostModeSwitchTimes.length) {
 	    			ghostModeTime = levels.ghostModeSwitchTimes[ghostModeSwitchPos] * D;
 	    			switch (mainGhostMode) {
-	    			case 2:
-	    				switchMainGhostMode(1, false);
+	    			case SCATTER:
+	    				switchMainGhostMode(GhostMode.CHASE, false);
 	    				break;
-	    			case 1:
-	    				switchMainGhostMode(2, false);
+	    			case CHASE:
+	    				switchMainGhostMode(GhostMode.SCATTER, false);
 	    				break;
 	    			}
 	    		}
@@ -2272,7 +2276,7 @@ public class PacmanGame {
 	    	forcePenLeaveTime--;
 	    	if (forcePenLeaveTime <= 0) {
 	    		for (int b = 1; b <= 3; b++)
-	    			if (actors[playerCount + b].getMode() == 16) {
+	    			if (actors[playerCount + b].getMode() == GhostMode.IN_PEN) {
 	    				actors[playerCount + b].setFreeToLeavePen(true);
 	    				break;
 	    			}
@@ -2283,7 +2287,7 @@ public class PacmanGame {
 	}
 	
 	void handleTimers() {
-	    if (gameplayMode == 0) {
+	    if (gameplayMode == GameplayMode.ORDINARY_PLAYING) {
 	    	handleForcePenLeaveTimer();
 	    	handleFruitTimer();
 	    	handleGhostModeTimer();
@@ -2305,7 +2309,7 @@ public class PacmanGame {
 	    	lastTimeDelta -= tickInterval * c;
 	    }
 	    lastTime = b;
-	    if (gameplayMode == 13) { // Cutscene
+	    if (gameplayMode == GameplayMode.CUTSCENE) { // Cutscene
 		    for (int i = 0; i < tickMultiplier + c; i++) { // tickMultiplierと処理地縁に応じて複数回のロジックを実行
 		        advanceCutscene();
 		        intervalTime = (intervalTime + 1) % D;
@@ -2316,7 +2320,7 @@ public class PacmanGame {
 	    } else
 	    	for (int i = 0; i < tickMultiplier + c; i++) { // tickMultiplierと処理地縁に応じて複数回のロジックを実行
 	    		moveActors();
-	    		if (gameplayMode == 0)
+	    		if (gameplayMode == GameplayMode.ORDINARY_PLAYING)
 	    			if (tilesChanged) {
 	    				detectCollisions();
 	    				updateActorTargetPositions();
@@ -2543,7 +2547,7 @@ public class PacmanGame {
 	
 	void playDotEatingSound(int b) {
 	    if (soundAvailable && pacManSound)
-	    	if (gameplayMode == 0)
+	    	if (gameplayMode == GameplayMode.ORDINARY_PLAYING)
 	    		if (dotEatingNow[b]) // 常にfalse
 	    			dotEatingNext[b] = true; // デッドコード
 	    		else {
@@ -2579,10 +2583,10 @@ public class PacmanGame {
 	public void playAmbientSound() {
 	    if (soundAvailable && pacManSound) {
 	    	String b = null;
-	    	if (gameplayMode == 0 || gameplayMode == 1)
+	    	if (gameplayMode == GameplayMode.ORDINARY_PLAYING || gameplayMode == GameplayMode.GHOST_DIED)
 	    		b = ghostEyesCount != 0
 	              	? "ambient_eyes"
-	              	: mainGhostMode == 4
+	              	: mainGhostMode == GhostMode.FRIGHTENED
 	              		? "ambient_fright"
 	              		: dotsEaten > 241
 	              			? "ambient_4"
@@ -2658,11 +2662,6 @@ public class PacmanGame {
 	    	ready = true;
 	    	createCanvasElement();
 	    	speedIntervals = new HashMap<Float, Boolean[]>();
-	    	oppositeDirections = new HashMap<Integer, Integer>();
-	    	oppositeDirections.put(Integer.valueOf(1), Integer.valueOf(2));
-	    	oppositeDirections.put(Integer.valueOf(2), Integer.valueOf(1));
-	    	oppositeDirections.put(Integer.valueOf(4), Integer.valueOf(8));
-	    	oppositeDirections.put(Integer.valueOf(8), Integer.valueOf(4));
 	    	fpsChoice = 0;
 	    	canDecreaseFps = true;
 	    	initializeTickTimer();
@@ -2736,9 +2735,9 @@ public class PacmanGame {
 		cutsceneAudioClip.destroy();
 	}
 
-	public Map<Integer, Integer> getOppositeDirections() {
-		return oppositeDirections;
-	}
+//	public Map<Dir, Dir> getOppositeDirections() {
+//		return oppositeDirections;
+//	}
 
 	public int getPlayerCount() {
 		return playerCount;
@@ -2792,15 +2791,15 @@ public class PacmanGame {
 		return timing;
 	}
 
-	public int getGameplayMode() {
+	public GameplayMode getGameplayMode() {
 		return gameplayMode;
 	}
 	
-	public int getMainGhostMode() {
+	public GhostMode getMainGhostMode() {
 		return mainGhostMode;
 	}
 	
-	public int getLastMainGhostMode() {
+	public GhostMode getLastMainGhostMode() {
 		return lastMainGhostMode;
 	}
 
