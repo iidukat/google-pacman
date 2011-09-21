@@ -181,11 +181,11 @@ public abstract class Actor {
 	int[] elBackgroundPos;
 	float[] targetPos;
 	float[] scatterPos;
-	Direction dir;
-	Direction lastActiveDir;
+	Direction dir = Direction.NONE;
+	Direction lastActiveDir = Direction.NONE;
 	float speed;
 	private float physicalSpeed;
-	Direction requestedDir;
+	Direction requestedDir = Direction.NONE;
 	Direction nextDir = Direction.NONE;
 	boolean reverseDirectionsNext;
 	private boolean freeToLeavePen;
