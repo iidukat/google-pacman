@@ -3,16 +3,54 @@ package jp.or.iidukat.example.pacman.entity;
 import jp.or.iidukat.example.pacman.CurrentSpeed;
 import jp.or.iidukat.example.pacman.Direction;
 import jp.or.iidukat.example.pacman.GameplayMode;
-import jp.or.iidukat.example.pacman.GhostMode;
+import jp.or.iidukat.example.pacman.Move;
 import jp.or.iidukat.example.pacman.PacmanGame;
 import jp.or.iidukat.example.pacman.PathElement;
 import android.util.FloatMath;
 
 public class Player extends Actor {
 
+	Direction requestedDir = Direction.NONE;
+	private float dotEatingSpeed;
+	
 	public Player(int b, PacmanGame g) {
 		super(b, g);
 	}
+
+	// Actorを再配置
+	@Override
+	public void A() {
+	    InitPosition b = r.get(g.getPlayerCount())[this.id];
+	    this.pos = new float[] {b.y * 8, b.x * 8};
+	    this.posDelta = new float[] {0, 0};
+	    this.tilePos = new int[] {(int) b.y * 8, (int) b.x * 8};
+	    this.lastActiveDir = this.dir = b.dir;
+	    this.physicalSpeed = 0;
+	    this.requestedDir = this.nextDir = Direction.NONE;
+	    this.c(CurrentSpeed.NORMAL);
+	}
+	
+	// Actorの速度設定(currentSpeedプロパティを利用)
+	@Override
+	public void d() {
+		float b = 0;
+	    switch (this.currentSpeed) {
+	    case NORMAL:
+	    	b = this.fullSpeed;
+		    break;
+	    case PACMAN_EATING_DOT:
+	    	b = this.dotEatingSpeed;
+	    	break;
+	    case PASSING_TUNNEL:
+	    	b = this.tunnelSpeed;
+	    	break;
+	    }
+	    if (this.physicalSpeed != b) {
+	      this.physicalSpeed = b;
+	      this.speedIntervals = g.getSpeedIntervals(this.physicalSpeed);
+	    }
+	}
+
 
 	@Override
 	void n() {
@@ -25,15 +63,11 @@ public class Player extends Actor {
 	        this.pos[0] = PacmanGame.getQ()[0].getY() * 8;
 	        this.pos[1] = (PacmanGame.getQ()[0].getX() + 1) * 8;
 	    }
-	    // モンスターが巣に入る
-	    if (this.mode == GhostMode.EATEN
-	    		&& this.pos[0] == s[0]
-	    		&& this.pos[1] == s[1])
-	    	this.a(GhostMode.ENTERING_PEN);
 	    
 	    // プレイヤーがフルーツを食べる
 	    if (this.pos[0] == PacmanGame.getV()[0]
-	            && (this.pos[1] == PacmanGame.getV()[1] || this.pos[1] == PacmanGame.getV()[1] + 8))
+	            && (this.pos[1] == PacmanGame.getV()[1]
+	                || this.pos[1] == PacmanGame.getV()[1] + 8))
 	        g.eatFruit(this.id);
 	}
 
@@ -66,12 +100,6 @@ public class Player extends Actor {
 	@Override
 	void p(int[] b) {
 	    g.setTilesChanged(true);
-	    if (this.reverseDirectionsNext) { // 方向を反転する(この判定がtrueになるのはモンスターのみ)
-	    	this.dir = this.dir.getOpposite();
-	    	this.nextDir = Direction.NONE;
-	    	this.reverseDirectionsNext = false;
-	    	this.i(true);
-	    }
 	    if (!g.getPlayfield().get(Integer.valueOf(b[0]))
 	    					.get(Integer.valueOf(b[1]))
 	    					.isPath()) { // プレイヤーがパスでないところへ移動しようとする
@@ -87,8 +115,7 @@ public class Player extends Actor {
 	    // トンネル通過[モンスターが食べられた時以外](currentSpeed:2) or それ以外(currentSpeed:0)
 	    if (g.getPlayfield().get(Integer.valueOf(b[0]))
 	    					.get(Integer.valueOf(b[1]))
-	    					.isTunnel()
-	    		&& this.mode != GhostMode.EATEN)
+	    					.isTunnel())
 	    	this.c(CurrentSpeed.PASSING_TUNNEL);
 	    else
 	    	this.c(CurrentSpeed.NORMAL);
@@ -102,7 +129,44 @@ public class Player extends Actor {
 	    this.tilePos[0] = b[0];
 	    this.tilePos[1] = b[1];
 	}
-	
+
+	// 先行入力された方向に対応
+	void t() {
+	    int[] b = this.tilePos;
+	    float[] c;
+	    float[] d;
+	    switch (this.dir) {
+	    case UP:
+	    	c = new float[] { b[0], b[1] };
+	        d = new float[] { b[0] + 3.6f, b[1] };
+	        break;
+	    case DOWN:
+	    	c = new float[] { b[0] - 4, b[1] };
+	    	d = new float[] { b[0], b[1] };
+	    	break;
+	    case LEFT:
+	    	c = new float[] { b[0], b[1] };
+	    	d = new float[] { b[0], b[1] + 3.6f };
+	    	break;
+	    case RIGHT:
+	    	c = new float[] { b[0], b[1] - 4 };
+	    	d = new float[] { b[0], b[1] };
+	    	break;
+	    default:
+	    	// posDeltaの更新が行われないようにダミーの値をセット
+	    	c = new float[] { this.pos[0] + 1, this.pos[1] + 1 };
+	    	d = new float[] { this.pos[0] - 1, this.pos[1] - 1 };
+	    	break;
+	    }
+	    if (this.pos[0] >= c[0]
+	        && this.pos[0] <= d[0]
+	        && this.pos[1] >= c[1]
+	        && this.pos[1] <= d[1]) {
+	    	Move dir = this.nextDir.getMove();
+	    	this.posDelta[dir.getAxis()] += dir.getIncrement();
+	    }
+	}
+
 	// posの値がtilePosと一致(pos が8の倍数)したときに呼び出される
 	@Override
 	void u() {
@@ -246,7 +310,56 @@ public class Player extends Actor {
 	    }
 	    return new int[] { c, b };
 	}
-	
+
+	// 位置, 速度の決定
+	void z(Direction b) {
+	    if (!g.isUserDisabledSound()) { // サウンドアイコンの更新
+	    	g.setPacManSound(true);
+	    	g.updateSoundIcon();
+	    }
+	    if (this.dir == b.getOpposite()) {
+	    	this.dir = b;
+	    	this.posDelta = new float[] {0, 0};
+	    	if (this.currentSpeed != CurrentSpeed.PASSING_TUNNEL) this.c(CurrentSpeed.NORMAL);
+	    	if (this.dir != Direction.NONE) this.lastActiveDir = this.dir;
+	    	this.nextDir = Direction.NONE;
+	    } else if (this.dir != b)
+	    	if (this.dir == Direction.NONE) {
+	    		if (g.getPlayfield().get(Integer.valueOf((int) this.pos[0]))
+	    							.get(Integer.valueOf((int) this.pos[1]))
+	    							.getAllowedDir().contains(b))
+	    			this.dir = b;
+	    	} else {
+	    		PathElement p = g.getPlayfield().get(Integer.valueOf(this.tilePos[0])).get(Integer.valueOf(this.tilePos[1]));
+	    		if (p != null && p.getAllowedDir().contains(b)) { // 移動可能な方向が入力された場合
+	    			// 	遅延ぎみに方向入力されたかどうか判定
+	    			Move c = this.dir.getMove();
+	    			float[] d = new float[] {this.pos[0], this.pos[1]};
+	    			d[c.getAxis()] -= c.getIncrement();
+	    			int f = 0;
+	    			if (d[0] == this.tilePos[0] && d[1] == this.tilePos[1]) {
+	    				f = 1;
+	    			} else {
+	    				d[c.getAxis()] -= c.getIncrement();
+	    				if (d[0] == this.tilePos[0] && d[1] == this.tilePos[1]) {
+	    					f = 2;
+	    				}
+	    			}
+	    			if (f != 0) { // 遅延ぎみに方向入力された場合、新しい移動方向に応じて位置を補正
+	    				this.dir = b;
+	    				this.pos[0] = this.tilePos[0];
+	    				this.pos[1] = this.tilePos[1];
+	    				c = this.dir.getMove();
+	    				this.pos[c.getAxis()] += c.getIncrement() * f;
+	    				return;
+	    			}
+	    		}
+	    		// 移動方向の先行入力対応
+	    		this.nextDir = b;
+	    		this.posDelta = new float[] {0, 0};
+	    	}
+	}
+
 	@Override
 	public void move() {
 	    if (g.getGameplayMode() == GameplayMode.ORDINARY_PLAYING) {
@@ -254,15 +367,25 @@ public class Player extends Actor {
 	    		this.z(this.requestedDir);
 	    		this.requestedDir = Direction.NONE;
 	    	}
-	    	if (this.followingRoutine) {
-	    		this.j();
-	    		if (this.mode == GhostMode.ENTERING_PEN) this.j();
-	    	} else {
-	    		this.e();
-	    		if (this.mode == GhostMode.EATEN) this.e();
-	    	}
+	    	
+	    	this.e();
 	    }
 	}
+
+	public Direction getRequestedDir() {
+		return requestedDir;
+	}
 	
+	public void setRequestedDir(Direction requestedDir) {
+		this.requestedDir = requestedDir;
+	}
+
+	public float getDotEatingSpeed() {
+		return dotEatingSpeed;
+	}
+
+	public void setDotEatingSpeed(float dotEatingSpeed) {
+		this.dotEatingSpeed = dotEatingSpeed;
+	}
 
 }

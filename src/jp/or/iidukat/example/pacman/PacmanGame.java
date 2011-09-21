@@ -1445,7 +1445,7 @@ public class PacmanGame {
 	    float[] d = getAbsoluteElPos(canvasEl.getPresentation());
 	    b -= d[1] - -32;
 	    c -= d[0] - 0;
-	    Actor player = players[0];
+	    Player player = players[0];
 	    float f = getPlayfieldX(player.getPos()[1] + player.getPosDelta()[1]) + 16;
 	    float h = getPlayfieldY(player.getPos()[0] + player.getPosDelta()[0]) + 32;
 	    float j = Math.abs(b - f);
@@ -1660,8 +1660,8 @@ public class PacmanGame {
 	// b: 切り替え先のモード c: 開始直後フラグ(trueなら開始直後)
 	void switchMainGhostMode(GhostMode b, boolean c) {
 	    if (b == GhostMode.FRIGHTENED && levels.frightTime == 0)
-	    	for (Actor actor : ghosts) {
-	    		actor.setReverseDirectionsNext(true); // frightTimeが0なら、ブルーモードになってもモンスターは反対に向きを変えるだけ
+	    	for (Ghost ghost : ghosts) {
+	    		ghost.setReverseDirectionsNext(true); // frightTimeが0なら、ブルーモードになってもモンスターは反対に向きを変えるだけ
 	    	}
 	    else {
 	    	GhostMode f = mainGhostMode;
@@ -1683,30 +1683,30 @@ public class PacmanGame {
 	    		modeScoreMultiplier = 1;
 	    		break;
 	    	}
-	    	for (Actor actor : ghosts) {
+	    	for (Ghost ghost : ghosts) {
     			// b(Main Ghost Mode)は1, 2, 4。 64になるケースは存在しないように思える. 巣の中にいるときにGhostMainModeが変わった、という条件にも合致していない
-	        	if (b != GhostMode.ENTERING_PEN && !c) actor.setModeChangedWhileInPen(true); 
-	        	if (b == GhostMode.FRIGHTENED) actor.setEatenInThisFrightMode(false);
-	        	if (actor.getMode() != GhostMode.EATEN
-	        			&& actor.getMode() != GhostMode.IN_PEN
-	        			&& actor.getMode() != GhostMode.EXITING_FROM_PEN
-	        			&& actor.getMode() != GhostMode.RE_EXITING_FROM_PEN
-	        			&& actor.getMode() != GhostMode.ENTERING_PEN || c) {
+	        	if (b != GhostMode.ENTERING_PEN && !c) ghost.setModeChangedWhileInPen(true); 
+	        	if (b == GhostMode.FRIGHTENED) ghost.setEatenInThisFrightMode(false);
+	        	if (ghost.getMode() != GhostMode.EATEN
+	        			&& ghost.getMode() != GhostMode.IN_PEN
+	        			&& ghost.getMode() != GhostMode.EXITING_FROM_PEN
+	        			&& ghost.getMode() != GhostMode.RE_EXITING_FROM_PEN
+	        			&& ghost.getMode() != GhostMode.ENTERING_PEN || c) {
 		        	// ゲーム再開直後(c:true)以外では, モンスターのモードが8, 16, 32, 64, 128ならモード更新対象とならない
 		        	// ゲーム再開直後以外でブルーモード(4)以外から異なるモード[追跡モード(1), Scatterモード(2), ブルーモード(4)]への切り替え時が行われるとき、反対に向きを変える 
-		        	if (!c && actor.getMode() != GhostMode.FRIGHTENED
-		        			&& actor.getMode() != b) {
-		        		actor.setReverseDirectionsNext(true);
+		        	if (!c && ghost.getMode() != GhostMode.FRIGHTENED
+		        			&& ghost.getMode() != b) {
+		        		ghost.setReverseDirectionsNext(true);
 		        	}
-		        	actor.a(b);
+		        	ghost.a(b);
 	        	}
 	    	}
 	    	
-	    	for (Actor actor : players){
-	        	actor.setFullSpeed(currentPlayerSpeed);
-	        	actor.setDotEatingSpeed(currentDotEatingSpeed);
-	        	actor.setTunnelSpeed(currentPlayerSpeed);
-	        	actor.d();
+	    	for (Player player : players){
+	        	player.setFullSpeed(currentPlayerSpeed);
+	        	player.setDotEatingSpeed(currentDotEatingSpeed);
+	        	player.setTunnelSpeed(currentPlayerSpeed);
+	        	player.d();
 	    	}
 	    }
 	}
@@ -2105,7 +2105,11 @@ public class PacmanGame {
 	    		d.setDir(b.moves[c].dir);
 	    		d.setSpeed(b.moves[c].speed);
 	        	if (b.moves[c].elId != null) d.getEl().setId(b.moves[c].elId);
-	    		if (b.moves[c].mode != null) d.setMode(b.moves[c].mode);
+	    		if (b.moves[c].mode != null) {
+	    			if (d instanceof Ghost) {
+		    			((Ghost) d).setMode(b.moves[c].mode); // TODO: タイプシステム見直し	    				
+	    			}
+	    		}
 	    		d.b();
 	    	}
 	    }
@@ -2225,11 +2229,11 @@ public class PacmanGame {
 		        	ghosts[ghostBeingEatenId - playerCount].a(GhostMode.EATEN);
 	        		// ブルーモードのモンスターがいない場合、 ブルーモードを終了させる
 		        	boolean c = false;
-		        	for (Actor actor : ghosts)
-			            if (actor.getMode() == GhostMode.FRIGHTENED
-			            		|| (actor.getMode() == GhostMode.IN_PEN
-			            				|| actor.getMode() == GhostMode.RE_EXITING_FROM_PEN)
-			            				&& !actor.isEatenInThisFrightMode()) {
+		        	for (Ghost ghost : ghosts)
+			            if (ghost.getMode() == GhostMode.FRIGHTENED
+			            		|| (ghost.getMode() == GhostMode.IN_PEN
+			            				|| ghost.getMode() == GhostMode.RE_EXITING_FROM_PEN)
+			            				&& !ghost.isEatenInThisFrightMode()) {
 			            	c = true;
 			            	break;
 			            }

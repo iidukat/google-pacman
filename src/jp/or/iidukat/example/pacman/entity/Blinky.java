@@ -22,5 +22,13 @@ public class Blinky extends Ghost {
 	    	this.targetPos = new float[] { b.tilePos[0], b.tilePos[1] };
 	    }
 	}
+	
+	@Override
+	float getNormalSpeed() {
+		return (this.mode == GhostMode.SCATTER
+					|| this.mode == GhostMode.CHASE)
+					? g.getCruiseElroySpeed()
+					: this.fullSpeed;
+	}
 
 }
