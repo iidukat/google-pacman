@@ -19,7 +19,7 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import android.util.FloatMath;
 
-public class E {
+public abstract class Actor {
 
     private static class InitPosition {
     	final float x;
@@ -77,7 +77,7 @@ public class E {
     	r = Collections.unmodifiableMap(ps);
     }
 
-    private static final int[] s = {32, 312}; // モンスターの巣の入り口の位置
+    static final int[] s = {32, 312}; // モンスターの巣の入り口の位置
 
     private static class MoveInPen {
     	final float x;
@@ -170,33 +170,32 @@ public class E {
     	A = Collections.unmodifiableMap(mvs);
     }
     
-	private final int id;
-	private final PacmanGame g;
-	private boolean ghost;
-	private GhostMode mode = GhostMode.NONE;
-	private float[] pos;
-	private float[] posDelta;
-	private int[] tilePos;
-	private int[] lastGoodTilePos;
+	final int id;
+	final PacmanGame g;
+	GhostMode mode = GhostMode.NONE;
+	float[] pos;
+	float[] posDelta;
+	int[] tilePos;
+	int[] lastGoodTilePos;
 	private float[] elPos;
-	private int[] elBackgroundPos;
-	private float[] targetPos;
-	private float[] scatterPos;
-	private Direction dir;
-	private Direction lastActiveDir;
-	private float speed;
+	int[] elBackgroundPos;
+	float[] targetPos;
+	float[] scatterPos;
+	Direction dir;
+	Direction lastActiveDir;
+	float speed;
 	private float physicalSpeed;
-	private Direction requestedDir;
-	private Direction nextDir;
-	private boolean reverseDirectionsNext;
+	Direction requestedDir;
+	Direction nextDir;
+	boolean reverseDirectionsNext;
 	private boolean freeToLeavePen;
 	private boolean modeChangedWhileInPen;
-	private boolean eatenInThisFrightMode;
-	private boolean followingRoutine;
+	boolean eatenInThisFrightMode;
+	boolean followingRoutine;
 	private boolean proceedToNextRoutineMove;
 	private int routineToFollow;
 	private int routineMoveId;
-	private int targetPlayerId;
+	int targetPlayerId;
 	private CurrentSpeed currentSpeed = CurrentSpeed.NONE;
 	private float fullSpeed;
 	private float dotEatingSpeed;
@@ -276,9 +275,9 @@ public class E {
 
 	}
 	
-	private Presentation el = new ActorPresentation();
+	Presentation el = new ActorPresentation();
 
-	public E(int b, PacmanGame g) {
+	public Actor(int b, PacmanGame g) {
 		this.id = b;
 		this.g = g;
 	}
@@ -304,7 +303,6 @@ public class E {
 		// this.el.className = "pcm-ac";
 		this.el.setWidth(16);
 		this.el.setHeight(16);
-		this.el.setId("actor" + this.id);
 		this.el.setParent(g.getPlayfieldEl().getPresentation());
 		g.prepareElement(this.el, 0, 0);
 		g.getPlayfieldEl().addActor(this);
@@ -511,46 +509,7 @@ public class E {
 	      }
 	}
 	// tilePosとposの差分が有意になったとき呼び出される
-	void p(int[] b) {
-	    g.setTilesChanged(true);
-	    if (this.reverseDirectionsNext) { // 方向を反転する(この判定がtrueになるのはモンスターのみ)
-	    	this.dir = this.dir.getOpposite();
-	    	this.nextDir = Direction.NONE;
-	    	this.reverseDirectionsNext = false;
-	    	this.i(true);
-	    }
-	    if (!this.ghost
-	    		&& !g.getPlayfield().get(Integer.valueOf(b[0]))
-	    							.get(Integer.valueOf(b[1]))
-	    							.isPath()) { // プレイヤーがパスでないところへ移動しようとする
-		    // 最後に正常に移動成功した位置に補正
-		    this.pos[0] = this.lastGoodTilePos[0];
-		    this.pos[1] = this.lastGoodTilePos[1];
-		    b[0] = this.lastGoodTilePos[0];
-		    b[1] = this.lastGoodTilePos[1];
-		    this.dir = Direction.NONE;
-	    } else // モンスターの移動 or プレイヤーがパスであるところへ移動
-	    	this.lastGoodTilePos = new int[] {b[0], b[1]};
-	
-	    // トンネル通過[モンスターが食べられた時以外](currentSpeed:2) or それ以外(currentSpeed:0)
-	    if (g.getPlayfield().get(Integer.valueOf(b[0]))
-	    					.get(Integer.valueOf(b[1]))
-	    					.isTunnel()
-	    		&& this.mode != GhostMode.EATEN)
-	    	this.c(CurrentSpeed.PASSING_TUNNEL);
-	    else
-	    	this.c(CurrentSpeed.NORMAL);
-	    
-	    // プレイヤーがエサを食べる
-	    if (!this.ghost
-	    		&& g.getPlayfield().get(Integer.valueOf(b[0]))
-	    							.get(Integer.valueOf(b[1]))
-	    							.getDot() != 0)
-	    	g.dotEaten(this.id, b);
-	    
-	    this.tilePos[0] = b[0];
-	    this.tilePos[1] = b[1];
-	}
+	abstract void p(int[] b);
 
 	// 先行入力された方向に対応
 	void t() {
@@ -589,106 +548,13 @@ public class E {
 	    }
 	}
 
-	void n() {
-	    if (this.pos[0] == PacmanGame.getQ()[0].getY() * 8
-	    		&& this.pos[1] == PacmanGame.getQ()[0].getX() * 8) { // 画面左から右へワープ
-	        this.pos[0] = PacmanGame.getQ()[1].getY() * 8;
-	        this.pos[1] = (PacmanGame.getQ()[1].getX() - 1) * 8;
-	    } else if (this.pos[0] == PacmanGame.getQ()[1].getY() * 8
-	    			&& this.pos[1] == PacmanGame.getQ()[1].getX() * 8) { // 画面右から左へワープ
-	        this.pos[0] = PacmanGame.getQ()[0].getY() * 8;
-	        this.pos[1] = (PacmanGame.getQ()[0].getX() + 1) * 8;
-	    }
-	    // モンスターが巣に入る
-	    if (this.mode == GhostMode.EATEN
-	    		&& this.pos[0] == s[0]
-	    		&& this.pos[1] == s[1])
-	    	this.a(GhostMode.ENTERING_PEN);
-	    
-	    // プレイヤーがフルーツを食べる
-	    if (!this.ghost && this.pos[0] == PacmanGame.getV()[0]
-	        && (this.pos[1] == PacmanGame.getV()[1] || this.pos[1] == PacmanGame.getV()[1] + 8))
-	        g.eatFruit(this.id);
-	}
+	abstract void n();
 
 	// posの値がtilePosと一致(pos が8の倍数)したときに呼び出される
-	void u() {
-	    this.n();
-	    if (this.ghost) this.i(false); // モンスターの交差点/行き止まりでの進行方向決定
-	    PathElement b =
-	    	g.getPlayfield().get(Integer.valueOf((int) this.pos[0]))
-	    					.get(Integer.valueOf((int) this.pos[1]));
-	    if (b.isIntersection()) // 行き止まり/交差点にて
-	    	if (this.nextDir != Direction.NONE && b.getAllowedDir().contains(this.nextDir)) { // nextDirで指定された方向へ移動可能
-		        if (this.dir != Direction.NONE) this.lastActiveDir = this.dir;
-		        this.dir = this.nextDir;
-		        this.nextDir = Direction.NONE;
-		        if (!this.ghost) { // 先行入力された移動方向分を更新(メソッドtを参照)
-		        	this.pos[0] += this.posDelta[0];
-			        this.pos[1] += this.posDelta[1];
-			        this.posDelta = new float[] {0, 0};
-		        }
-	    } else if (!b.getAllowedDir().contains(this.dir)) { // nextDirもdirも移動不可だったら、停止
-	    	if (this.dir != Direction.NONE) this.lastActiveDir = this.dir;
-	    	this.nextDir = this.dir = Direction.NONE;
-	    	this.c(CurrentSpeed.NORMAL);
-	    }
-	}
+	abstract void u();
 
-	void o() {
-	    float b = this.pos[0] / 8;
-	    float c = this.pos[1] / 8;
-	    int[] d = { Math.round(b) * 8, Math.round(c) * 8};
-	    if (d[0] != this.tilePos[0] || d[1] != this.tilePos[1]) // tileが切り替わる
-	    	this.p(d); // tilePosの更新
-	    else {
-	    	float[] tPoses =
-	    		new float[] {
-		    			FloatMath.floor(b) * 8,
-		    			FloatMath.floor(c) * 8
-	    		};
-	    	if (this.pos[1] == tPoses[1] && this.pos[0] == tPoses[0])
-	    		this.u(); // posの値がtilePosと一致(pos が8の倍数)
-	    }
-	    PathElement pe =
-	    	g.getPlayfield().get(Integer.valueOf(d[0]))
-	    					.get(Integer.valueOf(d[1]));
-	    if (!this.ghost
-	    		&& this.nextDir != Direction.NONE
-	    		&& pe.isIntersection()
-	    		&& pe.getAllowedDir().contains(this.nextDir))
-	    		this.t();
-	}
-	// ターゲットポジションを決定
-	public void B() {
-	    if (this.id == g.getPlayerCount()
-	    		&& g.getDotsRemaining() < g.getLevels().getElroyDotsLeftPart1()
-	    		&& this.mode == GhostMode.SCATTER
-	    		&& (!g.isLostLifeOnThisLevel() || g.getActors()[g.getPlayerCount() + 3].mode != GhostMode.IN_PEN)) {
-	    	E b = g.getActors()[this.targetPlayerId];
-	    	this.targetPos = new float[] { b.tilePos[0], b.tilePos[1] };
-	    } else if (this.ghost && this.mode == GhostMode.CHASE) {
-	    	E b = g.getActors()[this.targetPlayerId];
-    		Move c = b.dir.getMove();
-	    	if (this.id == g.getPlayerCount()) {
-	    		this.targetPos = new float[] { b.tilePos[0], b.tilePos[1] };
-	    	} else if (this.id == g.getPlayerCount() + 1) {
-	    		this.targetPos = new float[] { b.tilePos[0], b.tilePos[1] };
-	    		this.targetPos[c.getAxis()] += 32 * c.getIncrement();
-	    		if (b.dir == Direction.UP) this.targetPos[1] -= 32;
-	    	} else if (this.id == g.getPlayerCount() + 2) {
-	    		E d = g.getActors()[g.getPlayerCount()];
-	    		float[] f = new float[] { b.tilePos[0], b.tilePos[1] };
-	    		f[c.getAxis()] += 16 * c.getIncrement();
-	    		if (b.dir == Direction.UP) f[1] -= 16;
-	    		this.targetPos[0] = f[0] * 2 - d.tilePos[0];
-	    		this.targetPos[1] = f[1] * 2 - d.tilePos[1];
-	    	} else if (this.id == g.getPlayerCount() + 3) {
-	    		float distance = PacmanGame.getDistance(b.tilePos, this.tilePos);
-	    		this.targetPos = distance > 64 ? new float[] { b.tilePos[0], b.tilePos[1] } : this.scatterPos;
-	    	}
-	    }
-	}
+	abstract void o();
+
 	// モンスターの巣の中/巣から出る挙動を管理(モンスター個別のモード管理)
 	void v() {
 	    this.routineMoveId++;
@@ -804,24 +670,8 @@ public class E {
 	    	}
 	}
 
-	public void move() {
-	    if (g.getGameplayMode() == GameplayMode.ORDINARY_PLAYING
-	    		|| this.ghost && g.getGameplayMode() == GameplayMode.GHOST_DIED
-	    			&& (this.mode == GhostMode.EATEN
-	    					|| this.mode == GhostMode.ENTERING_PEN)) {
-	    	if (this.requestedDir != Direction.NONE) {
-	    		this.z(this.requestedDir);
-	    		this.requestedDir = Direction.NONE;
-	    	}
-	    	if (this.followingRoutine) {
-	    		this.j();
-	    		if (this.mode == GhostMode.ENTERING_PEN) this.j();
-	    	} else {
-	    		this.e();
-	    		if (this.mode == GhostMode.EATEN) this.e();
-	    	}
-	    }
-	}
+	public abstract void move();
+	
 	// 位置移動
 	public void k() {
 	    float b = PacmanGame.getPlayfieldX(this.pos[1] + this.posDelta[1]);
@@ -833,236 +683,9 @@ public class E {
 	    	this.el.setTop(c);
 	    }
 	}
-	// Pacman, Ms.Pacman表示画像決定(アニメーション対応)
-	int[] s() {
-	    int b = 0;
-	    int c = 0;
-	    Direction d = this.dir;
-	    if (d == Direction.NONE) d = this.lastActiveDir;
-	    if (g.getGameplayMode() == GameplayMode.GHOST_DIED && this.id == g.getPlayerEatingGhostId()) { // モンスターを食べたとき。画像なし
-	    	b = 3;
-	    	c = 0;
-	    } else if ((g.getGameplayMode() == GameplayMode.LEVEL_BEING_COMPLETED
-	    					|| g.getGameplayMode() == GameplayMode.LEVEL_COMPLETED)
-	    				&& this.id == 0) { // レベルクリア。Pacmanは丸まる
-	    	b = 2;
-	    	c = 0;
-	    } else if (g.getGameplayMode() == GameplayMode.NEWGAME_STARTING
-	    				|| g.getGameplayMode() == GameplayMode.NEWGAME_STARTED
-	    				|| g.getGameplayMode() == GameplayMode.GAME_RESTARTED) { // ゲーム開始直後の表示画像決定
-	    	b = this.id == 0 ? 2 : 4;
-	    	c = 0;
-	    } else if (g.getGameplayMode() == GameplayMode.PLAYER_DIED) // プレイヤーが死んだ時の画像決定.
-	    	if (this.id == g.getPlayerDyingId()) { // 死んだ方
-	    		int t = 20 - (int) FloatMath.floor(g.getGameplayModeTime() / g.getTiming()[4] * 21);
-		        if (this.id == 0) { // Pacman
-		        	b = t - 1;
-		        	switch (b) {
-		        	case -1:
-		        		b = 0;
-		        		break;
-		        	case 11:
-		        		b = 10;
-		        		break;
-			          case 12:
-			          case 13:
-			          case 14:
-			          case 15:
-			          case 16:
-			          case 17:
-			          case 18:
-			          case 19:
-			          case 20:
-			        	  b = 11;
-			        	  break;
-		        	}
-		        	c = 12;
-		        } else // Ms.Pacman
-		        	switch (t) {
-		        	case 0:
-			        case 1:
-			        case 2:
-			        case 6:
-			        case 10:
-			            b = 4;
-				        c = 3;
-				        break;
-			        case 3:
-			        case 7:
-			        case 11:
-			        	b = 4;
-			        	c = 0;
-			        	break;
-			        case 4:
-			        case 8:
-			        case 12:
-			        case 13:
-			        case 14:
-			        case 15:
-			        case 16:
-			        case 17:
-			        case 18:
-			        case 19:
-			        case 20:
-			        	b = 4;
-			        	c = 2;
-			        	break;
-			        case 5:
-			        case 9:
-			        	b = 4;
-			        	c = 1;
-			        	break;
-		        	}
-		    	} else { // 死んでない方のプレーヤーの画像は非表示
-			        b = 3;
-			        c = 0;
-		    	}
-	    else if ("pcm-bpcm".equals(this.el.getId())) { // Cutscene
-	    	b = 14;
-	    	c = 0;
-	    	int t = (int) (Math.floor(g.getGlobalTime() * 0.2) % 4);
-	    	if (t == 3) t = 1;
-	    	c += 2 * t;
-	    	// BigPacMan
-	    	this.el.setWidth(32);
-	    	this.el.setHeight(32);
-	    } else { // 通常時のプレイヤー画像決定
-	    	switch (d) {
-	    	case LEFT:
-	    		c = 0;
-	    		break;
-	    	case RIGHT:
-	    		c = 1;
-	    		break;
-	    	case UP:
-	    		c = 2;
-	    		break;
-	    	case DOWN:
-	    		c = 3;
-	    		break;
-	    	}
-	    	if (g.getGameplayMode() != GameplayMode.PLAYER_DYING) b = (int) (Math.floor(g.getGlobalTime() * 0.3) % 4);
-	    	if (b == 3 && this.dir == Direction.NONE) b = 0;
-	    	if (b == 2 && this.id == 0) b = 0;
-	    	if (b == 3) {
-	    		b = 2;
-	    		if (this.id == 0) c = 0;
-	    	}
-	    	if (this.id == 1) b += 4;
-	    }
-	    return new int[] { c, b };
-	}
-	// モンスターの表示画像決定
-	int[] r() {
-	    int b = 0;
-	    int c = 0;
-	    if (g.getGameplayMode() == GameplayMode.LEVEL_COMPLETED
-	    		|| g.getGameplayMode() == GameplayMode.NEWGAME_STARTING
-	    		|| g.getGameplayMode() == GameplayMode.PLAYER_DIED) {
-	    	// Pacman or Ms.Pacmanが死んだ直後。モンスターの姿は消える 
-	    	b = 3;
-	    	c = 0;
-	    } else if (g.getGameplayMode() == GameplayMode.GHOST_DIED && this.id == g.getGhostBeingEatenId()) {
-	    	switch (g.getModeScoreMultiplier()) {// モンスターが食べられたときに表示させるスコアを決定
-	    	case 2:
-	    		b = 0;
-	    		break;
-	    	case 4:
-	    		b = 1;
-	    		break;
-	    	case 8:
-	    		b = 2;
-	    		break;
-	    	case 16:
-	    		b = 3;
-	    		break;
-	    	}
-	    	c = 11;
-//	      	this.el.className = "pcm-ac pcm-n"
-	    } else if (this.mode == GhostMode.FRIGHTENED
-	              	|| (this.mode == GhostMode.IN_PEN || this.mode == GhostMode.EXITING_FROM_PEN)
-	              		&& g.getMainGhostMode() == GhostMode.FRIGHTENED
-	              		&& !this.eatenInThisFrightMode) {
-	    	// ブルーモード.ただし、食べられてはいない
-	    	b = 0;
-	    	c = 8;
-	    	// ブルーモード時間切れ間近の青白明滅
-	    	if (g.getFrightModeTime() < g.getLevels().getFrightTotalTime() - g.getLevels().getFrightTime()
-	    			&& FloatMath.floor(g.getFrightModeTime() / g.getTiming()[1]) % 2 == 0)
-	    		b += 2;
 	
-	    	b += (int) (Math.floor(g.getGlobalTime() / 16) % 2); // ブルーモードの画像切り替え
-	    } else if (this.mode == GhostMode.EATEN || this.mode == GhostMode.ENTERING_PEN) { // 食べられて目玉だけ
-	    	Direction ndir = this.nextDir;
-	    	if (ndir != Direction.NONE) ndir = this.dir;
-	    	switch (ndir) {
-	    	case LEFT:
-	    		b = 2;
-	    		break;
-	    	case RIGHT:
-	    		b = 3;
-	    		break;
-	    	case UP:
-	    		b = 0;
-	    		break;
-	    	case DOWN:
-	    		b = 1;
-	    		break;
-	    	}
-	    	c = 10;
-	    } else if ("pcm-ghin".equals(this.el.getId())) {
-	    	b = 6;
-	    	c = 8;
-	    	b += (int) (Math.floor(g.getGlobalTime() / 16) % 2);
-	    } else if ("pcm-gbug".equals(this.el.getId())) {
-	    	b = 6;
-	    	c = 9;
-	    	c += (int) (Math.floor(g.getGlobalTime() / 16) % 2);
-	    } else if ("pcm-ghfa".equals(this.el.getId())) {
-	    	b = g.getCutsceneSequenceId() == 3 ? 6 : 7;
-	    	c = 11;
-	    } else if ("pcm-stck".equals(this.el.getId())) {
-	    	b = g.getCutsceneSequenceId() == 1
-	            ? g.getCutsceneTime() > 60
-	                ? 1
-	                : g.getCutsceneTime() > 45
-	                    ? 2
-	                    : 3
-	            : g.getCutsceneSequenceId() == 2
-	                ? 3
-	                : g.getCutsceneSequenceId() == 3 || g.getCutsceneSequenceId() == 4
-	                    ? 4
-	                    : 0;
-	        c = 13;
-	    } else { // 通常時の画像表示
-	    	Direction ndir = this.nextDir;
-	    	if (ndir == Direction.NONE
-	    		|| g.getPlayfield().get(Integer.valueOf(this.tilePos[0]))
-	    							.get(Integer.valueOf(this.tilePos[1]))
-	    							.isTunnel()) {
-	    		ndir = this.dir;
-	    	}
-	    	
-	        switch (ndir) {
-	        case LEFT:
-	        	b = 4;
-	        	break;
-	        case RIGHT:
-	        	b = 6;
-	        	break;
-	        case UP:
-	        	b = 0;
-	        	break;
-	        case DOWN:
-	        	b = 2;
-	        	break;
-	        }
-	        c = 4 + this.id - g.getPlayerCount();
-	        if (this.speed > 0 || g.getGameplayMode() != GameplayMode.CUTSCENE)
-	        	b += (int) (Math.floor(g.getGlobalTime() / 16) % 2);
-	    }
-	    return new int[] { c, b };
-	}
+	abstract int[] getImagePos();
+	
 
 	// Actor表示画像切り替え(アニメーション対応)&位置移動
 	public void b() {
@@ -1071,9 +694,7 @@ public class E {
 	    b = g.getGameplayMode() == GameplayMode.GAMEOVER
 	    	|| g.getGameplayMode() == GameplayMode.KILL_SCREEN
 	    		? new int[] { 0, 3 }
-	    		: this.ghost
-	    			? this.r()
-	    			: this.s();
+	    		: getImagePos();
 	    if (this.elBackgroundPos[0] != b[0] || this.elBackgroundPos[1] != b[1]) {
 	    	this.elBackgroundPos[0] = b[0];
 	    	this.elBackgroundPos[1] = b[1];
@@ -1088,15 +709,6 @@ public class E {
 		
 		el.drawBitmap(sourceImage, c);
 
-	}
-
-	
-	public boolean isGhost() {
-		return ghost;
-	}
-
-	public void setGhost(boolean ghost) {
-		this.ghost = ghost;
 	}
 
 	public GhostMode getMode() {

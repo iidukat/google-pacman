@@ -11,7 +11,7 @@ public class PlayField {
 
 	private Presentation presentation = new Presentation();
 
-	private List<E> actors = new ArrayList<E>();
+	private List<Actor> actors = new ArrayList<Actor>();
 	private Door door;
 	private List<Food> foods = new ArrayList<Food>();
 	private Fruit fruit;
@@ -37,7 +37,7 @@ public class PlayField {
 			fruit.draw(sourceImage, c);
 		}
 
-		for (E actor : actors) {
+		for (Actor actor : actors) {
 			actor.draw(sourceImage, c);
 		}
 
@@ -58,7 +58,7 @@ public class PlayField {
 		return presentation;
 	}
 	
-	public void addActor(E actor) {
+	public void addActor(Actor actor) {
 		actors.add(actor);
 	}
 	
