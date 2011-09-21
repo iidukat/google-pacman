@@ -1551,9 +1551,9 @@ public class PacmanGame {
 	    dotEatingSoundPart = new int[] {1, 1};
 	    clearDotEatingNow();
 
-//	    if (b) changeGameplayMode(GameplayMode.NEWGAME_STARTING);
-//	    else changeGameplayMode(GameplayMode.GAME_RESTARTING);
-		changeGameplayMode(GameplayMode.LEVEL_COMPLETED); // for Cutscene debug
+	    if (b) changeGameplayMode(GameplayMode.NEWGAME_STARTING);
+	    else changeGameplayMode(GameplayMode.GAME_RESTARTING);
+//		changeGameplayMode(GameplayMode.LEVEL_COMPLETED); // for Cutscene debug
 	}
 
 	void initiateDoubleMode() {
