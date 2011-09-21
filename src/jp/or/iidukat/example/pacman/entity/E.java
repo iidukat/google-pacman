@@ -187,7 +187,7 @@ public class E {
 	private float speed;
 	private float physicalSpeed;
 	private Direction requestedDir;
-	private Direction nextDir;
+	private Direction nextDir = Direction.NONE;
 	private boolean reverseDirectionsNext;
 	private boolean freeToLeavePen;
 	private boolean modeChangedWhileInPen;

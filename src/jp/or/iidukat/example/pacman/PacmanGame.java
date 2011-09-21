@@ -1515,7 +1515,7 @@ public class PacmanGame {
 
 	    if (b) changeGameplayMode(GameplayMode.NEWGAME_STARTING);
 	    else changeGameplayMode(GameplayMode.GAME_RESTARTING);
-//		    changeGameplayMode(10);
+//	    changeGameplayMode(GameplayMode.LEVEL_COMPLETED); // for Cutscene debug
 	}
 
 	void initiateDoubleMode() {
