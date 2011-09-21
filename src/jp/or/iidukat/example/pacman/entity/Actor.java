@@ -186,7 +186,7 @@ public abstract class Actor {
 	float speed;
 	private float physicalSpeed;
 	Direction requestedDir;
-	Direction nextDir;
+	Direction nextDir = Direction.NONE;
 	boolean reverseDirectionsNext;
 	private boolean freeToLeavePen;
 	private boolean modeChangedWhileInPen;
