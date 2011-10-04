@@ -13,5 +13,9 @@ public class CutsceneGhost extends Ghost {
 		// TODO Auto-generated method stub
 
 	}
-
+	
+	@Override
+	InitPosition getInitPosition() {
+		return null;
+	}
 }

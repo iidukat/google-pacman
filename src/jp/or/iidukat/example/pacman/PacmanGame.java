@@ -19,12 +19,10 @@ import jp.or.iidukat.example.pacman.entity.Ghost;
 import jp.or.iidukat.example.pacman.entity.Inky;
 import jp.or.iidukat.example.pacman.entity.Level;
 import jp.or.iidukat.example.pacman.entity.Lives;
-import jp.or.iidukat.example.pacman.entity.MsPacman;
-import jp.or.iidukat.example.pacman.entity.PacManCanvas;
-import jp.or.iidukat.example.pacman.entity.Pacman;
+import jp.or.iidukat.example.pacman.entity.PacmanCanvas;
 import jp.or.iidukat.example.pacman.entity.Pinky;
 import jp.or.iidukat.example.pacman.entity.PlayField;
-import jp.or.iidukat.example.pacman.entity.Player;
+import jp.or.iidukat.example.pacman.entity.Pacman;
 import jp.or.iidukat.example.pacman.entity.Score;
 import jp.or.iidukat.example.pacman.entity.ScoreLabel;
 import jp.or.iidukat.example.pacman.entity.Sound;
@@ -992,14 +990,13 @@ public class PacmanGame {
 	private Map<Integer, Map<Integer, PathElement>> playfield;
 	private int dotsRemaining;
 	private int dotsEaten;
-	private PacManCanvas canvasEl;
+	private PacmanCanvas canvasEl;
 	private PlayField playfieldEl;
 	private CutsceneCanvas cutsceneCanvasEl;
 	private Fruit fruitEl;
 	private Door doorEl;
 	private Sound soundEl;
-	private int playerCount;
-	private Player[] players;
+	private Pacman player;
 	private Ghost[] ghosts;
 	
 	private float touchDX;
@@ -1008,8 +1005,8 @@ public class PacmanGame {
 	private float touchStartY;
 	private boolean touchCanceld = true;
 	
-    private int[] score;
-    private boolean[] extraLifeAwarded;
+    private int score;
+    private boolean extraLifeAwarded;
     private int lives = 3;
     private int level = 0;
     private int killScreenLevel = DEFAULT_KILL_SCREEN_LEVEL;
@@ -1027,8 +1024,8 @@ public class PacmanGame {
     private boolean ghostExitingPenNow = false;
     private int ghostEyesCount = 0;
     private boolean tilesChanged = false;
-    private int[] dotEatingChannel;
-    private int[] dotEatingSoundPart;
+    private int dotEatingChannel;
+    private int dotEatingSoundPart;
     
     private GameplayMode gameplayMode;
     
@@ -1053,8 +1050,6 @@ public class PacmanGame {
 	private boolean fruitShown;
 	
 	private int ghostBeingEatenId;
-	private int playerEatingGhostId;
-	private int playerDyingId;
 	
 	private boolean pacManSound = true;
 	volatile boolean soundAvailable;
@@ -1076,8 +1071,8 @@ public class PacmanGame {
 	private int tickMultiplier;
 	
 	private int scoreDigits;
-	private ScoreLabel[] scoreLabelEl;
-	private Score[] scoreEl;
+	private ScoreLabel scoreLabelEl;
+	private Score scoreEl;
 	private Lives livesEl;
 	private Level levelEl;
 	
@@ -1307,28 +1302,9 @@ public class PacmanGame {
 	}
 
   	void createActors() {
-//  		List<Actor> as = new ArrayList<Actor>(); 
-//  		for (int b = 0; b < playerCount + 4; b++) {
-//  			Actor actor = new Actor(b, this);
-//  			if (b < playerCount) {
-//  				actor.setGhost(false);
-//  				actor.setMode(GhostMode.CHASE);
-//  			} else {
-//  				actor.setGhost(true);
-//  			}
-//  			as.add(actor);	
-//	  	}
-//  		actors = as.toArray(new Actor[0]);
-
   		int cnt = 0;
   		{
-	  		List<Player> ps = new ArrayList<Player>();
-	  		ps.add(new Pacman(cnt++, this));
-	  		if (cnt < playerCount) {
-	  	  		ps.add(new MsPacman(cnt++, this));
-	  		}
-	  		
-	  		players = ps.toArray(new Player[0]);
+	  		player = new Pacman(cnt++, this);
   		}
   		
   		{
@@ -1344,16 +1320,14 @@ public class PacmanGame {
   	}
   	
   	void restartActors() {
-  		for (Actor player : players)
-  			player.A();
+		player.A();
   		
   		for (Actor ghost : ghosts)
   			ghost.A();
   	}
   	
 	void createActorElements() {
-		for (Actor player : players)
-			player.createElement();
+		player.createElement();
 		
 		for (Actor ghost : ghosts)
 			ghost.createElement();
@@ -1382,59 +1356,6 @@ public class PacmanGame {
 	    createActorElements();
     }
     
-//	    boolean keyPressed(int b){
-//		    boolean  c = e;
-//		    switch (b) {
-//		    case 37: // Left
-//		      actors[0].requestedDir = 4;
-//		      c = a;
-//		      break;
-//		    case 38: // Up
-//		      actors[0].requestedDir = 1;
-//		      c = a;
-//		      break;
-//		    case 39: // Right
-//		      actors[0].requestedDir = 8;
-//		      c = a;
-//		      break;
-//		    case 40: // Down
-//		      actors[0].requestedDir = 2;
-//		      c = a;
-//		      break;
-//		    case 65: // A as Left for 2P
-//		      if (playerCount == 2) {
-//		        actors[1].requestedDir = 4;
-//		        c = a;
-//		      }
-//		      break;
-//		    case 83: // S as Down for 2P
-//		      if (playerCount == 2) {
-//		        actors[1].requestedDir = 2;
-//		        c = a;
-//		      }
-//		      break;
-//		    case 68: // D as Right for 2P
-//		      if (playerCount == 2) {
-//		        actors[1].requestedDir = 8;
-//		        c = a;
-//		      }
-//		      break;
-//		    case 87: // W as UP for 2P
-//		      if (playerCount == 2) {
-//		        actors[1].requestedDir = 1;
-//		        c = a;
-//		      }
-//		      break;
-//		    }
-//		    return c;
-//		}
-//	    
-//	    void handleKeyDown(Object b) {
-////	    	if (b != null) b = window.event;
-////	    	if (g.keyPressed(b.keyCode))
-////	    		if (b.preventDefault) b.preventDefault();
-////	    		else b.returnValue = e
-//	    }
     
 	void canvasClicked(float b, float c) {
 		// TODO: actorsがロードされる前にクリックされるケースに対処する
@@ -1445,7 +1366,6 @@ public class PacmanGame {
 	    float[] d = getAbsoluteElPos(canvasEl.getPresentation());
 	    b -= d[1] - -32;
 	    c -= d[0] - 0;
-	    Player player = players[0];
 	    float f = getPlayfieldX(player.getPos()[1] + player.getPosDelta()[1]) + 16;
 	    float h = getPlayfieldY(player.getPos()[0] + player.getPosDelta()[0]) + 32;
 	    float j = Math.abs(b - f);
@@ -1469,17 +1389,6 @@ public class PacmanGame {
 		
 		return false;
 	}
-
-//		void handleClick(Object b) {
-////			if (b != null) b = window.event;
-////			canvasClicked(b.clientX, b.clientY);
-//		}
-	
-//	    void registerTouch() {
-////	    	document.body.addEventListener("touchstart", g.handleTouchStart, a);
-////	    	canvasEl.addEventListener("touchstart", g.handleTouchStart, a);
-////	    	document.f && document.f.q && document.f.q.addEventListener("touchstart", g.handleTouchStart, a);
-//	    }
     
     void handleTouchStart(MotionEvent e) {
 	    touchDX = 0;
@@ -1507,8 +1416,8 @@ public class PacmanGame {
     	float c = Math.abs(touchDX);
     	float d = Math.abs(touchDY);
     	if (c < 8 && d < 8) canvasClicked(touchStartX, touchStartY);
-    	else if (c > 15 && d < c * 2 / 3) players[0].setRequestedDir(touchDX > 0 ? Direction.RIGHT : Direction.LEFT);
-    	else if (d > 15 && c < d * 2 / 3) players[0].setRequestedDir(touchDY > 0 ? Direction.DOWN : Direction.UP);
+    	else if (c > 15 && d < c * 2 / 3) player.setRequestedDir(touchDX > 0 ? Direction.RIGHT : Direction.LEFT);
+    	else if (d > 15 && c < d * 2 / 3) player.setRequestedDir(touchDY > 0 ? Direction.DOWN : Direction.UP);
 	    cancelTouch();
     }
     
@@ -1519,8 +1428,8 @@ public class PacmanGame {
 	}
 	
 	void startGameplay() {
-	    score = new int[] {0, 0};
-	    extraLifeAwarded = new boolean[] {false, false};
+		score = 0;
+	    extraLifeAwarded = false;
 	    lives = 3;
 	    level = 0;
 	    paused = false;
@@ -1547,8 +1456,8 @@ public class PacmanGame {
 	    updateActorPositions();
 	    switchMainGhostMode(GhostMode.SCATTER, true);
 	    for (int c = 1; c < 4; c++) ghosts[c].a(GhostMode.IN_PEN);
-	    dotEatingChannel = new int[] {0, 0};
-	    dotEatingSoundPart = new int[] {1, 1};
+	    dotEatingChannel = 0;
+	    dotEatingSoundPart = 1;
 	    clearDotEatingNow();
 
 	    if (b) changeGameplayMode(GameplayMode.NEWGAME_STARTING);
@@ -1556,35 +1465,17 @@ public class PacmanGame {
 //		changeGameplayMode(GameplayMode.LEVEL_COMPLETED); // for Cutscene debug
 	}
 
-	void initiateDoubleMode() {
-	    if (playerCount != 2) {
-	    	stopAllAudio();
-	    	changeGameplayMode(GameplayMode.TWO_PLAYER_PLAY_STARTED);
-	    }
-	}
-	
 	void newGame() {
-	    playerCount = 1;
 	    createChrome();
 	    createPlayfield();
 	    createActors();
 	    startGameplay();
 	}
 
-	void switchToDoubleMode() {
-	    playerCount = 2;
-	    createChrome();
-	    createPlayfield();
-	    createActors();
-	    startGameplay();
-	}
-	
 	void insertCoin() {
 	    if (gameplayMode == GameplayMode.GAMEOVER
 	    		|| gameplayMode == GameplayMode.KILL_SCREEN)
 	    	newGame();
-	    else
-	    	initiateDoubleMode();
 	}
 
 	void createKillScreenElement(int b, int c, int d, int f, boolean h) {
@@ -1635,7 +1526,7 @@ public class PacmanGame {
 	    	levels.frightTime = Math.round(levels.frightTime * D); // z 配列を定義する際にこの処理を行っておくべきでは?
 	    // end issue 14
 	    levels.frightTotalTime = levels.frightTime + ((int) timing[1]) * (levels.frightBlinkCount * 2 - 1);
-	    for (Actor actor : players) actor.setDotCount(0);
+	    player.setDotCount(0);
 	    for (Actor actor : ghosts) actor.setDotCount(0);
 	    alternatePenLeavingScheme = false;
 	    lostLifeOnThisLevel = false;
@@ -1702,12 +1593,10 @@ public class PacmanGame {
 	        	}
 	    	}
 	    	
-	    	for (Player player : players){
-	        	player.setFullSpeed(currentPlayerSpeed);
-	        	player.setDotEatingSpeed(currentDotEatingSpeed);
-	        	player.setTunnelSpeed(currentPlayerSpeed);
-	        	player.d();
-	    	}
+	    	player.setFullSpeed(currentPlayerSpeed);
+	        player.setDotEatingSpeed(currentDotEatingSpeed);
+	        player.setTunnelSpeed(currentPlayerSpeed);
+	        player.d();
 	    }
 	}
 	
@@ -1743,15 +1632,15 @@ public class PacmanGame {
 	    forcePenLeaveTime = levels.penForceTime * D;
 	}
 	
-	public void dotEaten(int b, int[] c) {
+	public void dotEaten(int[] c) {
 	    dotsRemaining--;
 	    dotsEaten++;
-	    players[b].c(CurrentSpeed.PACMAN_EATING_DOT);
-	    playDotEatingSound(b);
+	    player.c(CurrentSpeed.PACMAN_EATING_DOT);
+	    playDotEatingSound();
 	    if (playfield.get(Integer.valueOf(c[0])).get(Integer.valueOf(c[1])).getDot() == 2) { // パワーエサを食べたとき
 	    	switchMainGhostMode(GhostMode.FRIGHTENED, false);
-	    	addToScore(50, b);
-	    } else addToScore(10, b); // 普通のエサ
+	    	addToScore(50);
+	    } else addToScore(10); // 普通のエサ
 	    
 	    Food d = getDotElement(getDotElementIndex(c[0], c[1]));
 //		    d.style.display = "none";
@@ -1790,14 +1679,14 @@ public class PacmanGame {
 		fruitTime = (int) timing[15] + (int) ((timing[16] - timing[15]) * rand());
 	}
 	
-	public void eatFruit(int b) {
+	public void eatFruit() {
 	    if (fruitShown) {
 	    	playSound("fruit", 0);
 	    	fruitShown = false;
 	    	int[] c = getFruitScoreSprite(levels.fruit);
 	    	changeElementBkPos(fruitEl.getPresentation(), c[0], c[1], true);
 	    	fruitTime = (int) timing[14];
-	    	addToScore(levels.fruitScore, b);
+	    	addToScore(levels.fruitScore);
 	    }
 	}
 	
@@ -1806,52 +1695,49 @@ public class PacmanGame {
 	}
 	
 	void moveActors() {
-		for (Actor actor : players) actor.move();
+		player.move();
 		for (Actor actor : ghosts) actor.move();
 	}
 	
-	void ghostDies(int b, int c) {
+	void ghostDies(int b) {
 	    playSound("eating_ghost", 0);
-		    addToScore(200 * modeScoreMultiplier, c);
-		    modeScoreMultiplier *= 2;
-		    ghostBeingEatenId = b + playerCount; // TODO: 食べられたゴーストの判定方法を見直す
-		    playerEatingGhostId = c;
-		    changeGameplayMode(GameplayMode.GHOST_DIED);
-		}
+	    addToScore(200 * modeScoreMultiplier);
+	    modeScoreMultiplier *= 2;
+	    ghostBeingEatenId = b + 1; // TODO: 食べられたゴーストの判定方法を見直す
+	    changeGameplayMode(GameplayMode.GHOST_DIED);
+	}
 
-		void playerDies(int b) {
-		    playerDyingId = b;
-		    changeGameplayMode(GameplayMode.PLAYER_DYING);
-		}
+	void playerDies() {
+		changeGameplayMode(GameplayMode.PLAYER_DYING);
+	}
   
-		void detectCollisions() {
-		    tilesChanged = false;
-		    for (int b = 0; b < 4; b++)
-		    	for (int c = 0; c < playerCount; c++)
-		    		if (ghosts[b].getTilePos()[0] == players[c].getTilePos()[0]
-		    		        && ghosts[b].getTilePos()[1] == players[c].getTilePos()[1])
-		    			if (ghosts[b].getMode() == GhostMode.FRIGHTENED) {
-		    				ghostDies(b, c);
-		    				return;
-		    			} else
-		    				if (ghosts[b].getMode() != GhostMode.EATEN
-		    						&& ghosts[b].getMode() != GhostMode.IN_PEN
-		    						&& ghosts[b].getMode() != GhostMode.EXITING_FROM_PEN
-		    						&& ghosts[b].getMode() != GhostMode.RE_EXITING_FROM_PEN
-		    						&& ghosts[b].getMode() != GhostMode.ENTERING_PEN)
-		    					playerDies(c);
-		  }
+	void detectCollisions() {
+	    tilesChanged = false;
+	    for (int b = 0; b < 4; b++)
+	   		if (ghosts[b].getTilePos()[0] == player.getTilePos()[0]
+	   		        && ghosts[b].getTilePos()[1] == player.getTilePos()[1])
+	   			if (ghosts[b].getMode() == GhostMode.FRIGHTENED) {
+	   				ghostDies(b);
+	   				return;
+	   			} else
+	   				if (ghosts[b].getMode() != GhostMode.EATEN
+	   						&& ghosts[b].getMode() != GhostMode.IN_PEN
+	   						&& ghosts[b].getMode() != GhostMode.EXITING_FROM_PEN
+	   						&& ghosts[b].getMode() != GhostMode.RE_EXITING_FROM_PEN
+	   						&& ghosts[b].getMode() != GhostMode.ENTERING_PEN)
+	   					playerDies();
+	}
 
-		public void updateCruiseElroySpeed() {
-			float b = levels.ghostSpeed * 0.8f;
-			if (!lostLifeOnThisLevel || ghosts[3].getMode() != GhostMode.IN_PEN) {
-				LevelConfig c = levels;
-				if (dotsRemaining < c.elroyDotsLeftPart2) b = c.elroySpeedPart2 * 0.8f;
-				else if (dotsRemaining < c.elroyDotsLeftPart1) b = c.elroySpeedPart1 * 0.8f;
-			}
-			if (b != cruiseElroySpeed) {
-				cruiseElroySpeed = b;
-				ghosts[0].d(); // アカベエの速度を更新
+	public void updateCruiseElroySpeed() {
+		float b = levels.ghostSpeed * 0.8f;
+		if (!lostLifeOnThisLevel || ghosts[3].getMode() != GhostMode.IN_PEN) {
+			LevelConfig c = levels;
+			if (dotsRemaining < c.elroyDotsLeftPart2) b = c.elroySpeedPart2 * 0.8f;
+			else if (dotsRemaining < c.elroyDotsLeftPart1) b = c.elroySpeedPart1 * 0.8f;
+		}
+		if (b != cruiseElroySpeed) {
+			cruiseElroySpeed = b;
+			ghosts[0].d(); // アカベエの速度を更新
 		}
 	}
 	
@@ -1884,8 +1770,7 @@ public class PacmanGame {
 	void changeGameplayMode(GameplayMode b){
 	    gameplayMode = b;
 	    if (b != GameplayMode.CUTSCENE) {
-	    	for (Actor actor : players)
-	    		actor.b();
+    		player.b();
 
 	    	for (Actor actor : ghosts)
 	    		actor.b();
@@ -1900,8 +1785,7 @@ public class PacmanGame {
 	    	gameplayModeTime = timing[3];
 	    	break;
 	    case PLAYER_DIED:
-	    	if (playerDyingId == 0) playSound("death", 0);
-	    	else playSound("death_double", 0);
+	    	playSound("death", 0);
 	    	
 	    	gameplayModeTime = timing[4];
 	    	break;
@@ -1942,8 +1826,7 @@ public class PacmanGame {
 		    gameplayModeTime = timing[7];
 		    stopAllAudio();
 		    
-		    if (playerCount == 2) playSound("start_music_double", 0, true);
-		    else playSound("start_music", 0, true);
+		    playSound("start_music", 0, true);
 		    
 		    break;
 	    case NEWGAME_STARTED:
@@ -1982,11 +1865,6 @@ public class PacmanGame {
 	    	canvasEl.getPresentation().setVisibility(false);
 	    	gameplayModeTime = timing[12];
 	    	break;
-	    case TWO_PLAYER_PLAY_STARTED:
-//		    	playfieldEl.style.visibility = "hidden";
-	    	playfieldEl.getPresentation().setVisibility(false);
-	    	gameplayModeTime = timing[13];
-	    	break;
 	    case GHOST_DIED:
 	    	gameplayModeTime = timing[2];
 	    	break;
@@ -1997,18 +1875,13 @@ public class PacmanGame {
 	 }
 
 	void showChrome(boolean b) {
-	    if (scoreLabelEl[0] != null)
-	    	scoreLabelEl[0].getPresentation().setVisibility(b); // showElementById("pcm-sc-1-l", b);
+	    if (scoreLabelEl != null)
+	    	scoreLabelEl.getPresentation().setVisibility(b); // showElementById("pcm-sc-1-l", b);
 	    
-	    if (scoreLabelEl[1] != null)
-	    	scoreLabelEl[1].getPresentation().setVisibility(b); // showElementById("pcm-sc-2-l", b);
+	    if (scoreEl != null)
+	    	scoreEl.getPresentation().setVisibility(b); //showElementById("pcm-sc-1", b);
 	    
-	    if (scoreEl[0] != null)
-	    	scoreEl[0].getPresentation().setVisibility(b); //showElementById("pcm-sc-1", b);
-	    
-	    if (scoreEl[1] != null)
-	    	scoreEl[1].getPresentation().setVisibility(b); // showElementById("pcm-sc-2", b);
-	    
+
 	    if (livesEl != null)
 	    	livesEl.getPresentation().setVisibility(b);// showElementById("pcm-li", b);
 	    
@@ -2057,7 +1930,6 @@ public class PacmanGame {
 	    List<Actor> cas = new ArrayList<Actor>();
 	    for (CutsceneActor ca : cutscene.actors) {
 	    	int c = ca.id;
-	    	if (c > 0) c += playerCount - 1;
 
 	    	Actor actor;
 	    	if (ca.ghost) {
@@ -2129,7 +2001,7 @@ public class PacmanGame {
 	}
 	
 	void updateActorPositions() {
-	    for (Actor actor : players) actor.k();
+	    player.k();
 	    for (Actor actor : ghosts) actor.k();
 	}
 	
@@ -2143,7 +2015,6 @@ public class PacmanGame {
 	    case LEVEL_BEING_COMPLETED:
 	    case LEVEL_COMPLETED:
 	    case TRANSITION_INTO_NEXT_SCENE:
-	    case TWO_PLAYER_PLAY_STARTED:
 //		      	playfieldEl.className = "";
 	    	for (Food f : playfieldEl.getFoods()) {
 	    		if (f.getPresentation().hasBackground()) {
@@ -2193,8 +2064,7 @@ public class PacmanGame {
 	    		modify = false;
 	    	
 	    	if (modify)
-	    		for (int c = 0; c < playerCount; c++)
-	    			scoreLabelEl[c].getPresentation().setVisibility(b);
+    			scoreLabelEl.getPresentation().setVisibility(b);
 	    }
 	}
 	
@@ -2208,7 +2078,7 @@ public class PacmanGame {
 	    	switch (gameplayMode) {
 	    	case PLAYER_DYING:
 	    	case PLAYER_DIED:
-	    		for (Actor actor : players) actor.b();
+	    		player.b();
 	    		for (Actor actor : ghosts) actor.b();
 	    		break;
 	    	case LEVEL_COMPLETED:
@@ -2226,7 +2096,7 @@ public class PacmanGame {
 		        	ghostEyesCount++;
 		        	playAmbientSound();
 //		        	actors[ghostBeingEatenId].el.className = "pcm-ac";
-		        	ghosts[ghostBeingEatenId - playerCount].a(GhostMode.EATEN);
+		        	ghosts[ghostBeingEatenId - 1].a(GhostMode.EATEN);
 	        		// ブルーモードのモンスターがいない場合、 ブルーモードを終了させる
 		        	boolean c = false;
 		        	for (Ghost ghost : ghosts)
@@ -2279,13 +2149,6 @@ public class PacmanGame {
 		        		canvasEl.getPresentation().setVisibility(true);
 		        		newLevel(false);
 		        	}
-		        	break;
-		        case TWO_PLAYER_PLAY_STARTED:
-//		        	playfieldEl.style.visibility = "";
-		        	playfieldEl.getPresentation().setVisibility(true);
-//		        	canvasEl.style.visibility = "";
-		        	canvasEl.getPresentation().setVisibility(true);
-		        	switchToDoubleMode();
 		        	break;
 		        }
 	    	}
@@ -2391,31 +2254,31 @@ public class PacmanGame {
 	    setTimeout();
 	}
 
-	void extraLife(int b) {
+	void extraLife() {
 	    playSound("extra_life", 0);
-	    extraLifeAwarded[b] = true;
+	    extraLifeAwarded = true;
 	    lives++;
 	    if (lives > 5) lives = 5;
 	    updateChromeLives();
 	}
 	
-	void addToScore(int b, int c){
-	    score[c] += b;
-	    if (!extraLifeAwarded[c] && score[c] > 10000) extraLife(c);
-	    updateChromeScore(c);
+	void addToScore(int b){
+	    score += b;
+	    if (!extraLifeAwarded && score > 10000) extraLife();
+	    updateChromeScore();
 	}
 	
 	void updateChrome() {
 	    updateChromeLevel();
 	    updateChromeLives();
-	    for (int b = 0; b < playerCount; b++) updateChromeScore(b);
+	    updateChromeScore();
 	}
 	
-	void updateChromeScore(int b) {
-	    String c = String.valueOf(score[b]);
+	void updateChromeScore() {
+	    String c = String.valueOf(score);
 	    if (c.length() > scoreDigits) c = c.substring(c.length() - scoreDigits);
 	    for (int d = 0; d < scoreDigits; d++) {
-	    	Score.Number f = scoreEl[b].getNumber(d);
+	    	Score.Number f = scoreEl.getNumber(d);
 	    	String h = null;
 	    	if (d < c.length()) h = c.substring(d, d + 1);
 	        if (h != null)
@@ -2459,25 +2322,23 @@ public class PacmanGame {
 	// スコアとサウンドアイコンを生成
 	void createChrome() {
 		canvasEl.reset();
-	    scoreDigits = playerCount == 1 ? 10 : 5;
-	    scoreLabelEl = new ScoreLabel[2];
-	    scoreLabelEl[0] = new ScoreLabel();
-	    scoreLabelEl[0].getPresentation().setId("pcm-sc-1-l");
-	    scoreLabelEl[0].getPresentation().setLeft(-2);
-	    scoreLabelEl[0].getPresentation().setTop(0);
-	    scoreLabelEl[0].getPresentation().setWidth(48);
-	    scoreLabelEl[0].getPresentation().setHeight(8);
-	    prepareElement(scoreLabelEl[0].getPresentation(), 160, 56);
-	    scoreLabelEl[0].getPresentation().setParent(canvasEl.getPresentation());
-	    canvasEl.getScoreLabels()[0] = scoreLabelEl[0];
-	    scoreEl = new Score[2];
-	    scoreEl[0] = new Score();
-	    scoreEl[0].getPresentation().setId("pcm-sc-1");
-	    scoreEl[0].getPresentation().setLeft(18);
-	    scoreEl[0].getPresentation().setTop(16);
-	    scoreEl[0].getPresentation().setWidth(8);
-	    scoreEl[0].getPresentation().setHeight(56);
-	    scoreEl[0].getPresentation().setParent(canvasEl.getPresentation());
+	    scoreDigits = 10;
+	    scoreLabelEl = new ScoreLabel();
+	    scoreLabelEl.getPresentation().setId("pcm-sc-1-l");
+	    scoreLabelEl.getPresentation().setLeft(-2);
+	    scoreLabelEl.getPresentation().setTop(0);
+	    scoreLabelEl.getPresentation().setWidth(48);
+	    scoreLabelEl.getPresentation().setHeight(8);
+	    prepareElement(scoreLabelEl.getPresentation(), 160, 56);
+	    scoreLabelEl.getPresentation().setParent(canvasEl.getPresentation());
+	    canvasEl.setScoreLabel(scoreLabelEl);
+	    scoreEl = new Score();
+	    scoreEl.getPresentation().setId("pcm-sc-1");
+	    scoreEl.getPresentation().setLeft(18);
+	    scoreEl.getPresentation().setTop(16);
+	    scoreEl.getPresentation().setWidth(8);
+	    scoreEl.getPresentation().setHeight(56);
+	    scoreEl.getPresentation().setParent(canvasEl.getPresentation());
 	    
 	    for (int b = 0; b < scoreDigits; b++) {
 	    	Score.Number c = new Score.Number();
@@ -2487,10 +2348,10 @@ public class PacmanGame {
 	    	c.getPresentation().setWidth(8);
 	    	c.getPresentation().setHeight(8);
 	    	prepareElement(c.getPresentation(), 48, 0);
-	    	c.getPresentation().setParent(scoreEl[0].getPresentation());
-	    	scoreEl[0].addNumber(c);
+	    	c.getPresentation().setParent(scoreEl.getPresentation());
+	    	scoreEl.addNumber(c);
 	    }
-	    canvasEl.getScores()[0] = scoreEl[0];
+	    canvasEl.setScore(scoreEl);
 	    livesEl = new Lives();
 	    livesEl.getPresentation().setId("pcm-li");
 	    livesEl.getPresentation().setLeft(523);
@@ -2507,37 +2368,6 @@ public class PacmanGame {
 	    levelEl.getPresentation().setWidth(32);
 	    levelEl.getPresentation().setParent(canvasEl.getPresentation());
 	    canvasEl.setLevel(levelEl);
-	    if (playerCount == 2) {
-	    	scoreLabelEl[1] = new ScoreLabel();
-	    	scoreLabelEl[1].getPresentation().setId("pcm-sc-2-l");
-		    scoreLabelEl[1].getPresentation().setLeft(-2);
-		    scoreLabelEl[1].getPresentation().setTop(64);
-		    scoreLabelEl[1].getPresentation().setWidth(48);
-		    scoreLabelEl[1].getPresentation().setHeight(8);
-	    	prepareElement(scoreLabelEl[1].getPresentation(), 160, 64);
-		    scoreLabelEl[1].getPresentation().setParent(canvasEl.getPresentation());
-	    	canvasEl.getScoreLabels()[1] = scoreLabelEl[1];
-	    	scoreEl[1] = new Score();
-	    	scoreEl[1].getPresentation().setId("pcm-sc-2");
-	    	scoreEl[1].getPresentation().setLeft(18);
-	    	scoreEl[1].getPresentation().setTop(80);
-	    	scoreEl[1].getPresentation().setWidth(8);
-	    	scoreEl[1].getPresentation().setHeight(56);
-		    scoreEl[1].getPresentation().setParent(canvasEl.getPresentation());		    	
-	    	for (int b = 0; b < scoreDigits; b++) {
-	    		Score.Number c = new Score.Number();
-	    		c.getPresentation().setId("pcm-sc-2-" + b);
-	    		c.getPresentation().setTop(b * 8);
-	    		c.getPresentation().setLeft(0);
-	    		c.getPresentation().setWidth(8);
-	    		c.getPresentation().setHeight(8);
-	    		prepareElement(c.getPresentation(), 48, 0);
-		    	c.getPresentation().setParent(scoreEl[1].getPresentation());
-	    		scoreEl[1].addNumber(c);
-	    	}
-	    	canvasEl.getScores()[1] = scoreEl[1];
-	    
-	    }
 	    if (soundAvailable) {
 	    	soundEl = new Sound();
 	    	soundEl.getPresentation().setId("pcm-so");
@@ -2600,39 +2430,31 @@ public class PacmanGame {
 		}
 	}
 	
-	void playDotEatingSound(int b) {
+	void playDotEatingSound() {
 	    if (soundAvailable && pacManSound)
 	    	if (gameplayMode == GameplayMode.ORDINARY_PLAYING)
-	    		if (dotEatingNow[b]) // 常にfalse
-	    			dotEatingNext[b] = true; // デッドコード
+	    		if (dotEatingNow[0]) // 常にfalse
+	    			dotEatingNext[0] = true; // デッドコード
 	    		else {
-	    			if (b == 0) {
-	    				String c = dotEatingSoundPart[b] == 1 ? "eating_dot_1" : "eating_dot_2";
-	    				playSound(c, 1 + dotEatingChannel[b], true);
-	//    				dotTimer = window.setInterval(g.repeatDotEatingSoundPacMan, 150) // 無意味な処理
-	    			} else {
-	    				playSound("eating_dot_double", 3 + dotEatingChannel[b], true);
-	//    				dotTimerMs = window.setInterval(g.repeatDotEatingSoundMsPacMan, 150) // 無意味な処理
-	    			}
-	    			dotEatingChannel[b] = (dotEatingChannel[b] + 1) % 2; // 0 と 1 をスイッチ
-	    			dotEatingSoundPart[b] = 3 - dotEatingSoundPart[b]; // 1 と 2 をスイッチ
+    				String c = dotEatingSoundPart == 1 ? "eating_dot_1" : "eating_dot_2";
+    				playSound(c, 1 + dotEatingChannel, true);
+//    				dotTimer = window.setInterval(g.repeatDotEatingSoundPacMan, 150) // 無意味な処理
+    				
+	    			dotEatingChannel = (dotEatingChannel + 1) % 2; // 0 と 1 をスイッチ
+	    			dotEatingSoundPart = 3 - dotEatingSoundPart; // 1 と 2 をスイッチ
 	    		}
 	}
 
-	void repeatDotEatingSound(int b) {
-	    dotEatingNow[b] = false;
-	    if (dotEatingNext[b]) { // 常にfalseのためこのブロックはデッドコード
-	    	dotEatingNext[b] = false;
-	    	playDotEatingSound(b);
+	void repeatDotEatingSound() {
+	    dotEatingNow[0] = false;
+	    if (dotEatingNext[0]) { // 常にfalseのためこのブロックはデッドコード
+	    	dotEatingNext[0] = false;
+	    	playDotEatingSound();
 	    }
 	}
 	
 	void repeatDotEatingSoundPacMan() {
-	    repeatDotEatingSound(0);
-	}
-	
-	void repeatDotEatingSoundMsPacMan() {
-		repeatDotEatingSound(1);
+	    repeatDotEatingSound();
 	}
 	
 	public void playAmbientSound() {
@@ -2701,7 +2523,7 @@ public class PacmanGame {
 	}
     
 	void createCanvasElement() {
-		canvasEl = new PacManCanvas();
+		canvasEl = new PacmanCanvas();
 	    canvasEl.getPresentation().setId("pcm-c");
 	    canvasEl.getPresentation().setWidth(554);
 	    canvasEl.getPresentation().setHeight(136);
@@ -2763,9 +2585,9 @@ public class PacmanGame {
 	    
 	    soundPlayer = new SoundPlayer(view.getContext(), this);
 	    soundPlayer.init();
-	    
+	    // TODO: サウンドの初期化まわり見直し
 	    cutsceneAudioClip = new AudioClip(view.getContext(), R.raw.cutscene);
-	    cutsceneAudioClip.init();
+	    soundAvailable &= cutsceneAudioClip.init();
 
 		soundReady = true;
 		checkIfEverythingIsReady();
@@ -2794,10 +2616,6 @@ public class PacmanGame {
 //		return oppositeDirections;
 //	}
 
-	public int getPlayerCount() {
-		return playerCount;
-	}
-
 	public Map<Integer, Map<Integer, PathElement>> getPlayfield() {
 		return playfield;
 	}
@@ -2806,7 +2624,7 @@ public class PacmanGame {
 		return playfieldEl;
 	}
 
-	public PacManCanvas getCanvasEl() {
+	public PacmanCanvas getCanvasEl() {
 		return canvasEl;
 	}
 
@@ -2822,8 +2640,8 @@ public class PacmanGame {
 		return levels;
 	}
 
-	public Player[] getPlayers() {
-		return players;
+	public Pacman getPlayer() {
+		return player;
 	}
 	
 	public Ghost[] getGhosts() {
@@ -2866,14 +2684,6 @@ public class PacmanGame {
 		return ghostBeingEatenId;
 	}
 
-	public int getPlayerEatingGhostId() {
-		return playerEatingGhostId;
-	}
-	
-	public int getPlayerDyingId() {
-		return playerDyingId;
-	}
-	
 	public int getModeScoreMultiplier() {
 		return modeScoreMultiplier;
 	}

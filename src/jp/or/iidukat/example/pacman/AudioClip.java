@@ -22,9 +22,12 @@ class AudioClip {
 		this.resId = resId;
 	}
 	
-	void init() {
+	boolean init() {
 		name = context.getResources().getResourceName(resId);
 		mPlayer = MediaPlayer.create(context, resId);
+		if (mPlayer == null) {
+			return false;
+		}
 		mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
 			@Override
 			public void onCompletion(MediaPlayer mp) {
@@ -33,7 +36,8 @@ class AudioClip {
 					play();
 				}
 			}
-		});		
+		});
+		return true;
 	}
 	
 	void play() {

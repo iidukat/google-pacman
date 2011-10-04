@@ -1,9 +1,5 @@
 package jp.or.iidukat.example.pacman.entity;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-
 import jp.or.iidukat.example.pacman.CurrentSpeed;
 import jp.or.iidukat.example.pacman.Direction;
 import jp.or.iidukat.example.pacman.GameplayMode;
@@ -45,33 +41,6 @@ public abstract class Actor {
     											float scatterX, float scatterY) {
     		return new InitPosition(x, y, dir, scatterX, scatterY);
     	}
-    }
-
-    // Actor初期配置
-    static final Map<Integer, InitPosition[]> r;
-    static {
-    	Map<Integer, InitPosition[]> ps = new HashMap<Integer, InitPosition[]>();
-    	ps.put(
-    		Integer.valueOf(1),
-    		new InitPosition[] {
-    			InitPosition.createPlayerInitPosition(39.5f, 15, Direction.LEFT), // Pacman
-    			InitPosition.createGhostInitPosition(39.5f, 4, Direction.LEFT, 57, -4), // アカベエ
-    			InitPosition.createGhostInitPosition(39.5f, 7, Direction.DOWN, 0, -4), // ピンキー
-    			InitPosition.createGhostInitPosition(37.625f, 7, Direction.UP, 57, 20), // アオスケ
-    			InitPosition.createGhostInitPosition(41.375f, 7, Direction.UP, 0, 20), // グズタ
-    		});
-    	ps.put(
-       		Integer.valueOf(2),
-       		new InitPosition[] {
-       			InitPosition.createPlayerInitPosition(40.25f, 15, Direction.RIGHT), // Pacman
-       			InitPosition.createPlayerInitPosition(38.75f, 15, Direction.LEFT), // Ms.Pacman
-       			InitPosition.createGhostInitPosition(39.5f, 4, Direction.LEFT, 57, -4), // アカベエ
-       			InitPosition.createGhostInitPosition(39.5f, 7, Direction.DOWN, 0, -4), // ピンキー
-       			InitPosition.createGhostInitPosition(37.625f, 7, Direction.UP, 57, 20), // アオスケ
-       			InitPosition.createGhostInitPosition(41.375f, 7, Direction.UP, 0, 20), // グズタ
-       		});
-    	
-    	r = Collections.unmodifiableMap(ps);
     }
 
     static final int[] s = {32, 312}; // モンスターの巣の入り口の位置
@@ -178,6 +147,8 @@ public abstract class Actor {
 	
 	// Actorを再配置
 	public abstract void A();
+	
+	abstract InitPosition getInitPosition();
 	
 	// Actor表示に使用するdivタグを生成: 表示位置、バックグランドのオフセットはダミー値
 	public void createElement() {

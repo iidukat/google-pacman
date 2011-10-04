@@ -1,9 +1,5 @@
 package jp.or.iidukat.example.pacman.entity;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-
 import jp.or.iidukat.example.pacman.CurrentSpeed;
 import jp.or.iidukat.example.pacman.Direction;
 import jp.or.iidukat.example.pacman.GameplayMode;
@@ -16,82 +12,9 @@ import android.util.FloatMath;
 public abstract class Ghost extends Actor {
 
     // 配列Aの要素のspeedプロパティで使用される
-    private static float y = 0.8f * 0.4f;
+    static float y = 0.8f * 0.4f;
 
-    // モンスターの巣の中での動き
-    private static final Map<Integer, MoveInPen[]> A;
-    static {
-    	Map<Integer, MoveInPen[]> mvs = new HashMap<Integer, MoveInPen[]>();
-    	mvs.put(
-    		Integer.valueOf(1),
-    		new MoveInPen[] {
-    			new MoveInPen(37.6f, 7, Direction.UP, 6.375f, 0.48f),
-    			new MoveInPen(37.6f, 6.375f, Direction.DOWN, 7.625f, 0.48f),
-    			new MoveInPen(37.6f, 7.625f, Direction.UP, 7, 0.48f),
-    		});
-    	mvs.put(
-    		Integer.valueOf(2),
-    		new MoveInPen[] {
-    			new MoveInPen(39.5f, 7, Direction.DOWN, 7.625f, 0.48f),
-    			new MoveInPen(39.5f, 7.625f, Direction.UP, 6.375f, 0.48f),
-    			new MoveInPen(39.5f, 6.375f, Direction.DOWN, 7, 0.48f),
-    		});
-    	mvs.put(
-    		Integer.valueOf(3),
-    		new MoveInPen[] {
-    			new MoveInPen(41.4f, 7, Direction.UP, 6.375f, 0.48f),
-    			new MoveInPen(41.4f, 6.375f, Direction.DOWN, 7.625f, 0.48f),
-    			new MoveInPen(41.4f, 7.625f, Direction.UP, 7, 0.48f),
-    		});
-    	mvs.put(
-    		Integer.valueOf(4),
-    		new MoveInPen[] {
-    			new MoveInPen(37.6f, 7, Direction.RIGHT, 39.5f, y),
-    			new MoveInPen(39.5f, 7, Direction.UP, 4, y),
-    		});
-    	mvs.put(
-    		Integer.valueOf(5),
-    		new MoveInPen[] { new MoveInPen(39.5f, 7, Direction.UP, 4, y) });
-    	mvs.put(
-        	Integer.valueOf(6),
-        	new MoveInPen[] {
-        		new MoveInPen(41.4f, 7, Direction.LEFT, 39.5f, y),
-        		new MoveInPen(39.5f, 7, Direction.UP, 4, y),
-        	});
-    	mvs.put(
-           	Integer.valueOf(7),
-           	new MoveInPen[] {
-           		new MoveInPen(39.5f, 4, Direction.DOWN, 7, 1.6f),
-           		new MoveInPen(39.5f, 7, Direction.LEFT, 37.625f, 1.6f),
-           	});
-    	mvs.put(
-       		Integer.valueOf(8),
-       		new MoveInPen[] { new MoveInPen(39.5f, 4, Direction.DOWN, 7, 1.6f) });
-    	mvs.put(
-           	Integer.valueOf(9),
-           	new MoveInPen[] {
-           		new MoveInPen(39.5f, 4, Direction.DOWN, 7, 1.6f),
-           		new MoveInPen(39.5f, 7, Direction.RIGHT, 41.375f, 1.6f),
-           	});
-    	mvs.put(
-           	Integer.valueOf(10),
-           	new MoveInPen[] {
-           		new MoveInPen(37.6f, 7, Direction.RIGHT, 39.5f, y),
-           		new MoveInPen(39.5f, 7, Direction.UP, 4, y),
-           	});
-    	mvs.put(
-       		Integer.valueOf(11),
-       		new MoveInPen[] { new MoveInPen(39.5f, 7, Direction.UP, 4, y) });
-    	mvs.put(
-            Integer.valueOf(12),
-            new MoveInPen[] {
-            	new MoveInPen(41.4f, 7, Direction.LEFT, 39.5f, y),
-            	new MoveInPen(39.5f, 7, Direction.UP, 4, y),
-            });
-    	A = Collections.unmodifiableMap(mvs);
-    }
-
-    private static class MoveInPen {
+    static class MoveInPen {
     	final float x;
     	final float y;
     	final Direction dir;
@@ -109,10 +32,8 @@ public abstract class Ghost extends Actor {
 	GhostMode mode = GhostMode.NONE;
 	float[] targetPos;
 	float[] scatterPos;
-	int targetPlayerId;
 	private boolean followingRoutine;
 	private boolean proceedToNextRoutineMove;
-	private int routineToFollow;
 	private int routineMoveId;
 	private boolean freeToLeavePen;
 	private boolean modeChangedWhileInPen;
@@ -126,7 +47,7 @@ public abstract class Ghost extends Actor {
 	// Actorを再配置
 	@Override
 	public void A() {
-	    InitPosition b = r.get(g.getPlayerCount())[this.id];
+	    InitPosition b = getInitPosition();
 	    this.pos = new float[] {b.y * 8, b.x * 8};
 	    this.posDelta = new float[] {0, 0};
 	    this.tilePos = new int[] {(int) b.y * 8, (int) b.x * 8};
@@ -137,7 +58,6 @@ public abstract class Ghost extends Actor {
 	    this.nextDir = Direction.NONE;
 	    this.c(CurrentSpeed.NORMAL);
 	    this.reverseDirectionsNext = this.freeToLeavePen = this.modeChangedWhileInPen = this.eatenInThisFrightMode = false;
-	    this.l();
 	}
 
 	public abstract void B();
@@ -146,7 +66,7 @@ public abstract class Ghost extends Actor {
 	public void a(GhostMode b) {
 		GhostMode c = this.mode;
 		this.mode = b;
-		if (this.id == g.getPlayerCount() + 3
+		if (this.id == 4
 				&& (b == GhostMode.IN_PEN || c == GhostMode.IN_PEN))
 			g.updateCruiseElroySpeed();
 		switch (c) {
@@ -180,53 +100,16 @@ public abstract class Ghost extends Actor {
 	    	this.targetPos = new float[] {s[0], s[1]};
 	    	this.freeToLeavePen = this.followingRoutine = false;
 	    	break;
-	    case IN_PEN:
-	    	this.l();
-	    	this.followingRoutine = true;
-	    	this.routineMoveId = -1;
-	    	if (this.id == g.getPlayerCount() + 1)
-		        this.routineToFollow = 2;
-	    	else if (this.id == g.getPlayerCount() + 2)
-		        this.routineToFollow = 1;
-	    	else if (this.id == g.getPlayerCount() + 3)
-		        this.routineToFollow = 3;
-
-	    	break;
 	    case EXITING_FROM_PEN:
 	    	this.followingRoutine = true;
 	    	this.routineMoveId = -1;
-	    	if (this.id == g.getPlayerCount() + 1)
-	    		this.routineToFollow = 5;
-	    	else if (this.id == g.getPlayerCount() + 2)
-	    		this.routineToFollow = 4;
-	    	else if (this.id == g.getPlayerCount() + 3)
-	    		this.routineToFollow = 6;
-
 	    	g.setGhostExitingPenNow(true);
 	    	break;
+	    case IN_PEN:
 	    case ENTERING_PEN:
-	    	this.followingRoutine = true;
-	    	this.routineMoveId = -1;
-	    	
-	    	if (this.id == g.getPlayerCount() || this.id == g.getPlayerCount() + 1)
-	    		this.routineToFollow = 8;
-	    	else if (this.id == g.getPlayerCount() + 2)
-	    		this.routineToFollow = 7;
-	    	else if (this.id == g.getPlayerCount() + 3)
-	    		this.routineToFollow = 9;
-	    	
-	    	break;
 	    case RE_EXITING_FROM_PEN:
 	    	this.followingRoutine = true;
 	    	this.routineMoveId = -1;
-	    	
-	    	if (this.id == g.getPlayerCount() || this.id == g.getPlayerCount() + 1)
-	    		this.routineToFollow = 11;
-	    	else if (this.id == g.getPlayerCount() + 2)
-	    		this.routineToFollow = 10;
-	    	else if (this.id == g.getPlayerCount() + 3)
-	    		this.routineToFollow = 12;
-	    	
 	    	break;
 	    }
 	    this.d();
@@ -311,15 +194,10 @@ public abstract class Ghost extends Actor {
 	      }
 	}
 
-	// 追跡対象のActorを決定(Pacman or Ms.Pacman)
-	void l() {
-		this.targetPlayerId = (int) FloatMath.floor(g.rand() * g.getPlayerCount());
-	}
-
 	// モンスターの巣の中/巣から出る挙動を管理(モンスター個別のモード管理)
 	void v() {
 	    this.routineMoveId++;
-	    if (this.routineMoveId == A.get(Integer.valueOf(this.routineToFollow)).length) // ルーチンの最後に到達
+	    if (this.routineMoveId == getMovesInPen().length) // ルーチンの最後に到達
 	    	if (this.mode == GhostMode.IN_PEN && this.freeToLeavePen && !g.isGhostExitingPenNow()) { // 外に出る条件が満たされた
 	    		if (this.eatenInThisFrightMode) this.a(GhostMode.RE_EXITING_FROM_PEN);
 	    		else this.a(GhostMode.EXITING_FROM_PEN);
@@ -335,7 +213,7 @@ public abstract class Ghost extends Actor {
 	    	    this.a(b);
 	    	    return;
 	    	} else if (this.mode == GhostMode.ENTERING_PEN) { // 食べられて巣に入る
-	    	    if (this.id == g.getPlayerCount() || this.freeToLeavePen)
+	    	    if (this instanceof Blinky || this.freeToLeavePen)
 	    	    	this.a(GhostMode.RE_EXITING_FROM_PEN); // アカベエはすぐに巣から出てくる
 	    	    else {
 	    		    this.eatenInThisFrightMode = true;
@@ -345,7 +223,7 @@ public abstract class Ghost extends Actor {
 	        } else // 外にでる条件が満たされなければ、ルーチンを繰り返す
 	    	    this.routineMoveId = 0;
 	
-	    MoveInPen mv = A.get(Integer.valueOf(this.routineToFollow))[this.routineMoveId];
+	    MoveInPen mv = getMovesInPen()[this.routineMoveId];
 	    this.pos[0] = mv.y * 8;
 	    this.pos[1] = mv.x * 8;
 	    this.dir = mv.dir;
@@ -354,14 +232,15 @@ public abstract class Ghost extends Actor {
 	    this.proceedToNextRoutineMove = false;
 	    this.b();
 	}
+	
 	// モンスターの巣の中/巣から出る挙動を管理(表示画像決定&位置移動)
 	void m() {
 		
 	    MoveInPen b = null;
-	    MoveInPen[] mvs = A.get(Integer.valueOf(this.routineToFollow));
+	    MoveInPen[] mvs = getMovesInPen();
 	    
 	    if (0 <= this.routineMoveId && this.routineMoveId < mvs.length)
-	    	b = A.get(Integer.valueOf(this.routineToFollow))[this.routineMoveId];
+	    	b = mvs[this.routineMoveId];
 	    
 	    if (b != null)
 	    	if (this.speedIntervals[g.getIntervalTime()]) {
@@ -386,6 +265,11 @@ public abstract class Ghost extends Actor {
 		        this.b();
 	    	}
 	}
+	
+	MoveInPen[] getMovesInPen() {
+		return new MoveInPen[0];
+	}
+	
 	// モンスターの巣の中/巣から出る挙動を管理
 	void j() {
 	    if (this.routineMoveId == -1 || this.proceedToNextRoutineMove)
@@ -582,11 +466,15 @@ public abstract class Ghost extends Actor {
 	        	b = 2;
 	        	break;
 	        }
-	        c = 4 + this.id - g.getPlayerCount();
+	        c = getOrdinaryImageRow();
 	        if (this.speed > 0 || g.getGameplayMode() != GameplayMode.CUTSCENE)
 	        	b += (int) (Math.floor(g.getGlobalTime() / 16) % 2);
 	    }
 	    return new int[] { c, b };
+	}
+	
+	int getOrdinaryImageRow() {
+		return -1;
 	}
 
 	@Override

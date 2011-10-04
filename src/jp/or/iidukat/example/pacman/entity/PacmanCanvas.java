@@ -4,12 +4,12 @@ import jp.or.iidukat.example.pacman.Presentation;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 
-public class PacManCanvas {
+public class PacmanCanvas {
 	private Presentation presentation = new Presentation();
 	
 	private PlayField playfield;
-	private ScoreLabel[] scoreLabels = new ScoreLabel[2];
-	private Score[] scores = new Score[2];
+	private ScoreLabel scoreLabel;
+	private Score score;
 	private Sound sound;
 	private Lives lives;
 	private Level level;
@@ -25,16 +25,13 @@ public class PacManCanvas {
 			playfield.draw(sourceImage, c);
 		}
 		
-		for (ScoreLabel sl : scoreLabels) {
-			if (sl != null) {
-				sl.draw(sourceImage, c);
-			}
+
+		if (scoreLabel != null) {
+			scoreLabel.draw(sourceImage, c);
 		}
 		
-		for (Score s : scores) {
-			if (s != null) {
-				s.draw(sourceImage, c);
-			}
+		if (score != null) {
+			score.draw(sourceImage, c);
 		}
 		
 		if (sound != null) {
@@ -62,12 +59,20 @@ public class PacManCanvas {
 		return playfield;
 	}
 
-	public ScoreLabel[] getScoreLabels() {
-		return scoreLabels;
+	public ScoreLabel getScoreLabel() {
+		return scoreLabel;
 	}
 
-	public Score[] getScores() {
-		return scores;
+	public void setScoreLabel(ScoreLabel scoreLabel) {
+		this.scoreLabel = scoreLabel;
+	}
+
+	public Score getScore() {
+		return score;
+	}
+	
+	public void setScore(Score score) {
+		this.score = score;
 	}
 	
 	public void setPlayfield(PlayField playfield) {
@@ -108,9 +113,8 @@ public class PacManCanvas {
 
 	public void reset() {
 		playfield = null;
-		scoreLabels[0] = null;
-		scoreLabels[1] = null;
-		scores[0] = null;
+		scoreLabel = null;
+		score = null;
 		sound = null;
 		lives = null;
 		level = null;
