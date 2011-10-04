@@ -473,9 +473,7 @@ public abstract class Ghost extends Actor {
 	    return new int[] { c, b };
 	}
 	
-	int getOrdinaryImageRow() {
-		return -1;
-	}
+	abstract int getOrdinaryImageRow();
 
 	@Override
 	public void move() {

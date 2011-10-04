@@ -18,4 +18,9 @@ public class CutsceneGhost extends Ghost {
 	InitPosition getInitPosition() {
 		return null;
 	}
+	
+	@Override
+	int getOrdinaryImageRow() {
+        return 4; // 4 + this.id - 1;		
+	}
 }
