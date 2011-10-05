@@ -4,23 +4,23 @@ import jp.or.iidukat.example.pacman.PacmanGame;
 
 public class CutsceneGhost extends Ghost {
 
-	public CutsceneGhost(int b, PacmanGame g) {
-		super(b, g);
-	}
+    public CutsceneGhost(int b, PacmanGame g) {
+        super(b, g);
+    }
 
-	@Override
-	public void B() {
-		// TODO Auto-generated method stub
+    @Override
+    public void B() {
+        // TODO Auto-generated method stub
 
-	}
-	
-	@Override
-	InitPosition getInitPosition() {
-		return null;
-	}
-	
-	@Override
-	int getOrdinaryImageRow() {
-        return 4; // 4 + this.id - 1;		
-	}
+    }
+    
+    @Override
+    InitPosition getInitPosition() {
+        return null;
+    }
+    
+    @Override
+    int getOrdinaryImageRow() {
+        return 4; // 4 + this.id - 1;
+    }
 }

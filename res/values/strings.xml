@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-	<string name="app_name">Google Pacman</string>
-	<string name="game_start_label">Game Start...</string>
+    <string name="app_name">Google Pacman</string>
+    <string name="game_start_label">Game Start...</string>
     <string name="game_start_title">Game Start</string>
     <string name="game_start_shortcut">s</string>
-	<string name="kill_screen_label">Kill Screen...</string>
+    <string name="kill_screen_label">Kill Screen...</string>
     <string name="kill_screen_title">Kill Screen</string>
     <string name="kill_screen_shortcut">k</string>
 </resources>
