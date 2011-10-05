@@ -11,15 +11,12 @@ import android.media.SoundPool.OnLoadCompleteListener;
 public class SoundPlayer {
 	
 	private static final int[] soundResources = {
-		R.raw.death_double, 
 		R.raw.death,
 		R.raw.eating_dot_1,
 		R.raw.eating_dot_2,
-		R.raw.eating_dot_double,
 		R.raw.eating_ghost,
 		R.raw.extra_life,
 		R.raw.fruit,
-		R.raw.start_music_double,
 		R.raw.start_music,
 	};
 	
