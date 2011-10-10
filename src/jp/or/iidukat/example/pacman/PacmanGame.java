@@ -439,7 +439,7 @@ public class PacmanGame {
                 .ghostModeSwitchTimes(new float[] { 7, 20, 7, 20, 5, 1033, 1f / 60, 1, })
                 .penForceTime(4)
                 .penLeavingLimits(new float[] { 0, 0, 0, 0, })
-                .build(),                
+                .build(),
         new LevelConfig.Builder()
                 .ghostSpeed(0.85f)
                 .ghostTunnelSpeed(0.45f)
@@ -459,7 +459,7 @@ public class PacmanGame {
                 .ghostModeSwitchTimes(new float[] { 7, 20, 7, 20, 5, 1033, 1f / 60, 1, })
                 .penForceTime(4)
                 .penLeavingLimits(new float[] { 0, 0, 0, 0, })
-                .build(),                
+                .build(),
         new LevelConfig.Builder()
                 .ghostSpeed(0.95f)
                 .ghostTunnelSpeed(0.5f)
@@ -500,7 +500,7 @@ public class PacmanGame {
                 .ghostModeSwitchTimes(new float[] { 5, 20, 5, 20, 5, 1037, 1f / 60, 1, })
                 .penForceTime(3)
                 .penLeavingLimits(new float[] { 0, 0, 0, 0, })
-                .build(),                
+                .build(),
         new LevelConfig.Builder()
                 .ghostSpeed(0.95f)
                 .ghostTunnelSpeed(0.5f)
@@ -520,7 +520,7 @@ public class PacmanGame {
                 .ghostModeSwitchTimes(new float[] { 5, 20, 5, 20, 5, 1037, 1f / 60, 1, })
                 .penForceTime(3)
                 .penLeavingLimits(new float[] { 0, 0, 0, 0, })
-                .build(),                
+                .build(),
         new LevelConfig.Builder()
                 .ghostSpeed(0.95f)
                 .ghostTunnelSpeed(0.5f)
@@ -561,7 +561,7 @@ public class PacmanGame {
                 .penForceTime(3)
                 .penLeavingLimits(new float[] { 0, 0, 0, 0, })
                 .cutsceneId(3)
-                .build(),                
+                .build(),
         new LevelConfig.Builder()
                 .ghostSpeed(0.95f)
                 .ghostTunnelSpeed(0.5f)
@@ -581,7 +581,7 @@ public class PacmanGame {
                 .ghostModeSwitchTimes(new float[] { 5, 20, 5, 20, 5, 1037, 1f / 60, 1, })
                 .penForceTime(3)
                 .penLeavingLimits(new float[] { 0, 0, 0, 0, })
-                .build(),                
+                .build(),
         new LevelConfig.Builder()
                 .ghostSpeed(0.95f)
                 .ghostTunnelSpeed(0.5f)
@@ -601,7 +601,7 @@ public class PacmanGame {
                 .ghostModeSwitchTimes(new float[] { 5, 20, 5, 20, 5, 1037, 1f / 60, 1, })
                 .penForceTime(3)
                 .penLeavingLimits(new float[] { 0, 0, 0, 0, })
-                .build(),                
+                .build(),
         new LevelConfig.Builder()
                 .ghostSpeed(0.95f)
                 .ghostTunnelSpeed(0.5f)
@@ -621,7 +621,7 @@ public class PacmanGame {
                 .ghostModeSwitchTimes(new float[] { 5, 20, 5, 20, 5, 1037, 1f / 60, 1, })
                 .penForceTime(3)
                 .penLeavingLimits(new float[] { 0, 0, 0, 0, })
-                .build(),                
+                .build(),
         new LevelConfig.Builder()
                 .ghostSpeed(0.95f)
                 .ghostTunnelSpeed(0.5f)
@@ -642,7 +642,7 @@ public class PacmanGame {
                 .penForceTime(3)
                 .penLeavingLimits(new float[] { 0, 0, 0, 0, })
                 .cutsceneId(3)
-                .build(),                
+                .build(),
         new LevelConfig.Builder()
                 .ghostSpeed(0.95f)
                 .ghostTunnelSpeed(0.5f)
@@ -662,7 +662,7 @@ public class PacmanGame {
                 .ghostModeSwitchTimes(new float[] { 5, 20, 5, 20, 5, 1037, 1f / 60, 1, })
                 .penForceTime(3)
                 .penLeavingLimits(new float[] { 0, 0, 0, 0, })
-                .build(),                
+                .build(),
         new LevelConfig.Builder()
                 .ghostSpeed(0.95f)
                 .ghostTunnelSpeed(0.5f)
@@ -682,7 +682,7 @@ public class PacmanGame {
                 .ghostModeSwitchTimes(new float[] { 5, 20, 5, 20, 5, 1037, 1f / 60, 1, })
                 .penForceTime(3)
                 .penLeavingLimits(new float[] { 0, 0, 0, 0, })
-                .build(),                
+                .build(),
         new LevelConfig.Builder()
                 .ghostSpeed(0.95f)
                 .ghostTunnelSpeed(0.5f)
@@ -702,7 +702,7 @@ public class PacmanGame {
                 .ghostModeSwitchTimes(new float[] { 5, 20, 5, 20, 5, 1037, 1f / 60, 1, })
                 .penForceTime(3)
                 .penLeavingLimits(new float[] { 0, 0, 0, 0, })
-                .build(),                
+                .build(),
         new LevelConfig.Builder()
                 .ghostSpeed(0.95f)
                 .ghostTunnelSpeed(0.5f)
@@ -723,7 +723,7 @@ public class PacmanGame {
                 .penForceTime(3)
                 .penLeavingLimits(new float[] { 0, 0, 0, 0, })
                 .cutsceneId(3)
-                .build(),                
+                .build(),
         new LevelConfig.Builder()
                 .ghostSpeed(0.95f)
                 .ghostTunnelSpeed(0.5f)
@@ -763,7 +763,7 @@ public class PacmanGame {
                 .ghostModeSwitchTimes(new float[] { 5, 20, 5, 20, 5, 1037, 1f / 60, 1, })
                 .penForceTime(3)
                 .penLeavingLimits(new float[] { 0, 0, 0, 0, })
-                .build(),        
+                .build(),
         new LevelConfig.Builder()
                 .ghostSpeed(0.95f)
                 .ghostTunnelSpeed(0.5f)
@@ -783,7 +783,7 @@ public class PacmanGame {
                 .ghostModeSwitchTimes(new float[] { 5, 20, 5, 20, 5, 1037, 1f / 60, 1, })
                 .penForceTime(3)
                 .penLeavingLimits(new float[] { 0, 0, 0, 0, })
-                .build(),        
+                .build(),
         new LevelConfig.Builder()
                 .ghostSpeed(0.95f)
                 .ghostTunnelSpeed(0.5f)
@@ -965,13 +965,11 @@ public class PacmanGame {
     }
 
     public static float getDistance(int[] b, int[] c) {
-        return FloatMath.sqrt((c[1] - b[1]) * (c[1] - b[1]) + (c[0] - b[0])
-                * (c[0] - b[0]));
+        return FloatMath.sqrt((c[1] - b[1]) * (c[1] - b[1]) + (c[0] - b[0]) * (c[0] - b[0]));
     }
 
     public static float getDistance(float[] b, float[] c) {
-        return FloatMath.sqrt((c[1] - b[1]) * (c[1] - b[1]) + (c[0] - b[0])
-                * (c[0] - b[0]));
+        return FloatMath.sqrt((c[1] - b[1]) * (c[1] - b[1]) + (c[0] - b[0]) * (c[0] - b[0]));
     }
 
     public static float getPlayfieldX(float b) {
@@ -1061,20 +1059,16 @@ public class PacmanGame {
                         pe.setDot(1);
                         dotsRemaining++;
                     }
-                    pe
-                            .setTunnel(!d || h != c.x * 8
-                                    && h != (c.x + c.w - 1) * 8 ? d : false);
+                    pe.setTunnel(!d || h != c.x * 8 && h != (c.x + c.w - 1) * 8 ? d : false);
                 }
                 playfield.get(Integer.valueOf(f)).get(Integer.valueOf(c.x * 8))
                         .setIntersection(true);
-                playfield.get(Integer.valueOf(f)).get(
-                        Integer.valueOf((c.x + c.w - 1) * 8)).setIntersection(
-                        true);
+                playfield.get(Integer.valueOf(f)).get(Integer.valueOf((c.x + c.w - 1) * 8))
+                        .setIntersection(true);
             } else {
                 int h = c.x * 8;
                 for (int f = c.y * 8; f <= (c.y + c.h - 1) * 8; f += 8) {
-                    PathElement pe = playfield.get(Integer.valueOf(f)).get(
-                            Integer.valueOf(h));
+                    PathElement pe = playfield.get(Integer.valueOf(f)).get(Integer.valueOf(h));
                     if (pe.isPath())
                         pe.setIntersection(true);
                     pe.setPath(true);
@@ -1082,27 +1076,23 @@ public class PacmanGame {
                         pe.setDot(1);
                         dotsRemaining++;
                     }
-                    pe
-                            .setTunnel(!d || f != c.y * 8
-                                    && f != (c.y + c.h - 1) * 8 ? d : false);
+                    pe.setTunnel(!d || f != c.y * 8 && f != (c.y + c.h - 1) * 8 ? d : false);
                 }
                 playfield.get(Integer.valueOf(c.y * 8)).get(Integer.valueOf(h))
                         .setIntersection(true);
-                playfield.get(Integer.valueOf((c.y + c.h - 1) * 8)).get(
-                        Integer.valueOf(h)).setIntersection(true);
+                playfield.get(Integer.valueOf((c.y + c.h - 1) * 8)).get(Integer.valueOf(h))
+                        .setIntersection(true);
             }
         }
         for (Path p : o)
             if (p.w != 0)
                 for (int h = p.x * 8; h <= (p.x + p.w - 1) * 8; h += 8) {
-                    playfield.get(Integer.valueOf(p.y * 8)).get(
-                            Integer.valueOf(h)).setDot(0);
+                    playfield.get(Integer.valueOf(p.y * 8)).get(Integer.valueOf(h)).setDot(0);
                     dotsRemaining--;
                 }
             else
                 for (int f = p.y * 8; f <= (p.y + p.h - 1) * 8; f += 8) {
-                    playfield.get(Integer.valueOf(f)).get(
-                            Integer.valueOf(p.x * 8)).setDot(0);
+                    playfield.get(Integer.valueOf(f)).get(Integer.valueOf(p.x * 8)).setDot(0);
                     dotsRemaining--;
                 }
     }
@@ -1110,20 +1100,15 @@ public class PacmanGame {
     void prepareAllowedDirections() {
         for (int b = 8; b <= playfieldHeight * 8; b += 8)
             for (int c = 8; c <= playfieldWidth * 8; c += 8) {
-                PathElement pe = playfield.get(Integer.valueOf(b)).get(
-                        Integer.valueOf(c));
+                PathElement pe = playfield.get(Integer.valueOf(b)).get(Integer.valueOf(c));
                 EnumSet<Direction> allowedDir = EnumSet.noneOf(Direction.class);
-                if (playfield.get(Integer.valueOf(b - 8)).get(
-                        Integer.valueOf(c)).isPath())
+                if (playfield.get(Integer.valueOf(b - 8)).get(Integer.valueOf(c)).isPath())
                     allowedDir.add(Direction.UP);
-                if (playfield.get(Integer.valueOf(b + 8)).get(
-                        Integer.valueOf(c)).isPath())
+                if (playfield.get(Integer.valueOf(b + 8)).get(Integer.valueOf(c)).isPath())
                     allowedDir.add(Direction.DOWN);
-                if (playfield.get(Integer.valueOf(b)).get(
-                        Integer.valueOf(c - 8)).isPath())
+                if (playfield.get(Integer.valueOf(b)).get(Integer.valueOf(c - 8)).isPath())
                     allowedDir.add(Direction.LEFT);
-                if (playfield.get(Integer.valueOf(b)).get(
-                        Integer.valueOf(c + 8)).isPath())
+                if (playfield.get(Integer.valueOf(b)).get(Integer.valueOf(c + 8)).isPath())
                     allowedDir.add(Direction.RIGHT);
                 pe.setAllowedDir(allowedDir);
             }
@@ -1144,8 +1129,7 @@ public class PacmanGame {
                     food.getPresentation().setWidth(2);
                     food.getPresentation().setHeight(2);
                     food.getPresentation().setBgColor(0xf8b090);
-                    food.getPresentation().setParent(
-                            playfieldEl.getPresentation());
+                    food.getPresentation().setParent(playfieldEl.getPresentation());
                     playfieldEl.addFood(food);
                 }
     }
@@ -1163,8 +1147,7 @@ public class PacmanGame {
             f.getPresentation().setWidth(8);
             f.getPresentation().setHeight(8);
             prepareElement(f.getPresentation(), 0, 144);
-            playfield.get(Integer.valueOf(c.y * 8)).get(
-                    Integer.valueOf(c.x * 8)).setDot(2);
+            playfield.get(Integer.valueOf(c.y * 8)).get(Integer.valueOf(c.x * 8)).setDot(2);
         }
     }
 
@@ -1326,8 +1309,7 @@ public class PacmanGame {
         if (c < 8 && d < 8)
             canvasClicked(touchStartX, touchStartY);
         else if (c > 15 && d < c * 2 / 3)
-            player.setRequestedDir(touchDX > 0 ? Direction.RIGHT
-                    : Direction.LEFT);
+            player.setRequestedDir(touchDX > 0 ? Direction.RIGHT : Direction.LEFT);
         else if (d > 15 && c < d * 2 / 3)
             player.setRequestedDir(touchDY > 0 ? Direction.DOWN : Direction.UP);
         cancelTouch();
@@ -1563,8 +1545,7 @@ public class PacmanGame {
         dotsEaten++;
         player.c(CurrentSpeed.PACMAN_EATING_DOT);
         playDotEatingSound();
-        if (playfield.get(Integer.valueOf(c[0])).get(Integer.valueOf(c[1]))
-                .getDot() == 2) { // パワーエサを食べたとき
+        if (playfield.get(Integer.valueOf(c[0])).get(Integer.valueOf(c[1])).getDot() == 2) { // パワーエサを食べたとき
             switchMainGhostMode(GhostMode.FRIGHTENED, false);
             addToScore(50);
         } else
@@ -1574,8 +1555,7 @@ public class PacmanGame {
         // d.style.display = "none";
         d.setEaten(true);
         d.getPresentation().setVisibility(false);
-        playfield.get(Integer.valueOf(c[0])).get(Integer.valueOf(c[1])).setDot(
-                0);
+        playfield.get(Integer.valueOf(c[0])).get(Integer.valueOf(c[1])).setDot(0);
         updateCruiseElroySpeed();
         resetForcePenLeaveTime();
         figureOutPenLeaving();
@@ -1607,8 +1587,7 @@ public class PacmanGame {
         fruitShown = true;
         int[] b = getFruitSprite(levels.fruit);
         changeElementBkPos(fruitEl.getPresentation(), b[0], b[1], true);
-        fruitTime = (int) timing[15]
-                + (int) ((timing[16] - timing[15]) * rand());
+        fruitTime = (int) timing[15] + (int) ((timing[16] - timing[15]) * rand());
     }
 
     public void eatFruit() {
@@ -2003,11 +1982,9 @@ public class PacmanGame {
                 break;
             case LEVEL_COMPLETED:
                 if (FloatMath.floor(gameplayModeTime / (timing[11] / 8)) % 2 == 0)
-                    changeElementBkPos(playfieldEl.getPresentation(), 322, 2,
-                            false);
+                    changeElementBkPos(playfieldEl.getPresentation(), 322, 2, false);
                 else
-                    changeElementBkPos(playfieldEl.getPresentation(), 322, 138,
-                            false);
+                    changeElementBkPos(playfieldEl.getPresentation(), 322, 138, false);
             }
 
             if (gameplayModeTime <= 0) {
@@ -2023,8 +2000,8 @@ public class PacmanGame {
                     boolean c = false;
                     for (Ghost ghost : ghosts)
                         if (ghost.getMode() == GhostMode.FRIGHTENED
-                                || (ghost.getMode() == GhostMode.IN_PEN || ghost
-                                        .getMode() == GhostMode.RE_EXITING_FROM_PEN)
+                                || (ghost.getMode() == GhostMode.IN_PEN
+                                || ghost.getMode() == GhostMode.RE_EXITING_FROM_PEN)
                                 && !ghost.isEatenInThisFrightMode()) {
                             c = true;
                             break;
@@ -2100,8 +2077,7 @@ public class PacmanGame {
                 ghostModeTime = 0;
                 ghostModeSwitchPos++;
                 if (ghostModeSwitchPos < levels.ghostModeSwitchTimes.length) {
-                    ghostModeTime = levels.ghostModeSwitchTimes[ghostModeSwitchPos]
-                            * D;
+                    ghostModeTime = levels.ghostModeSwitchTimes[ghostModeSwitchPos] * D;
                     switch (mainGhostMode) {
                     case SCATTER:
                         switchMainGhostMode(GhostMode.CHASE, false);
@@ -2214,8 +2190,7 @@ public class PacmanGame {
             if (d < c.length())
                 h = c.substring(d, d + 1);
             if (h != null)
-                changeElementBkPos(f.getPresentation(), 8 + 8 * Integer
-                        .parseInt(h, 10), 144, true);
+                changeElementBkPos(f.getPresentation(), 8 + 8 * Integer.parseInt(h, 10), 144, true);
             else
                 changeElementBkPos(f.getPresentation(), 48, 0, true);
         }

@@ -8,9 +8,6 @@ import jp.or.iidukat.example.pacman.PacmanGame;
 import jp.or.iidukat.example.pacman.Presentation;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Paint;
-import android.graphics.Rect;
-import android.graphics.RectF;
 
 public abstract class Actor {
 

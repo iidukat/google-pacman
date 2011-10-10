@@ -4,10 +4,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import android.util.FloatMath;
-
 import jp.or.iidukat.example.pacman.Direction;
-import jp.or.iidukat.example.pacman.GameplayMode;
 import jp.or.iidukat.example.pacman.PacmanGame;
 import jp.or.iidukat.example.pacman.Presentation;
 import jp.or.iidukat.example.pacman.entity.CutsceneActor.Cutscene.Move;
