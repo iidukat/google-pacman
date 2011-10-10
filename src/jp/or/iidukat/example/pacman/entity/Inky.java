@@ -5,7 +5,6 @@ import java.util.EnumMap;
 import java.util.Map;
 
 import jp.or.iidukat.example.pacman.Direction;
-import jp.or.iidukat.example.pacman.GhostMode;
 import jp.or.iidukat.example.pacman.Move;
 import jp.or.iidukat.example.pacman.PacmanGame;
 
@@ -22,28 +21,28 @@ public class Inky extends Ghost {
         m.put(
             GhostMode.IN_PEN,
             new MoveInPen[] {
-                      new MoveInPen(37.6f, 7, Direction.UP, 6.375f, 0.48f),
-                      new MoveInPen(37.6f, 6.375f, Direction.DOWN, 7.625f, 0.48f),
-                      new MoveInPen(37.6f, 7.625f, Direction.UP, 7, 0.48f),
-              });            
+                new MoveInPen(37.6f, 7, Direction.UP, 6.375f, 0.48f),
+                new MoveInPen(37.6f, 6.375f, Direction.DOWN, 7.625f, 0.48f),
+                new MoveInPen(37.6f, 7.625f, Direction.UP, 7, 0.48f),
+            });            
         m.put(
             GhostMode.EXITING_FROM_PEN,
             new MoveInPen[] {
-                      new MoveInPen(37.6f, 7, Direction.RIGHT, 39.5f, y),
-                      new MoveInPen(39.5f, 7, Direction.UP, 4, y),
-              });            
+                new MoveInPen(37.6f, 7, Direction.RIGHT, 39.5f, y),
+                new MoveInPen(39.5f, 7, Direction.UP, 4, y),
+            });            
         m.put(
             GhostMode.ENTERING_PEN,
             new MoveInPen[] {
-                     new MoveInPen(39.5f, 4, Direction.DOWN, 7, 1.6f),
-                     new MoveInPen(39.5f, 7, Direction.LEFT, 37.625f, 1.6f),
-                 });            
+                new MoveInPen(39.5f, 4, Direction.DOWN, 7, 1.6f),
+                new MoveInPen(39.5f, 7, Direction.LEFT, 37.625f, 1.6f),
+            });            
         m.put(
             GhostMode.RE_EXITING_FROM_PEN,
             new MoveInPen[] {
-                     new MoveInPen(37.6f, 7, Direction.RIGHT, 39.5f, y),
-                     new MoveInPen(39.5f, 7, Direction.UP, 4, y),
-                 });            
+                new MoveInPen(37.6f, 7, Direction.RIGHT, 39.5f, y),
+                new MoveInPen(39.5f, 7, Direction.UP, 4, y),
+            });            
         MOVES_IN_PEN = Collections.unmodifiableMap(m);
     }
 
@@ -86,5 +85,5 @@ public class Inky extends Ghost {
     @Override
     int getOrdinaryImageRow() {
         return 6; // 4 + this.id - 1;
-    }    
+    }
 }

@@ -5,7 +5,6 @@ import java.util.EnumMap;
 import java.util.Map;
 
 import jp.or.iidukat.example.pacman.Direction;
-import jp.or.iidukat.example.pacman.GhostMode;
 import jp.or.iidukat.example.pacman.PacmanGame;
 
 public class Blinky extends Ghost {

@@ -3,7 +3,6 @@ package jp.or.iidukat.example.pacman.entity;
 import jp.or.iidukat.example.pacman.CurrentSpeed;
 import jp.or.iidukat.example.pacman.Direction;
 import jp.or.iidukat.example.pacman.GameplayMode;
-import jp.or.iidukat.example.pacman.GhostMode;
 import jp.or.iidukat.example.pacman.Move;
 import jp.or.iidukat.example.pacman.PacmanGame;
 import jp.or.iidukat.example.pacman.PathElement;
@@ -11,6 +10,22 @@ import android.util.FloatMath;
 
 public abstract class Ghost extends Actor {
 
+    public static enum GhostMode {
+        NONE(0), CHASE(1), SCATTER(2), FRIGHTENED(4), 
+        EATEN(8), IN_PEN(16), EXITING_FROM_PEN(32),
+        ENTERING_PEN(64), RE_EXITING_FROM_PEN(128);
+        
+        private final int mode;
+        
+        private GhostMode(int mode) {
+            this.mode = mode;
+        }
+
+        public int getMode() {
+            return mode;
+        }
+    }
+    
     // 配列Aの要素のspeedプロパティで使用される
     static float y = 0.8f * 0.4f;
 
@@ -39,6 +54,7 @@ public abstract class Ghost extends Actor {
     private boolean modeChangedWhileInPen;
     boolean eatenInThisFrightMode;
     boolean reverseDirectionsNext;
+    private int dotCount;
 
     public Ghost(int b, PacmanGame g) {
         super(b, g);
@@ -371,7 +387,8 @@ public abstract class Ghost extends Actor {
             // Pacman or Ms.Pacmanが死んだ直後。モンスターの姿は消える 
             b = 3;
             c = 0;
-        } else if (g.getGameplayMode() == GameplayMode.GHOST_DIED && this.id == g.getGhostBeingEatenId()) {
+        } else if (g.getGameplayMode() == GameplayMode.GHOST_DIED
+                        && this.id == g.getGhostBeingEatenId()) {
             switch (g.getModeScoreMultiplier()) {// モンスターが食べられたときに表示させるスコアを決定
             case 2:
                 b = 0;
@@ -430,19 +447,6 @@ public abstract class Ghost extends Actor {
         } else if ("pcm-ghfa".equals(this.el.getId())) {
             b = g.getCutsceneSequenceId() == 3 ? 6 : 7;
             c = 11;
-        } else if ("pcm-stck".equals(this.el.getId())) {
-            b = g.getCutsceneSequenceId() == 1
-                ? g.getCutsceneTime() > 60
-                    ? 1
-                    : g.getCutsceneTime() > 45
-                        ? 2
-                        : 3
-                : g.getCutsceneSequenceId() == 2
-                    ? 3
-                    : g.getCutsceneSequenceId() == 3 || g.getCutsceneSequenceId() == 4
-                        ? 4
-                        : 0;
-            c = 13;
         } else { // 通常時の画像表示
             Direction ndir = this.nextDir;
             if (ndir == Direction.NONE
@@ -531,4 +535,15 @@ public abstract class Ghost extends Actor {
         this.modeChangedWhileInPen = modeChangedWhileInPen;
     }
 
+    public int getDotCount() {
+        return dotCount;
+    }
+
+    public void setDotCount(int dotCount) {
+        this.dotCount = dotCount;
+    }
+    
+    public void incrementDotCount() {
+        this.dotCount++;
+    }
 }

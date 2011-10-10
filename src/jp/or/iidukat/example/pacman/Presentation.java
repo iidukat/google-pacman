@@ -31,8 +31,8 @@ public class Presentation {
         float left = 0;
         Presentation p = this;
         do {
-            top += p.top;
-            left += p.left;
+            top += p.getTop();
+            left += p.getLeft();
         } while ((p = p.parent) != null);
 
         // TODO: floatをintに変更して問題ないかどうか検討すること
@@ -54,8 +54,8 @@ public class Presentation {
         float left = 0;
         Presentation p = this;
         do {
-            top += p.top;
-            left += p.left;
+            top += p.getTop();
+            left += p.getLeft();
         } while ((p = p.parent) != null);
 
         dest.set(

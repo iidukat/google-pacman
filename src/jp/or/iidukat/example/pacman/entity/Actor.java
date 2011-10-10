@@ -37,15 +37,17 @@ public abstract class Actor {
             return new InitPosition(x, y, dir);
         }
         
-        static InitPosition createGhostInitPosition(float x, float y, Direction dir,
-                                                float scatterX, float scatterY) {
+        static InitPosition createGhostInitPosition(
+                                                float x,
+                                                float y,
+                                                Direction dir,
+                                                float scatterX,
+                                                float scatterY) {
             return new InitPosition(x, y, dir, scatterX, scatterY);
         }
     }
 
     static final int[] s = {32, 312}; // モンスターの巣の入り口の位置
-
-
     
     final int id;
     final PacmanGame g;
@@ -64,79 +66,7 @@ public abstract class Actor {
     float fullSpeed;
     float tunnelSpeed;
     Boolean[] speedIntervals;
-    private int dotCount;
 
-    static class ActorPresentation extends Presentation {
-
-        @Override
-        public void drawBitmap(Bitmap sourceImage, Canvas c) {
-            float top = getTop();
-            float left = getLeft();
-            Presentation p = this;
-            
-            while ((p = p.getParent()) != null) {
-                top += p.getTop();
-                left += p.getLeft();
-            }
-
-            // TODO: floatをintに変更して問題ないかどうか検討すること
-            Rect src = getSrc();
-            src.set(
-                Math.round(getBgPosX()),
-                Math.round(getBgPosY()),
-                Math.round(getBgPosX() + getWidth()),
-                Math.round(getBgPosY() + getHeight()));
-            RectF dest = getDest();
-            dest.set(
-                    left,
-                    top,
-                    left + getWidth(),
-                    top + getHeight());
-            c.drawBitmap(sourceImage, src, dest, null);
-        }
-        
-        @Override
-        public void drawRectShape(Canvas c) {
-            float top = getTop();
-            float left = getLeft();
-            Presentation p = this;
-            
-            while ((p = p.getParent()) != null) {
-                top += p.getTop();
-                left += p.getLeft();
-            }
-            
-            RectF dest = getDest();
-            dest.set(
-                    left,
-                    top,
-                    left + getWidth(),
-                    top + getHeight());
-            
-            Paint paint = getPaint();
-            paint.setColor(getBgColor());
-            paint.setAlpha(0xff);
-            
-            c.drawRect(dest, paint);
-        }
-        
-        public float getLeft() {
-            if ("pcm-bpcm".equals(getId())) {
-                return super.getLeft() - 20;
-            } else {
-                return super.getLeft() - 4;
-            }
-        }
-
-        public float getTop() {
-            if ("pcm-bpcm".equals(getId())) {
-                return super.getTop() - 20;
-            } else {
-                return super.getTop() - 4;
-            }
-        }
-
-    }
     
     Presentation el = new ActorPresentation();
 
@@ -305,17 +235,17 @@ public abstract class Actor {
     public void setDir(Direction dir) {
         this.dir = dir;
     }
-    
-    public int getDotCount() {
-        return dotCount;
-    }
 
-    public void setDotCount(int dotCount) {
-        this.dotCount = dotCount;
+    static class ActorPresentation extends Presentation {
+        
+        @Override
+        public float getLeft() {
+            return super.getLeft() - 4;
+        }
+
+        @Override
+        public float getTop() {
+            return super.getTop() - 4;
+        }
     }
-    
-    public void incrementDotCount() {
-        this.dotCount++;
-    }
-    
 }

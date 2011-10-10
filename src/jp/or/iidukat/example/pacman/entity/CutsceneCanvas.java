@@ -10,14 +10,14 @@ import android.graphics.Canvas;
 public class CutsceneCanvas {
     private Presentation presentation = new Presentation();
     
-    private List<Actor> actors = new ArrayList<Actor>();
+    private List<CutsceneActor> actors = new ArrayList<CutsceneActor>();
     
     void draw(Bitmap sourceImage, Canvas c) {
         if (!presentation.isVisible()) return;
         
         presentation.drawRectShape(c);
         
-        for (Actor actor : actors) {
+        for (CutsceneActor actor : actors) {
             actor.draw(sourceImage, c);
         }
     }
@@ -26,7 +26,8 @@ public class CutsceneCanvas {
         return presentation;
     }
     
-    public void addActor(Actor actor) {
+    public void addActor(CutsceneActor actor) {
+        actor.getEl().setParent(presentation);
         actors.add(actor);
     }
 }

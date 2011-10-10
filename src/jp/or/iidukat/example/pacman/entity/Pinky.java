@@ -5,7 +5,6 @@ import java.util.EnumMap;
 import java.util.Map;
 
 import jp.or.iidukat.example.pacman.Direction;
-import jp.or.iidukat.example.pacman.GhostMode;
 import jp.or.iidukat.example.pacman.Move;
 import jp.or.iidukat.example.pacman.PacmanGame;
 
@@ -34,7 +33,7 @@ public class Pinky extends Ghost {
             new MoveInPen[] { new MoveInPen(39.5f, 4, Direction.DOWN, 7, 1.6f) });
         m.put(
             GhostMode.RE_EXITING_FROM_PEN,
-             new MoveInPen[] { new MoveInPen(39.5f, 7, Direction.UP, 4, y) });
+            new MoveInPen[] { new MoveInPen(39.5f, 7, Direction.UP, 4, y) });
 
         MOVES_IN_PEN = Collections.unmodifiableMap(m);
     }
