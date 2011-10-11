@@ -14,7 +14,7 @@ public class CutsceneActorFactory {
     }
     
     public CutsceneActor create(
-                            Class<? extends CutsceneActor> type,
+                            Class<?> type,
                             PacmanGame g,
                             int cutsceneId) {
         

@@ -808,10 +808,10 @@ public class PacmanGame {
     
     // Cutscene Animation
     private static class Cutscene {
-        private final List<Class<? extends CutsceneActor>> actors;
+        private final Class<?>[] actors;
         private final float[] sequenceTimes;
 
-        Cutscene(List<Class<? extends CutsceneActor>> actors, float[] sequenceTimes) {
+        Cutscene(Class<?>[] actors, float[] sequenceTimes) {
             this.actors = actors;
             this.sequenceTimes= sequenceTimes;
         }
@@ -823,24 +823,21 @@ public class PacmanGame {
         css.put(
             Integer.valueOf(1),
             new Cutscene(
-                Arrays.<Class<? extends CutsceneActor>> asList(
-                                                        CutscenePacman.class,
-                                                        CutsceneBlinky.class),
+                new Class<?>[] { CutscenePacman.class, CutsceneBlinky.class },
                 new float[] { 5.5f, 0.1f, 9 }));
         css.put(
             Integer.valueOf(2),
             new Cutscene(
-                Arrays.<Class<? extends CutsceneActor>> asList(
-                                                        CutscenePacman.class,
-                                                        CutsceneBlinky.class,
-                                                        CutsceneSteak.class),
+                new Class<?>[] {
+                    CutscenePacman.class,
+                    CutsceneBlinky.class,
+                    CutsceneSteak.class
+                },
                 new float[] { 2.7f, 1, 1.3f, 1, 2.5f }));
         css.put(
             Integer.valueOf(3),
             new Cutscene(
-                Arrays    .<Class<? extends CutsceneActor>> asList(
-                                                        CutscenePacman.class,
-                                                        CutsceneBlinky.class),
+                new Class<?>[] { CutscenePacman.class, CutsceneBlinky.class },
                 new float[] { 5.3f, 5.3f }));
         B = Collections.unmodifiableMap(css);
     }
@@ -1848,7 +1845,7 @@ public class PacmanGame {
         cutsceneSequenceId = -1;
         frightModeTime = levels.frightTotalTime;
         List<CutsceneActor> cas = new ArrayList<CutsceneActor>();
-        for (Class<? extends CutsceneActor> actorType : cutscene.actors) {
+        for (Class<?> actorType : cutscene.actors) {
             CutsceneActor actor = CutsceneActorFactory.getInstance()
                                     .create(actorType, this, cutsceneId);
             actor.init();
