@@ -57,8 +57,26 @@ public class PacmanGame {
     private static final int[] m = { 0, 7, 17, 32 };
 
     // イベント時間管理テーブル. index 7, 8しか使わない
-    private static final float[] w = { 0.16f, 0.23f, 1, 1, 2.23f, 0.3f, 1.9f,
-            2.23f, 1.9f, 5, 1.9f, 1.18f, 0.3f, 0.5f, 1.9f, 9, 10, 0.26f };
+    private static final float[] w = {
+        0.16f,
+        0.23f,
+        1,
+        1,
+        2.23f,
+        0.3f,
+        1.9f,
+        2.23f,
+        1.9f,
+        5,
+        1.9f,
+        1.18f,
+        0.3f,
+        0.5f,
+        1.9f,
+        9,
+        10,
+        0.26f
+    };
 
     // パスの配列.左上:(5, 1), 左下:(5, 15), 右上:(60, 1), 右下:(60, 15).
     // 配列要素のオブジェクトのプロパティは(x, y, w) もしくは(x, y, h)
@@ -98,52 +116,57 @@ public class PacmanGame {
         }
     }
 
-    private static final Path[] n = { Path.createHorizontalPath(5, 1, 56),
-            Path.createHorizontalPath(5, 4, 5),
-            Path.createVerticalPath(5, 1, 4),
-            Path.createVerticalPath(9, 1, 12),
-            Path.createVerticalPath(5, 12, 4),
-            Path.createVerticalPath(10, 12, 4),
-            Path.createHorizontalPath(5, 15, 16),
-            Path.createHorizontalPath(5, 12, 31),
-            Path.createVerticalPath(60, 1, 4),
-            Path.createVerticalPath(54, 1, 4),
-            Path.createVerticalPath(19, 1, 12),
-            Path.createHorizontalPath(19, 4, 26),
-            Path.createHorizontalPath(13, 5, 7),
-            Path.createVerticalPath(13, 5, 4),
-            Path.createHorizontalPath(13, 8, 3),
-            Path.createVerticalPath(56, 4, 9),
-            Path.createHorizontalPath(48, 4, 13),
-            Path.createVerticalPath(48, 1, 12),
-            Path.createVerticalPath(60, 12, 4),
-            Path.createHorizontalPath(44, 15, 17),
-            Path.createVerticalPath(54, 12, 4),
-            Path.createHorizontalPath(44, 12, 17),
-            Path.createVerticalPath(44, 1, 15),
-            Path.createHorizontalPath(41, 13, 4),
-            Path.createVerticalPath(41, 13, 3),
-            Path.createVerticalPath(38, 13, 3),
-            Path.createHorizontalPath(38, 15, 4),
-            Path.createHorizontalPath(35, 10, 10),
-            Path.createVerticalPath(35, 1, 15),
-            Path.createHorizontalPath(35, 13, 4),
-            Path.createVerticalPath(21, 12, 4),
-            Path.createVerticalPath(24, 12, 4),
-            Path.createHorizontalPath(24, 15, 12),
-            Path.createVerticalPath(27, 4, 9),
-            Path.createHorizontalPath(52, 9, 5),
-            Path.createTunnelPath(56, 8, 10), Path.createTunnelPath(1, 8, 9), };
+    private static final Path[] n = {
+        Path.createHorizontalPath(5, 1, 56),
+        Path.createHorizontalPath(5, 4, 5),
+        Path.createVerticalPath(5, 1, 4),
+        Path.createVerticalPath(9, 1, 12),
+        Path.createVerticalPath(5, 12, 4),
+        Path.createVerticalPath(10, 12, 4),
+        Path.createHorizontalPath(5, 15, 16),
+        Path.createHorizontalPath(5, 12, 31),
+        Path.createVerticalPath(60, 1, 4),
+        Path.createVerticalPath(54, 1, 4),
+        Path.createVerticalPath(19, 1, 12),
+        Path.createHorizontalPath(19, 4, 26),
+        Path.createHorizontalPath(13, 5, 7),
+        Path.createVerticalPath(13, 5, 4),
+        Path.createHorizontalPath(13, 8, 3),
+        Path.createVerticalPath(56, 4, 9),
+        Path.createHorizontalPath(48, 4, 13),
+        Path.createVerticalPath(48, 1, 12),
+        Path.createVerticalPath(60, 12, 4),
+        Path.createHorizontalPath(44, 15, 17),
+        Path.createVerticalPath(54, 12, 4),
+        Path.createHorizontalPath(44, 12, 17),
+        Path.createVerticalPath(44, 1, 15),
+        Path.createHorizontalPath(41, 13, 4),
+        Path.createVerticalPath(41, 13, 3),
+        Path.createVerticalPath(38, 13, 3),
+        Path.createHorizontalPath(38, 15, 4),
+        Path.createHorizontalPath(35, 10, 10),
+        Path.createVerticalPath(35, 1, 15),
+        Path.createHorizontalPath(35, 13, 4),
+        Path.createVerticalPath(21, 12, 4),
+        Path.createVerticalPath(24, 12, 4),
+        Path.createHorizontalPath(24, 15, 12),
+        Path.createVerticalPath(27, 4, 9),
+        Path.createHorizontalPath(52, 9, 5),
+        Path.createTunnelPath(56, 8, 10),
+        Path.createTunnelPath(1, 8, 9),
+    };
 
     // エサの存在しないパス
     // 左上:(5, 1), 左下:(5, 15), 右上:(60, 1), 右下:(60, 15).
-    private static final Path[] o = { Path.createHorizontalPath(1, 8, 8),
-            Path.createHorizontalPath(57, 8, 9),
-            Path.createVerticalPath(44, 2, 10),
-            Path.createVerticalPath(35, 5, 7),
-            Path.createHorizontalPath(36, 4, 8),
-            Path.createHorizontalPath(36, 10, 8),
-            Path.createHorizontalPath(39, 15, 2), };
+    private static final Path[] o = {
+        Path.createHorizontalPath(1, 8, 8),
+        Path.createHorizontalPath(57, 8, 9),
+        Path.createVerticalPath(44, 2, 10),
+        Path.createVerticalPath(35, 5, 7),
+        Path.createHorizontalPath(36, 4, 8),
+        Path.createHorizontalPath(36, 10, 8),
+        Path.createHorizontalPath(39, 15, 2),
+    };
 
     public static class Position {
         final int x;
@@ -164,13 +187,19 @@ public class PacmanGame {
     }
 
     // パワーエサ
-    private static final Position[] p = { new Position(5, 15),
-            new Position(5, 3), new Position(15, 8), new Position(60, 3),
-            new Position(60, 15), };
+    private static final Position[] p = {
+        new Position(5, 15),
+        new Position(5, 3),
+        new Position(15, 8),
+        new Position(60, 3),
+        new Position(60, 15),
+    };
 
     // ワープトンネル
-    private static final Position[] q = { new Position(2, 8),
-            new Position(63, 8), };
+    private static final Position[] q = {
+        new Position(2, 8),
+        new Position(63, 8),
+    };
 
     public static Position[] getQ() {
         return q;
@@ -1792,20 +1821,16 @@ public class PacmanGame {
 
     void showChrome(boolean b) {
         if (scoreLabelEl != null)
-            scoreLabelEl.getPresentation().setVisibility(b); // showElementById("pcm-sc-1-l",
-        // b);
+            scoreLabelEl.getPresentation().setVisibility(b); // showElementById("pcm-sc-1-l", b);
 
         if (scoreEl != null)
-            scoreEl.getPresentation().setVisibility(b); // showElementById("pcm-sc-1",
-        // b);
+            scoreEl.getPresentation().setVisibility(b); // showElementById("pcm-sc-1", b);
 
         if (livesEl != null)
-            livesEl.getPresentation().setVisibility(b);// showElementById("pcm-li",
-        // b);
+            livesEl.getPresentation().setVisibility(b);// showElementById("pcm-li", b);
 
         if (soundEl != null)
-            soundEl.getPresentation().setVisibility(b);// showElementById("pcm-so",
-        // b);
+            soundEl.getPresentation().setVisibility(b);// showElementById("pcm-so", b);
     }
 
     boolean toggleSound() { // 元は引数b
