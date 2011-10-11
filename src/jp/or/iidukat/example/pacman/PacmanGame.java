@@ -1,7 +1,6 @@
 package jp.or.iidukat.example.pacman;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.EnumSet;
@@ -36,6 +35,9 @@ import jp.or.iidukat.example.pacman.entity.PlayField.Food;
 import jp.or.iidukat.example.pacman.entity.PlayField.GameOver;
 import jp.or.iidukat.example.pacman.entity.PlayField.KillScreenTile;
 import jp.or.iidukat.example.pacman.entity.PlayField.Ready;
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.util.FloatMath;
 import android.view.MotionEvent;
 
@@ -845,7 +847,9 @@ public class PacmanGame {
     private static final int[] C = { 90, 45, 30, }; // fps オプション
     private static final int D = C[0]; // 本来想定されているfps
 
-    private final GameFieldView view;
+    private final Context context;
+    GameView view;
+    private Bitmap sourceImage;
     private SoundPlayer soundPlayer;
     private AudioClip cutsceneAudioClip;
     private boolean ready;
@@ -946,8 +950,8 @@ public class PacmanGame {
     private boolean[] dotEatingNow;
     private boolean[] dotEatingNext;
 
-    PacmanGame(GameFieldView view) {
-        this.view = view;
+    PacmanGame(Context context) {
+        this.context = context;
     }
 
     public float rand() {
@@ -2439,7 +2443,7 @@ public class PacmanGame {
     }
 
     void createCanvasElement() {
-        canvasEl = new PacmanCanvas();
+        canvasEl = new PacmanCanvas(sourceImage);
         canvasEl.getPresentation().setId("pcm-c");
         canvasEl.getPresentation().setWidth(554);
         canvasEl.getPresentation().setHeight(136);
@@ -2458,16 +2462,25 @@ public class PacmanGame {
             fpsChoice = 0;
             canDecreaseFps = true;
             initializeTickTimer();
-            view.invalidate();
         }
     }
 
     // TODO: 要メソッド名見直し
-    void start() {
+    private void start() {
         if (ready) {
             setTimeout();
             newGame();
         }
+    }
+    
+    void startNewGame() {
+        setDefaultKillScreenLevel();
+        start();
+    }
+    
+    void showKillScreen() {
+        setKillScreenLevel(1);
+        start();
     }
 
     void checkIfEverythingIsReady() {
@@ -2477,11 +2490,9 @@ public class PacmanGame {
     }
 
     void preloadImage() {
-        // var c = new Image,
-        // d = google.browser.engine.IE;
-        // if (!d) c.onload = g.imageLoaded;
-        // c.src = b;
-        // d && g.imageLoaded()
+        sourceImage = BitmapFactory.decodeResource(
+                                            context.getResources(),
+                                            R.drawable.pacman_sprite);
         imageLoaded();
     }
 
@@ -2499,21 +2510,21 @@ public class PacmanGame {
         soundAvailable = false;
         soundReady = false;
 
-        soundPlayer = new SoundPlayer(view.getContext(), this);
+        soundPlayer = new SoundPlayer(context, this);
         soundPlayer.init();
         // TODO: サウンドの初期化まわり見直し
-        cutsceneAudioClip = new AudioClip(view.getContext(), R.raw.cutscene);
+        cutsceneAudioClip = new AudioClip(context, R.raw.cutscene);
         soundAvailable &= cutsceneAudioClip.init();
 
         soundReady = true;
         checkIfEverythingIsReady();
     }
 
-    void setKillScreenLevel(int level) {
+    private void setKillScreenLevel(int level) {
         this.killScreenLevel = level;
     }
 
-    void setDefaultKillScreenLevel() {
+    private void setDefaultKillScreenLevel() {
         this.killScreenLevel = DEFAULT_KILL_SCREEN_LEVEL;
     }
 

@@ -1,9 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-             android:layout_width="match_parent"
-             android:layout_height="match_parent">
-    <jp.or.iidukat.example.pacman.GameFieldView
-      android:id="@+id/game_field"
-      android:layout_width="match_parent"
-      android:layout_height="match_parent"/>
-</FrameLayout>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="30dip"
+    android:orientation="horizontal">
+    <LinearLayout
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:paddingTop="30dip"
+        android:paddingBottom="30dip"
+        android:paddingLeft="60dip"
+        android:paddingRight="60dip"
+        android:orientation="vertical"
+        android:layout_gravity="center">
+        <Button
+            android:id="@+id/new_game_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/new_game_label" />
+        <Button
+            android:id="@+id/killscreen_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/killscreen_label" />
+        <Button
+            android:id="@+id/exit_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/exit_label" />
+    </LinearLayout>
+</LinearLayout>

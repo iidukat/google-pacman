@@ -5,6 +5,8 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 
 public class PacmanCanvas {
+	private final Bitmap sourceImage;
+	
     private Presentation presentation = new Presentation();
     
     private PlayField playfield;
@@ -16,7 +18,11 @@ public class PacmanCanvas {
     
     private CutsceneCanvas cutsceneCanvas;
     
-    public void draw(Bitmap sourceImage, Canvas c) {
+    public PacmanCanvas(Bitmap sourceImage) {
+    	this.sourceImage = sourceImage;
+    }
+    
+    public void draw(Canvas c) {
         if (!presentation.isVisible()) return;
         
 //        presentation.drawRectShape(c);
