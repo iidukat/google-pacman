@@ -2412,17 +2412,8 @@ public class PacmanGame {
         tickMultiplier = D / fps;
         timing = new float[w.length];
         for (int b = 0; b < w.length; b++) {
-            float c = !pacManSound && (b == 7 || b == 8) ? 1 : w[b]; // timing[7]
-            // ->
-            // GameplayMode
-            // 4,
-            // timing[8]
-            // ->
-            // GameplayMode
-            // 5.
-            // ともにゲーム開始直後がらみ.
-            timing[b] = Math.round(c * D); // D = 90より、timingの要素はindex 7,
-            // 8以外は90.
+            float c = !pacManSound && (b == 7 || b == 8) ? 1 : w[b]; // timing[7] -> GameplayMode 4, timing[8] -> GameplayMode 5. ともにゲーム開始直後がらみ.
+            timing[b] = Math.round(c * D); // D = 90より、timingの要素はindex 7, 8以外は90.
         }
         lastTime = new Date().getTime();
         lastTimeDelta = 0;
@@ -2538,10 +2529,6 @@ public class PacmanGame {
         soundPlayer.destroy();
         cutsceneAudioClip.destroy();
     }
-
-    // public Map<Dir, Dir> getOppositeDirections() {
-    // return oppositeDirections;
-    // }
 
     public Map<Integer, Map<Integer, PathElement>> getPlayfield() {
         return playfield;
