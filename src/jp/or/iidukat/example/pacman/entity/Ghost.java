@@ -436,17 +436,6 @@ public abstract class Ghost extends Actor {
                 break;
             }
             c = 10;
-        } else if ("pcm-ghin".equals(this.el.getId())) {
-            b = 6;
-            c = 8;
-            b += (int) (Math.floor(g.getGlobalTime() / 16) % 2);
-        } else if ("pcm-gbug".equals(this.el.getId())) {
-            b = 6;
-            c = 9;
-            c += (int) (Math.floor(g.getGlobalTime() / 16) % 2);
-        } else if ("pcm-ghfa".equals(this.el.getId())) {
-            b = g.getCutsceneSequenceId() == 3 ? 6 : 7;
-            c = 11;
         } else { // 通常時の画像表示
             Direction ndir = this.nextDir;
             if (ndir == Direction.NONE

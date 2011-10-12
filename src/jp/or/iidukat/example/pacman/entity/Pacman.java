@@ -236,15 +236,6 @@ public class Pacman extends Actor {
                   break;
             }
             c = 12;
-        } else if ("pcm-bpcm".equals(this.el.getId())) { // Cutscene
-            b = 14;
-            c = 0;
-            int t = (int) (Math.floor(g.getGlobalTime() * 0.2) % 4);
-            if (t == 3) t = 1;
-            c += 2 * t;
-            // BigPacMan
-            this.el.setWidth(32);
-            this.el.setHeight(32);
         } else { // 通常時のプレイヤー画像決定
             switch (d) {
             case LEFT:
