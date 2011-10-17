@@ -158,7 +158,7 @@ public abstract class Actor extends BaseEntity {
         Presentation el = getPresentation();
         if (!el.isVisible()) return;
         
-        el.drawBitmap(g.getSourceImage(), c);
+        el.drawBitmap(c);
 
     }
 

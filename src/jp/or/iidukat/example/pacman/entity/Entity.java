@@ -40,12 +40,20 @@ public interface Entity extends Comparable<Entity>{
         private Paint paint = new Paint();
         private int order;
         private Presentation parent;
+        private Bitmap sourceImage;
         
+        Presentation() {
+        }
+        
+        Presentation(Bitmap sourceImage) {
+            this.sourceImage = sourceImage;
+        }
+
         public boolean hasBackground() {
             return !Float.isNaN(bgPosX) && !Float.isNaN(bgPosY);
         }
         
-        public void drawBitmap(Bitmap sourceImage, Canvas c) {
+        public void drawBitmap(Canvas c) {
             float top = 0;
             float left = 0;
             Presentation p = this;

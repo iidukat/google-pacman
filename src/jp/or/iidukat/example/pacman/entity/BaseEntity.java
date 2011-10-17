@@ -4,15 +4,16 @@ import android.graphics.Bitmap;
 
 abstract class BaseEntity implements Entity {
     
-    private Bitmap sourceImage;
-    private final Presentation presentation = new Presentation();
+    private final Presentation presentation;
 
     public BaseEntity() {
+        presentation = new Presentation();
     }
     
     public BaseEntity(Bitmap sourceImage) {
-        this.sourceImage = sourceImage;
+        presentation = new Presentation(sourceImage);
     }
+    
     @Override
     public float getTop() {
         return presentation.getTop();
@@ -62,10 +63,6 @@ abstract class BaseEntity implements Entity {
                 return lt < alt ? -1 : lt > alt ? 1 : 0;
             }
         }
-    }
-    
-    public Bitmap getSourceImage() {
-        return sourceImage;
     }
     
     public Presentation getPresentation() {

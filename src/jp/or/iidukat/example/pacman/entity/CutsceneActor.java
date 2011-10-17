@@ -48,7 +48,7 @@ public abstract class CutsceneActor extends BaseEntity {
         if (!el.isVisible())
             return;
 
-        el.drawBitmap(g.getSourceImage(), c);
+        el.drawBitmap(c);
 
     }
 

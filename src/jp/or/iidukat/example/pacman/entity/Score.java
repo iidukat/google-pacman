@@ -37,7 +37,7 @@ public class Score extends BaseEntity {
         public void draw(Canvas c) {
             if (!isVisible()) return;
             
-            getPresentation().drawBitmap(getSourceImage(), c);
+            getPresentation().drawBitmap(c);
         }
     }
 }

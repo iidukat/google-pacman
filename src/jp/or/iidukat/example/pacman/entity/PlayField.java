@@ -24,7 +24,7 @@ public class PlayField extends BaseEntity {
         if (!isVisible())
             return;
 
-        getPresentation().drawBitmap(getSourceImage(), c);
+        getPresentation().drawBitmap(c);
 
         if (door != null) {
             door.draw(c);
@@ -123,7 +123,7 @@ public class PlayField extends BaseEntity {
             // TODO: 要見直し
             Presentation p = getPresentation();
             if (p.hasBackground()) {
-                p.drawBitmap(getSourceImage(), c);
+                p.drawBitmap(c);
             } else {
                 p.drawRectShape(c);
             }
@@ -150,7 +150,7 @@ public class PlayField extends BaseEntity {
             if (!isVisible())
                 return;
 
-            getPresentation().drawBitmap(getSourceImage(), c);
+            getPresentation().drawBitmap(c);
         }
     }
 
@@ -165,7 +165,7 @@ public class PlayField extends BaseEntity {
             if (!isVisible())
                 return;
 
-            getPresentation().drawBitmap(getSourceImage(), c);
+            getPresentation().drawBitmap(c);
         }
     }
     
@@ -182,7 +182,7 @@ public class PlayField extends BaseEntity {
             // TODO: 要見直し
             Presentation p = getPresentation();
             if (p.hasBackground()) {
-                p.drawBitmap(getSourceImage(), c);
+                p.drawBitmap(c);
             } else {
                 p.drawRectShape(c);
             }

@@ -40,7 +40,7 @@ public class Lives extends BaseEntity {
             if (!isVisible())
                 return;
 
-            getPresentation().drawBitmap(getSourceImage(), c);
+            getPresentation().drawBitmap(c);
         }
     }
 }
