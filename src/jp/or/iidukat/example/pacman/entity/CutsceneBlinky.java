@@ -7,7 +7,6 @@ import java.util.Map;
 import jp.or.iidukat.example.pacman.Direction;
 import jp.or.iidukat.example.pacman.GameplayMode;
 import jp.or.iidukat.example.pacman.PacmanGame;
-import jp.or.iidukat.example.pacman.Presentation;
 import jp.or.iidukat.example.pacman.entity.CutsceneActor.Cutscene.Move;
 import jp.or.iidukat.example.pacman.entity.CutsceneActor.Cutscene.StartPoint;
 import android.util.FloatMath;
@@ -83,16 +82,9 @@ public class CutsceneBlinky extends CutsceneActor {
     }
     
     private Mode mode;
-    private Presentation el = new ActorPresentation();
     
     CutsceneBlinky(PacmanGame g) {
         super(g);
-    }
-    
-
-    @Override
-    Presentation getEl() {
-        return el;
     }
     
     @Override

@@ -3,14 +3,15 @@ package jp.or.iidukat.example.pacman.entity;
 import java.util.ArrayList;
 import java.util.List;
 
-import jp.or.iidukat.example.pacman.Presentation;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 
-public class PlayField {
+public class PlayField extends BaseEntity {
 
-    private Presentation presentation = new Presentation();
-
+    public PlayField(Bitmap sourceImage) {
+        super(sourceImage);
+    }
+    
     private List<Actor> actors = new ArrayList<Actor>();
     private Door door;
     private List<Food> foods = new ArrayList<Food>();
@@ -19,43 +20,39 @@ public class PlayField {
     private List<KillScreenTile> killScreenTiles = new ArrayList<KillScreenTile>();
     private GameOver gameover;
     
-    void draw(Bitmap sourceImage, Canvas c) {
-        if (!presentation.isVisible())
+    public void draw(Canvas c) {
+        if (!isVisible())
             return;
 
-        presentation.drawBitmap(sourceImage, c);
+        getPresentation().drawBitmap(getSourceImage(), c);
 
         if (door != null) {
             door.draw(c);
         }
 
         for (Food f : foods) {
-            f.draw(sourceImage, c);
+            f.draw(c);
         }
 
         if (fruit != null) {
-            fruit.draw(sourceImage, c);
+            fruit.draw(c);
         }
 
         for (Actor actor : actors) {
-            actor.draw(sourceImage, c);
+            actor.draw(c);
         }
 
         for (KillScreenTile tile : killScreenTiles) {
-            tile.draw(sourceImage, c);
+            tile.draw(c);
         }
         
         if (ready != null) {
-            ready.draw(sourceImage, c);
+            ready.draw(c);
         }
         
         if (gameover != null) {
-            gameover.draw(sourceImage, c);
+            gameover.draw(c);
         }
-    }
-    
-    public Presentation getPresentation() {
-        return presentation;
     }
     
     public void addActor(Actor actor) {
@@ -110,24 +107,26 @@ public class PlayField {
         this.gameover = gameover;
     }
 
-    public static class Food {
+    public static class Food extends BaseEntity {
+        
         private boolean eaten = false;
-        private Presentation presentation = new Presentation();
 
-        void draw(Bitmap sourceImage, Canvas c) {
-            if (eaten || !presentation.isVisible())
+        public Food(Bitmap sourceImage) {
+            super(sourceImage);
+        }
+        
+        @Override
+        public void draw(Canvas c) {
+            if (eaten || !isVisible())
                 return;
 
             // TODO: 要見直し
-            if (presentation.hasBackground()) {
-                presentation.drawBitmap(sourceImage, c);
+            Presentation p = getPresentation();
+            if (p.hasBackground()) {
+                p.drawBitmap(getSourceImage(), c);
             } else {
-                presentation.drawRectShape(c);
+                p.drawRectShape(c);
             }
-        }
-
-        public Presentation getPresentation() {
-            return presentation;
         }
 
         public boolean isEaten() {
@@ -140,54 +139,54 @@ public class PlayField {
         
     }
 
-    public static class Ready {
-        Presentation presentation = new Presentation();
-
-        void draw(Bitmap sourceImage, Canvas c) {
-            if (!presentation.isVisible())
+    public static class Ready extends BaseEntity {
+    
+        public Ready(Bitmap sourceImage) {
+            super(sourceImage);
+        }
+        
+        @Override
+        public void draw(Canvas c) {
+            if (!isVisible())
                 return;
 
-            presentation.drawBitmap(sourceImage, c);
-        }
-
-        public Presentation getPresentation() {
-            return presentation;
+            getPresentation().drawBitmap(getSourceImage(), c);
         }
     }
 
-    public static class GameOver {
-        Presentation presentation = new Presentation();
-
-        void draw(Bitmap sourceImage, Canvas c) {
-            if (!presentation.isVisible())
+    public static class GameOver extends BaseEntity {
+        
+        public GameOver(Bitmap sourceImage) {
+            super(sourceImage);
+        }
+        
+        @Override
+        public void draw(Canvas c) {
+            if (!isVisible())
                 return;
 
-            presentation.drawBitmap(sourceImage, c);
-        }
-
-        public Presentation getPresentation() {
-            return presentation;
+            getPresentation().drawBitmap(getSourceImage(), c);
         }
     }
     
-    public static class KillScreenTile {
-        private Presentation presentation = new Presentation();
+    public static class KillScreenTile extends BaseEntity {
         
-        void draw(Bitmap sourceImage, Canvas c) {
-            if (!presentation.isVisible()) return;
+        public KillScreenTile(Bitmap sourceImage) {
+            super(sourceImage);
+        }
+        
+        @Override
+        public void draw(Canvas c) {
+            if (!isVisible()) return;
 
             // TODO: 要見直し
-            if (presentation.hasBackground()) {
-                presentation.drawBitmap(sourceImage, c);
+            Presentation p = getPresentation();
+            if (p.hasBackground()) {
+                p.drawBitmap(getSourceImage(), c);
             } else {
-                presentation.drawRectShape(c);
+                p.drawRectShape(c);
             }
         }
-
-        public Presentation getPresentation() {
-            return presentation;
-        }
-        
     }
 
 }

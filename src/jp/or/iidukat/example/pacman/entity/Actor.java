@@ -5,11 +5,9 @@ import jp.or.iidukat.example.pacman.Direction;
 import jp.or.iidukat.example.pacman.GameplayMode;
 import jp.or.iidukat.example.pacman.Move;
 import jp.or.iidukat.example.pacman.PacmanGame;
-import jp.or.iidukat.example.pacman.Presentation;
-import android.graphics.Bitmap;
 import android.graphics.Canvas;
 
-public abstract class Actor {
+public abstract class Actor extends BaseEntity {
 
     static class InitPosition {
         final float x;
@@ -64,10 +62,8 @@ public abstract class Actor {
     float tunnelSpeed;
     Boolean[] speedIntervals;
 
-    
-    Presentation el = new ActorPresentation();
-
     public Actor(int b, PacmanGame g) {
+        super(g.getSourceImage());
         this.id = b;
         this.g = g;
     }
@@ -80,10 +76,13 @@ public abstract class Actor {
     // Actor表示に使用するdivタグを生成: 表示位置、バックグランドのオフセットはダミー値
     public void createElement() {
         // this.el.className = "pcm-ac";
-        this.el.setWidth(16);
-        this.el.setHeight(16);
-        this.el.setParent(g.getPlayfieldEl().getPresentation());
-        g.prepareElement(this.el, 0, 0);
+        Presentation el = getPresentation();
+        el.setWidth(16);
+        el.setHeight(16);
+        el.setTopOffset(-4);
+        el.setLeftOffset(-4);
+        el.setParent(g.getPlayfieldEl().getPresentation());
+        g.prepareElement(el, 0, 0);
         g.getPlayfieldEl().addActor(this);
         this.elPos = new float[] {0, 0};
         this.elBackgroundPos = new int[] {0, 0};
@@ -128,8 +127,9 @@ public abstract class Actor {
         if (this.elPos[0] != c || this.elPos[1] != b) {
             this.elPos[0] = c;
             this.elPos[1] = b;
-            this.el.setLeft(b);
-            this.el.setTop(c);
+            Presentation el = getPresentation();
+            el.setLeft(b);
+            el.setTop(c);
         }
     }
     
@@ -149,14 +149,16 @@ public abstract class Actor {
             this.elBackgroundPos[1] = b[1];
             b[0] *= 16;
             b[1] *= 16;
-            g.changeElementBkPos(this.el, b[1], b[0], true);
+            g.changeElementBkPos(getPresentation(), b[1], b[0], true);
         }
     }
     
-    public void draw(Bitmap sourceImage, Canvas c) {
+    @Override
+    public void draw(Canvas c) {
+        Presentation el = getPresentation();
         if (!el.isVisible()) return;
         
-        el.drawBitmap(sourceImage, c);
+        el.drawBitmap(g.getSourceImage(), c);
 
     }
 
@@ -197,10 +199,6 @@ public abstract class Actor {
         this.elBackgroundPos = elBackgroundPos;
     }
 
-    public Presentation getEl() {
-        return el;
-    }
-
     public float getSpeed() {
         return speed;
     }
@@ -231,18 +229,5 @@ public abstract class Actor {
 
     public void setDir(Direction dir) {
         this.dir = dir;
-    }
-
-    static class ActorPresentation extends Presentation {
-        
-        @Override
-        public float getLeft() {
-            return super.getLeft() - 4;
-        }
-
-        @Override
-        public float getTop() {
-            return super.getTop() - 4;
-        }
     }
 }

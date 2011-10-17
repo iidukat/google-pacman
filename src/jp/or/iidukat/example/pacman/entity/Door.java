@@ -1,18 +1,14 @@
 package jp.or.iidukat.example.pacman.entity;
 
-import jp.or.iidukat.example.pacman.Presentation;
 import android.graphics.Canvas;
 
-public class Door {
-    private Presentation presentation = new Presentation();
+public class Door extends BaseEntity {
     
-    void draw(Canvas c) {
-        if (!presentation.isVisible()) return;
+    @Override
+    public void draw(Canvas c) {
+        Presentation p = getPresentation();
+        if (!p.isVisible()) return;
         
-        presentation.drawRectShape(c);
-    }
-
-    public Presentation getPresentation() {
-        return presentation;
+        p.drawRectShape(c);
     }
 }

@@ -3,12 +3,10 @@ package jp.or.iidukat.example.pacman.entity;
 import jp.or.iidukat.example.pacman.Direction;
 import jp.or.iidukat.example.pacman.Move;
 import jp.or.iidukat.example.pacman.PacmanGame;
-import jp.or.iidukat.example.pacman.Presentation;
 import jp.or.iidukat.example.pacman.entity.CutsceneActor.Cutscene.StartPoint;
-import android.graphics.Bitmap;
 import android.graphics.Canvas;
 
-public abstract class CutsceneActor {
+public abstract class CutsceneActor extends BaseEntity {
 
     final PacmanGame g;
     private float[] pos;
@@ -19,32 +17,38 @@ public abstract class CutsceneActor {
     private float speed;
 
     CutsceneActor(PacmanGame g) {
+        super(g.getSourceImage());
         this.g = g;
     }
 
     public void init() {
         // d.className = "pcm-ac";
-        getEl().setWidth(16);
-        getEl().setHeight(16);
+        Presentation el = getPresentation();
+        el.setWidth(16);
+        el.setHeight(16);
+        el.setLeftOffset(-4);
+        el.setTopOffset(-4);
         // actor.getEl().setId("actor" + c);
-        g.prepareElement(getEl(), 0, 0);
+        g.prepareElement(el, 0, 0);
         elBackgroundPos = new int[] { 0, 0 };
         elPos = new float[] { 0, 0 };
         float[] start = getStartPoint(getCutscene());
         pos = new float[] { start[0] * 8, start[1] * 8 };
         posDelta = new float[] { 0, 0 };
     }
-    
+
     float[] getStartPoint(Cutscene cutscene) {
         StartPoint p = cutscene.startPoint;
         return new float[] { p.y, p.x };
     }
 
-    public void draw(Bitmap sourceImage, Canvas c) {
-        if (!getEl().isVisible())
+    @Override
+    public void draw(Canvas c) {
+        Presentation el = getPresentation();
+        if (!el.isVisible())
             return;
 
-        getEl().drawBitmap(sourceImage, c);
+        el.drawBitmap(g.getSourceImage(), c);
 
     }
 
@@ -64,7 +68,7 @@ public abstract class CutsceneActor {
             this.elBackgroundPos[1] = b[1];
             b[0] *= 16;
             b[1] *= 16;
-            g.changeElementBkPos(getEl(), b[1], b[0], true);
+            g.changeElementBkPos(getPresentation(), b[1], b[0], true);
         }
     }
 
@@ -75,8 +79,9 @@ public abstract class CutsceneActor {
         if (this.elPos[0] != c || this.elPos[1] != b) {
             this.elPos[0] = c;
             this.elPos[1] = b;
-            getEl().setLeft(b);
-            getEl().setTop(c);
+            Presentation el = getPresentation();
+            el.setLeft(b);
+            el.setTop(c);
         }
     }
 
@@ -132,23 +137,21 @@ public abstract class CutsceneActor {
         this.dir = dir;
     }
 
-    abstract Presentation getEl();
-
     abstract Cutscene getCutscene();
-    
+
     public void setupSequence() {
         Cutscene c = getCutscene();
         setMove(c);
         setMode(c);
     }
-    
+
     private void setMove(Cutscene cutscene) {
         dir = cutscene.sequences[g.getCutsceneSequenceId()].move.dir;
         speed = cutscene.sequences[g.getCutsceneSequenceId()].move.speed;
     }
-    
+
     abstract void setMode(Cutscene cutscene);
-    
+
     static class Cutscene {
         final StartPoint startPoint;
         final Sequence[] sequences;
@@ -170,12 +173,12 @@ public abstract class CutsceneActor {
 
         static class Sequence {
             final Move move;
-            
+
             Sequence(Move move) {
                 this.move = move;
             }
         }
-        
+
         static class Move {
             final Direction dir;
             final float speed;
@@ -186,16 +189,5 @@ public abstract class CutsceneActor {
             }
         }
 
-    }
-
-    static class ActorPresentation extends Presentation {
-
-        public float getLeft() {
-            return super.getLeft() - 4;
-        }
-
-        public float getTop() {
-            return super.getTop() - 4;
-        }
     }
 }

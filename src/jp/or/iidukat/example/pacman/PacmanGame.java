@@ -18,8 +18,10 @@ import jp.or.iidukat.example.pacman.entity.CutsceneCanvas;
 import jp.or.iidukat.example.pacman.entity.CutscenePacman;
 import jp.or.iidukat.example.pacman.entity.CutsceneSteak;
 import jp.or.iidukat.example.pacman.entity.Door;
+import jp.or.iidukat.example.pacman.entity.Entity.Presentation;
 import jp.or.iidukat.example.pacman.entity.Fruit;
 import jp.or.iidukat.example.pacman.entity.Ghost;
+import jp.or.iidukat.example.pacman.entity.Ghost.GhostMode;
 import jp.or.iidukat.example.pacman.entity.Inky;
 import jp.or.iidukat.example.pacman.entity.Level;
 import jp.or.iidukat.example.pacman.entity.Lives;
@@ -27,14 +29,13 @@ import jp.or.iidukat.example.pacman.entity.Pacman;
 import jp.or.iidukat.example.pacman.entity.PacmanCanvas;
 import jp.or.iidukat.example.pacman.entity.Pinky;
 import jp.or.iidukat.example.pacman.entity.PlayField;
-import jp.or.iidukat.example.pacman.entity.Score;
-import jp.or.iidukat.example.pacman.entity.ScoreLabel;
-import jp.or.iidukat.example.pacman.entity.Sound;
-import jp.or.iidukat.example.pacman.entity.Ghost.GhostMode;
 import jp.or.iidukat.example.pacman.entity.PlayField.Food;
 import jp.or.iidukat.example.pacman.entity.PlayField.GameOver;
 import jp.or.iidukat.example.pacman.entity.PlayField.KillScreenTile;
 import jp.or.iidukat.example.pacman.entity.PlayField.Ready;
+import jp.or.iidukat.example.pacman.entity.Score;
+import jp.or.iidukat.example.pacman.entity.ScoreLabel;
+import jp.or.iidukat.example.pacman.entity.Sound;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -1151,15 +1152,17 @@ public class PacmanGame {
             for (int c = 8; c <= playfieldWidth * 8; c += 8)
                 if (playfield.get(Integer.valueOf(b)).get(Integer.valueOf(c))
                         .getDot() != 0) {
-                    Food food = new Food();
-                    food.getPresentation().setIndex(getDotElementIndex(b, c));
-                    food.getPresentation().setLeft(c + -32 + 3); // margin-left:
-                    // 3
-                    food.getPresentation().setTop(b + 0 + 3); // margint-top: 3
-                    food.getPresentation().setWidth(2);
-                    food.getPresentation().setHeight(2);
-                    food.getPresentation().setBgColor(0xf8b090);
-                    food.getPresentation().setParent(playfieldEl.getPresentation());
+                    Food food = new Food(sourceImage);
+                    Presentation p = food.getPresentation();
+                    p.setId(getDotElementIndex(b, c));
+                    p.setLeft(c + -32); 
+                    p.setLeftOffset(3);// margin-left: 3
+                    p.setTop(b + 0);
+                    p.setTopOffset(3); // margint-top: 3
+                    p.setWidth(2);
+                    p.setHeight(2);
+                    p.setBgColor(0xf8b090);
+                    p.setParent(playfieldEl.getPresentation());
                     playfieldEl.addFood(food);
                 }
     }
@@ -1172,18 +1175,19 @@ public class PacmanGame {
             if (f == null)
                 continue;
             // document.getElementById(d).className = "pcm-e";
-            f.getPresentation().setLeft(f.getPresentation().getLeft() - 3);
-            f.getPresentation().setTop(f.getPresentation().getTop() - 3);
-            f.getPresentation().setWidth(8);
-            f.getPresentation().setHeight(8);
-            prepareElement(f.getPresentation(), 0, 144);
+            Presentation p = f.getPresentation();
+            p.setLeftOffset(0);
+            p.setTopOffset(0);
+            p.setWidth(8);
+            p.setHeight(8);
+            prepareElement(p, 0, 144);
             playfield.get(Integer.valueOf(c.y * 8)).get(Integer.valueOf(c.x * 8)).setDot(2);
         }
     }
 
     private Food getDotElement(int index) {
         for (Food f : playfieldEl.getFoods()) {
-            if (f.getPresentation().getIndex() == index) {
+            if (f.getPresentation().getId() == index) {
                 return f;
             }
         }
@@ -1192,20 +1196,23 @@ public class PacmanGame {
     }
 
     void createFruitElement() {
-        fruitEl = new Fruit();
-        fruitEl.getPresentation().setId("pcm-f");
-        fruitEl.getPresentation().setWidth(32);
-        fruitEl.getPresentation().setHeight(16);
-        fruitEl.getPresentation().setLeft(getPlayfieldX(v[1]) - 8);
-        fruitEl.getPresentation().setTop(getPlayfieldY(v[0]) - 4);
-        prepareElement(fruitEl.getPresentation(), -32, -16);
+        fruitEl = new Fruit(sourceImage);
+//        fruitEl.getPresentation().setId("pcm-f");
+        Presentation p = fruitEl.getPresentation();
+        p.setWidth(32);
+        p.setHeight(16);
+        p.setLeft(getPlayfieldX(v[1]));
+        p.setTop(getPlayfieldY(v[0]));
+        p.setLeftOffset(-8);
+        p.setTopOffset(-4);
+        prepareElement(p, -32, -16);
         fruitEl.getPresentation().setParent(playfieldEl.getPresentation());
         playfieldEl.setFruit(fruitEl);
     }
 
     void createPlayfieldElements() {
         doorEl = new Door();
-        doorEl.getPresentation().setId("pcm-do");
+//        doorEl.getPresentation().setId("pcm-do");
         doorEl.getPresentation().setWidth(19);
         doorEl.getPresentation().setHeight(2);
         doorEl.getPresentation().setLeft(279);
@@ -1250,9 +1257,9 @@ public class PacmanGame {
     }
 
     void createPlayfield() {
-        playfieldEl = new PlayField();
+        playfieldEl = new PlayField(sourceImage);
         Presentation p = playfieldEl.getPresentation();
-        p.setId("pcm-p");
+//        p.setId("pcm-p");
         p.setLeft(45);
         p.setWidth(464);
         p.setHeight(136);
@@ -1405,7 +1412,7 @@ public class PacmanGame {
 
     void createKillScreenElement(int b, int c, int d, int f, boolean h) {
         // var j = document.createElement("div");
-        KillScreenTile j = new KillScreenTile();
+        KillScreenTile j = new KillScreenTile(sourceImage);
         j.getPresentation().setLeft(b); // j.style.left = b + "px";
         j.getPresentation().setTop(c); // j.style.top = c + "px";
         j.getPresentation().setWidth(d); // j.style.width = d + "px";
@@ -1744,8 +1751,8 @@ public class PacmanGame {
             canvasEl.getPresentation().setVisibility(true);
             // doorEl.style.display = "block";
             doorEl.getPresentation().setVisibility(true);
-            Ready m7_ready = new Ready();
-            m7_ready.getPresentation().setId("pcm-re");
+            Ready m7_ready = new Ready(sourceImage);
+//            m7_ready.getPresentation().setId("pcm-re");
             m7_ready.getPresentation().setWidth(48);
             m7_ready.getPresentation().setHeight(8);
             m7_ready.getPresentation().setLeft(264);
@@ -1759,8 +1766,8 @@ public class PacmanGame {
             // doorEl.style.display = "block";
             doorEl.getPresentation().setVisibility(true);
 
-            Ready m4_ready = new Ready();
-            m4_ready.getPresentation().setId("pcm-re");
+            Ready m4_ready = new Ready(sourceImage);
+//            m4_ready.getPresentation().setId("pcm-re");
             m4_ready.getPresentation().setWidth(48);
             m4_ready.getPresentation().setHeight(8);
             m4_ready.getPresentation().setLeft(264);
@@ -1785,8 +1792,8 @@ public class PacmanGame {
             // google.dom.remove(ready);
             playfieldEl.setReady(null);
             stopAllAudio();
-            GameOver go = new GameOver();
-            go.getPresentation().setId("pcm-go");
+            GameOver go = new GameOver(sourceImage);
+//            go.getPresentation().setId("pcm-go");
             go.getPresentation().setWidth(80);
             go.getPresentation().setHeight(8);
             go.getPresentation().setLeft(248);
@@ -1864,7 +1871,7 @@ public class PacmanGame {
         canvasEl.getPresentation().setVisibility(true);
         showChrome(false);
         cutsceneCanvasEl = new CutsceneCanvas();
-        cutsceneCanvasEl.getPresentation().setId("pcm-cc");
+//        cutsceneCanvasEl.getPresentation().setId("pcm-cc");
         cutsceneCanvasEl.getPresentation().setLeft(45);
         cutsceneCanvasEl.getPresentation().setWidth(464);
         cutsceneCanvasEl.getPresentation().setHeight(136);
@@ -2225,7 +2232,7 @@ public class PacmanGame {
     void updateChromeLives() {
         livesEl.clearLives();
         for (int b = 0; b < lives; b++) {
-            Lives.Life life = new Lives.Life();
+            Lives.Life life = new Lives.Life(sourceImage);
             prepareElement(life.getPresentation(), 64, 129);
             // c.className = "pcm-lif";
             life.getPresentation().setWidth(16);
@@ -2241,7 +2248,7 @@ public class PacmanGame {
         int top = (4 - Math.min(level, 4)) * 16 - 16;
         for (int b = level; b >= Math.max(level - 4 + 1, 1); b--) {
             int c = b >= z.length ? z[z.length - 1].fruit : z[b].fruit;
-            Fruit d = new Fruit();
+            Fruit d = new Fruit(sourceImage);
             int[] fs = getFruitSprite(c);
             prepareElement(d.getPresentation(), fs[0], fs[1]);
             d.getPresentation().setWidth(32);
@@ -2257,8 +2264,8 @@ public class PacmanGame {
     void createChrome() {
         canvasEl.reset();
         scoreDigits = 10;
-        scoreLabelEl = new ScoreLabel();
-        scoreLabelEl.getPresentation().setId("pcm-sc-1-l");
+        scoreLabelEl = new ScoreLabel(sourceImage);
+//        scoreLabelEl.getPresentation().setId("pcm-sc-1-l");
         scoreLabelEl.getPresentation().setLeft(-2);
         scoreLabelEl.getPresentation().setTop(0);
         scoreLabelEl.getPresentation().setWidth(48);
@@ -2267,7 +2274,7 @@ public class PacmanGame {
         scoreLabelEl.getPresentation().setParent(canvasEl.getPresentation());
         canvasEl.setScoreLabel(scoreLabelEl);
         scoreEl = new Score();
-        scoreEl.getPresentation().setId("pcm-sc-1");
+//        scoreEl.getPresentation().setId("pcm-sc-1");
         scoreEl.getPresentation().setLeft(18);
         scoreEl.getPresentation().setTop(16);
         scoreEl.getPresentation().setWidth(8);
@@ -2275,8 +2282,8 @@ public class PacmanGame {
         scoreEl.getPresentation().setParent(canvasEl.getPresentation());
 
         for (int b = 0; b < scoreDigits; b++) {
-            Score.Number c = new Score.Number();
-            c.getPresentation().setId("pcm-sc-1-" + b);
+            Score.Number c = new Score.Number(sourceImage);
+//            c.getPresentation().setId("pcm-sc-1-" + b);
             c.getPresentation().setTop(b * 8);
             c.getPresentation().setLeft(0);
             c.getPresentation().setWidth(8);
@@ -2287,7 +2294,7 @@ public class PacmanGame {
         }
         canvasEl.setScore(scoreEl);
         livesEl = new Lives();
-        livesEl.getPresentation().setId("pcm-li");
+//        livesEl.getPresentation().setId("pcm-li");
         livesEl.getPresentation().setLeft(523);
         livesEl.getPresentation().setTop(0);
         livesEl.getPresentation().setHeight(80);
@@ -2295,7 +2302,7 @@ public class PacmanGame {
         livesEl.getPresentation().setParent(canvasEl.getPresentation());
         canvasEl.setLives(livesEl);
         levelEl = new Level();
-        levelEl.getPresentation().setId("pcm-le");
+//        levelEl.getPresentation().setId("pcm-le");
         levelEl.getPresentation().setLeft(515);
         levelEl.getPresentation().setTop(74);
         levelEl.getPresentation().setHeight(64);
@@ -2303,8 +2310,8 @@ public class PacmanGame {
         levelEl.getPresentation().setParent(canvasEl.getPresentation());
         canvasEl.setLevel(levelEl);
         if (soundAvailable) {
-            soundEl = new Sound();
-            soundEl.getPresentation().setId("pcm-so");
+            soundEl = new Sound(sourceImage);
+//            soundEl.getPresentation().setId("pcm-so");
             soundEl.getPresentation().setLeft(15); // 7 + 8
             soundEl.getPresentation().setTop(124); // 116 + 8
             soundEl.getPresentation().setWidth(12);
@@ -2463,8 +2470,8 @@ public class PacmanGame {
     }
 
     void createCanvasElement() {
-        canvasEl = new PacmanCanvas(sourceImage);
-        canvasEl.getPresentation().setId("pcm-c");
+        canvasEl = new PacmanCanvas();
+//        canvasEl.getPresentation().setId("pcm-c");
         canvasEl.getPresentation().setWidth(554);
         canvasEl.getPresentation().setHeight(136);
         canvasEl.getPresentation().setBgColor(0x000000);
@@ -2559,6 +2566,10 @@ public class PacmanGame {
         cutsceneAudioClip.destroy();
     }
 
+    public Bitmap getSourceImage() {
+        return sourceImage;
+    }
+    
     public Map<Integer, Map<Integer, PathElement>> getPlayfield() {
         return playfield;
     }

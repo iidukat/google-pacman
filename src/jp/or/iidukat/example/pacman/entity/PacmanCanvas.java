@@ -1,13 +1,8 @@
 package jp.or.iidukat.example.pacman.entity;
 
-import jp.or.iidukat.example.pacman.Presentation;
-import android.graphics.Bitmap;
 import android.graphics.Canvas;
 
-public class PacmanCanvas {
-	private final Bitmap sourceImage;
-	
-    private Presentation presentation = new Presentation();
+public class PacmanCanvas extends BaseEntity {
     
     private PlayField playfield;
     private ScoreLabel scoreLabel;
@@ -17,48 +12,41 @@ public class PacmanCanvas {
     private Level level;
     
     private CutsceneCanvas cutsceneCanvas;
-    
-    public PacmanCanvas(Bitmap sourceImage) {
-    	this.sourceImage = sourceImage;
-    }
-    
+
+    @Override
     public void draw(Canvas c) {
-        if (!presentation.isVisible()) return;
+        if (!isVisible()) return;
         
 //        presentation.drawRectShape(c);
         
         if (playfield != null) {
-            playfield.draw(sourceImage, c);
+            playfield.draw(c);
         }
         
 
         if (scoreLabel != null) {
-            scoreLabel.draw(sourceImage, c);
+            scoreLabel.draw(c);
         }
         
         if (score != null) {
-            score.draw(sourceImage, c);
+            score.draw(c);
         }
         
         if (sound != null) {
-            sound.draw(sourceImage, c);
+            sound.draw(c);
         }
         
         if (lives != null) {
-            lives.draw(sourceImage, c);
+            lives.draw(c);
         }
         
         if (level != null) {
-            level.draw(sourceImage, c);
+            level.draw(c);
         }
         
         if (cutsceneCanvas != null) {
-            cutsceneCanvas.draw(sourceImage, c);
+            cutsceneCanvas.draw(c);
         }
-    }
-
-    public Presentation getPresentation() {
-        return presentation;
     }
 
     public PlayField getPlayfield() {

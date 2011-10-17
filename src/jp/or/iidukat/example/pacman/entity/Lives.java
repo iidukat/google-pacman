@@ -3,28 +3,22 @@ package jp.or.iidukat.example.pacman.entity;
 import java.util.ArrayList;
 import java.util.List;
 
-import jp.or.iidukat.example.pacman.Presentation;
-
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 
-public class Lives {
-    private Presentation presentation = new Presentation();
+public class Lives extends BaseEntity {
     private List<Life> lives = new ArrayList<Life>();
 
-    void draw(Bitmap sourceImage, Canvas c) {
-        if (!presentation.isVisible())
+    @Override
+    public void draw(Canvas c) {
+        if (!isVisible())
             return;
 
 //        presentation.drawRectShape(c);
 
         for (Life life : lives) {
-            life.draw(sourceImage, c);
+            life.draw(c);
         }
-    }
-    
-    public Presentation getPresentation() {
-        return presentation;
     }
     
     public void addLife(Life life) {
@@ -35,19 +29,18 @@ public class Lives {
         lives.clear();
     }
     
-    public static class Life {
-        private Presentation presentation = new Presentation();
+    public static class Life extends BaseEntity {
+        
+        public Life(Bitmap sourceImage) {
+            super(sourceImage);
+        }
 
-        void draw(Bitmap sourceImage, Canvas c) {
-            if (!presentation.isVisible())
+        @Override
+        public void draw(Canvas c) {
+            if (!isVisible())
                 return;
 
-            presentation.drawBitmap(sourceImage, c);
+            getPresentation().drawBitmap(getSourceImage(), c);
         }
-
-        public Presentation getPresentation() {
-            return presentation;
-        }
-        
     }
 }

@@ -1,20 +1,18 @@
 package jp.or.iidukat.example.pacman.entity;
 
-import jp.or.iidukat.example.pacman.Presentation;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 
-public class ScoreLabel {
-    private Presentation presentation = new Presentation();
+public class ScoreLabel extends BaseEntity {
     
-    void draw(Bitmap sourceImage, Canvas c) {
-        if (!presentation.isVisible()) return;
+    public ScoreLabel(Bitmap sourceImage) {
+        super(sourceImage);
+    }
+    
+    @Override
+    public void draw(Canvas c) {
+        if (!isVisible()) return;
         
-        presentation.drawBitmap(sourceImage, c);
+        getPresentation().drawBitmap(getSourceImage(), c);
     }
-
-    public Presentation getPresentation() {
-        return presentation;
-    }
-    
 }

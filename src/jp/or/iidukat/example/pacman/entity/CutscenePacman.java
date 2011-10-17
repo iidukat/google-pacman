@@ -6,7 +6,6 @@ import java.util.Map;
 
 import jp.or.iidukat.example.pacman.Direction;
 import jp.or.iidukat.example.pacman.PacmanGame;
-import jp.or.iidukat.example.pacman.Presentation;
 import jp.or.iidukat.example.pacman.entity.CutsceneActor.Cutscene.Move;
 import jp.or.iidukat.example.pacman.entity.CutsceneActor.Cutscene.StartPoint;
 
@@ -76,17 +75,11 @@ public class CutscenePacman extends CutsceneActor {
     }
 
     private Mode mode;
-    private Presentation el = new ActorPresentation();
     
     CutscenePacman(PacmanGame g) {
         super(g);
     }
 
-    @Override
-    Presentation getEl() {
-        return el;
-    }
-    
     @Override
     Cutscene getCutscene() {
         return CUTSCENES.get(Integer.valueOf(g.getCutsceneId()));
@@ -112,8 +105,11 @@ public class CutscenePacman extends CutsceneActor {
             if (t == 3) t = 1;
             c += 2 * t;
             // BigPacMan
-            this.el.setWidth(32);
-            this.el.setHeight(32);
+            Presentation el = getPresentation();
+            el.setWidth(32);
+            el.setHeight(32);
+            el.setTopOffset(-20);
+            el.setLeftOffset(-20);
         } else {
             switch (d) {
             case LEFT:
@@ -139,25 +135,4 @@ public class CutscenePacman extends CutsceneActor {
         }
         return new int[] { c, b };
     }
-   
-    private class ActorPresentation extends Presentation {
-
-        public float getLeft() {
-            if (Mode.BIG == mode) {
-                return super.getLeft() - 20;
-            } else {
-                return super.getLeft() - 4;
-            }
-        }
-
-        public float getTop() {
-            if (Mode.BIG == mode) {
-                return super.getTop() - 20;
-            } else {
-                return super.getTop() - 4;
-            }
-        }
-    }
-    
-
 }

@@ -3,26 +3,20 @@ package jp.or.iidukat.example.pacman.entity;
 import java.util.ArrayList;
 import java.util.List;
 
-import jp.or.iidukat.example.pacman.Presentation;
-
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 
-public class Score {
-    private Presentation presentation = new Presentation();
+public class Score extends BaseEntity {
     private List<Number> numbers = new ArrayList<Number>();
     
-    void draw(Bitmap sourceImage, Canvas c) {
+    @Override
+    public void draw(Canvas c) {
         
-        presentation.drawRectShape(c);
+        getPresentation().drawRectShape(c);
         
         for (Number n : numbers) {
-            n.draw(sourceImage, c);
+            n.draw(c);
         }
-    }
-    
-    public Presentation getPresentation() {
-        return presentation;
     }
     
     public void addNumber(Number number) {
@@ -33,18 +27,17 @@ public class Score {
         return numbers.get(index);
     }
 
-    public static class Number {
-        private Presentation presentation = new Presentation();
+    public static class Number extends BaseEntity {
         
-        void draw(Bitmap sourceImage, Canvas c) {
-            if (!presentation.isVisible()) return;
+        public Number(Bitmap sourceImage) {
+            super(sourceImage);
+        }
+        
+        @Override
+        public void draw(Canvas c) {
+            if (!isVisible()) return;
             
-            presentation.drawBitmap(sourceImage, c);
+            getPresentation().drawBitmap(getSourceImage(), c);
         }
-
-        public Presentation getPresentation() {
-            return presentation;
-        }
-        
     }
 }
