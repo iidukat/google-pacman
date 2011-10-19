@@ -3,7 +3,6 @@ package jp.or.iidukat.example.pacman;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,12 +46,6 @@ public class PacmanGame {
     private static final String TAG = "PacmanGame";
     private static final int DEFAULT_KILL_SCREEN_LEVEL = 256;
 
-    private static final int[] v = { 80, 312 }; // フルーツ出現位置
-
-    public static int[] getV() {
-        return v;
-    }
-
     // レベル再開後、一定数のエサが食べられるとモンスターが巣から出てくる
     // そのしきい値をモンスター毎に設定
     private static final int[] m = { 0, 7, 17, 32 };
@@ -78,133 +71,6 @@ public class PacmanGame {
         10,
         0.26f
     };
-
-    // パスの配列.左上:(5, 1), 左下:(5, 15), 右上:(60, 1), 右下:(60, 15).
-    // 配列要素のオブジェクトのプロパティは(x, y, w) もしくは(x, y, h)
-    // 要素のオブジェクトにwプロパティがあり:横方向, 要素のオブジェクトにhプロパティがあり:縦方向
-    // x, yはパスの始点の座標
-    // h, wは各々パスの長さを表現
-    // [例外] typeプロパティを値1でもつパスはワープつき
-    private static class Path {
-        final int x;
-        final int y;
-        final int w;
-        final int h;
-        final boolean tunnel;
-
-        private Path(int x, int y, int w, int h) {
-            this(x, y, w, h, false);
-        }
-
-        private Path(int x, int y, int w, int h, boolean tunnel) {
-            this.x = x;
-            this.y = y;
-            this.w = w;
-            this.h = h;
-            this.tunnel = tunnel;
-        }
-
-        static Path createHorizontalPath(int x, int y, int w) {
-            return new Path(x, y, w, 0);
-        }
-
-        static Path createVerticalPath(int x, int y, int h) {
-            return new Path(x, y, 0, h);
-        }
-
-        static Path createTunnelPath(int x, int y, int w) {
-            return new Path(x, y, w, 0, true);
-        }
-    }
-
-    private static final Path[] n = {
-        Path.createHorizontalPath(5, 1, 56),
-        Path.createHorizontalPath(5, 4, 5),
-        Path.createVerticalPath(5, 1, 4),
-        Path.createVerticalPath(9, 1, 12),
-        Path.createVerticalPath(5, 12, 4),
-        Path.createVerticalPath(10, 12, 4),
-        Path.createHorizontalPath(5, 15, 16),
-        Path.createHorizontalPath(5, 12, 31),
-        Path.createVerticalPath(60, 1, 4),
-        Path.createVerticalPath(54, 1, 4),
-        Path.createVerticalPath(19, 1, 12),
-        Path.createHorizontalPath(19, 4, 26),
-        Path.createHorizontalPath(13, 5, 7),
-        Path.createVerticalPath(13, 5, 4),
-        Path.createHorizontalPath(13, 8, 3),
-        Path.createVerticalPath(56, 4, 9),
-        Path.createHorizontalPath(48, 4, 13),
-        Path.createVerticalPath(48, 1, 12),
-        Path.createVerticalPath(60, 12, 4),
-        Path.createHorizontalPath(44, 15, 17),
-        Path.createVerticalPath(54, 12, 4),
-        Path.createHorizontalPath(44, 12, 17),
-        Path.createVerticalPath(44, 1, 15),
-        Path.createHorizontalPath(41, 13, 4),
-        Path.createVerticalPath(41, 13, 3),
-        Path.createVerticalPath(38, 13, 3),
-        Path.createHorizontalPath(38, 15, 4),
-        Path.createHorizontalPath(35, 10, 10),
-        Path.createVerticalPath(35, 1, 15),
-        Path.createHorizontalPath(35, 13, 4),
-        Path.createVerticalPath(21, 12, 4),
-        Path.createVerticalPath(24, 12, 4),
-        Path.createHorizontalPath(24, 15, 12),
-        Path.createVerticalPath(27, 4, 9),
-        Path.createHorizontalPath(52, 9, 5),
-        Path.createTunnelPath(56, 8, 10),
-        Path.createTunnelPath(1, 8, 9),
-    };
-
-    // エサの存在しないパス
-    // 左上:(5, 1), 左下:(5, 15), 右上:(60, 1), 右下:(60, 15).
-    private static final Path[] o = {
-        Path.createHorizontalPath(1, 8, 8),
-        Path.createHorizontalPath(57, 8, 9),
-        Path.createVerticalPath(44, 2, 10),
-        Path.createVerticalPath(35, 5, 7),
-        Path.createHorizontalPath(36, 4, 8),
-        Path.createHorizontalPath(36, 10, 8),
-        Path.createHorizontalPath(39, 15, 2),
-    };
-
-    public static class Position {
-        final int x;
-        final int y;
-
-        Position(int x, int y) {
-            this.x = x;
-            this.y = y;
-        }
-
-        public int getX() {
-            return x;
-        }
-
-        public int getY() {
-            return y;
-        }
-    }
-
-    // パワーエサ
-    private static final Position[] p = {
-        new Position(5, 15),
-        new Position(5, 3),
-        new Position(15, 8),
-        new Position(60, 3),
-        new Position(60, 15),
-    };
-
-    // ワープトンネル
-    private static final Position[] q = {
-        new Position(2, 8),
-        new Position(63, 8),
-    };
-
-    public static Position[] getQ() {
-        return q;
-    }
 
     public static class LevelConfig {
         private final float ghostSpeed;
@@ -886,11 +752,6 @@ public class PacmanGame {
     private boolean soundReady;
     private boolean graphicsReady;
     private long randSeed;
-    private int playfieldWidth;
-    private int playfieldHeight;
-    private Map<Integer, Map<Integer, PathElement>> playfield;
-    private int dotsRemaining;
-    private int dotsEaten;
     private PacmanCanvas canvasEl;
     private PlayField playfieldEl;
     private CutsceneCanvas cutsceneCanvasEl;
@@ -1011,11 +872,11 @@ public class PacmanGame {
         return b + 0;
     }
 
-    int getCorrectedSpritePos(int b) {
+    static int getCorrectedSpritePos(int b) {
         return b / 8 * 10 + 2;
     }
 
-    int getDotElementIndex(int b, int c) {
+    public static int getDotElementIndex(int b, int c) {
         return 1000 * b + c;
     }
 
@@ -1030,7 +891,7 @@ public class PacmanGame {
         return c;
     }
 
-    public void prepareElement(Presentation b, int c, int d) {
+    public static void prepareElement(Presentation b, int c, int d) {
         c = getCorrectedSpritePos(c);
         d = getCorrectedSpritePos(d);
         b.setBgPosX(c);
@@ -1046,185 +907,6 @@ public class PacmanGame {
         b.setBgPosY(d);
     }
 
-    void determinePlayfieldDimensions() {
-        playfieldWidth = 0;
-        playfieldHeight = 0;
-        for (Path c : n) {
-            if (c.w > 0) {
-                int x = c.x + c.w - 1;
-                if (x > playfieldWidth)
-                    playfieldWidth = x;
-            } else {
-                int y = c.y + c.h - 1;
-                if (y > playfieldHeight)
-                    playfieldHeight = y;
-            }
-        }
-    }
-
-    void preparePlayfield() {
-        playfield = new HashMap<Integer, Map<Integer, PathElement>>();
-        for (int b = 0; b <= playfieldHeight + 1; b++) {
-            Map<Integer, PathElement> row = new HashMap<Integer, PathElement>();
-            for (int c = -2; c <= playfieldWidth + 1; c++) {
-                PathElement p = new PathElement();
-                p.setPath(false);
-                p.setDot(0);
-                p.setIntersection(false);
-                row.put(Integer.valueOf(c * 8), p);
-            }
-            playfield.put(Integer.valueOf(b * 8), row);
-        }
-    }
-
-    void preparePaths() {
-        for (Path c : n) {
-            boolean d = c.tunnel;
-            if (c.w > 0) {
-                int f = c.y * 8;
-                for (int h = c.x * 8; h <= (c.x + c.w - 1) * 8; h += 8) {
-                    PathElement pe = playfield.get(Integer.valueOf(f)).get(
-                            Integer.valueOf(h));
-                    pe.setPath(true);
-                    if (pe.getDot() == 0) {
-                        pe.setDot(1);
-                        dotsRemaining++;
-                    }
-                    pe.setTunnel(!d || h != c.x * 8 && h != (c.x + c.w - 1) * 8 ? d : false);
-                }
-                playfield.get(Integer.valueOf(f)).get(Integer.valueOf(c.x * 8))
-                        .setIntersection(true);
-                playfield.get(Integer.valueOf(f)).get(Integer.valueOf((c.x + c.w - 1) * 8))
-                        .setIntersection(true);
-            } else {
-                int h = c.x * 8;
-                for (int f = c.y * 8; f <= (c.y + c.h - 1) * 8; f += 8) {
-                    PathElement pe = playfield.get(Integer.valueOf(f)).get(Integer.valueOf(h));
-                    if (pe.isPath())
-                        pe.setIntersection(true);
-                    pe.setPath(true);
-                    if (pe.getDot() == 0) {
-                        pe.setDot(1);
-                        dotsRemaining++;
-                    }
-                    pe.setTunnel(!d || f != c.y * 8 && f != (c.y + c.h - 1) * 8 ? d : false);
-                }
-                playfield.get(Integer.valueOf(c.y * 8)).get(Integer.valueOf(h))
-                        .setIntersection(true);
-                playfield.get(Integer.valueOf((c.y + c.h - 1) * 8)).get(Integer.valueOf(h))
-                        .setIntersection(true);
-            }
-        }
-        for (Path p : o)
-            if (p.w != 0)
-                for (int h = p.x * 8; h <= (p.x + p.w - 1) * 8; h += 8) {
-                    playfield.get(Integer.valueOf(p.y * 8)).get(Integer.valueOf(h)).setDot(0);
-                    dotsRemaining--;
-                }
-            else
-                for (int f = p.y * 8; f <= (p.y + p.h - 1) * 8; f += 8) {
-                    playfield.get(Integer.valueOf(f)).get(Integer.valueOf(p.x * 8)).setDot(0);
-                    dotsRemaining--;
-                }
-    }
-
-    void prepareAllowedDirections() {
-        for (int b = 8; b <= playfieldHeight * 8; b += 8)
-            for (int c = 8; c <= playfieldWidth * 8; c += 8) {
-                PathElement pe = playfield.get(Integer.valueOf(b)).get(Integer.valueOf(c));
-                EnumSet<Direction> allowedDir = EnumSet.noneOf(Direction.class);
-                if (playfield.get(Integer.valueOf(b - 8)).get(Integer.valueOf(c)).isPath())
-                    allowedDir.add(Direction.UP);
-                if (playfield.get(Integer.valueOf(b + 8)).get(Integer.valueOf(c)).isPath())
-                    allowedDir.add(Direction.DOWN);
-                if (playfield.get(Integer.valueOf(b)).get(Integer.valueOf(c - 8)).isPath())
-                    allowedDir.add(Direction.LEFT);
-                if (playfield.get(Integer.valueOf(b)).get(Integer.valueOf(c + 8)).isPath())
-                    allowedDir.add(Direction.RIGHT);
-                pe.setAllowedDir(allowedDir);
-            }
-    }
-
-    // エサを作成
-    void createDotElements() {
-        playfieldEl.clearFoods();
-        for (int b = 8; b <= playfieldHeight * 8; b += 8)
-            for (int c = 8; c <= playfieldWidth * 8; c += 8)
-                if (playfield.get(Integer.valueOf(b)).get(Integer.valueOf(c))
-                        .getDot() != 0) {
-                    Food food = new Food(sourceImage);
-                    Presentation p = food.getPresentation();
-                    p.setId(getDotElementIndex(b, c));
-                    p.setLeft(c + -32); 
-                    p.setLeftOffset(3);// margin-left: 3
-                    p.setTop(b + 0);
-                    p.setTopOffset(3); // margint-top: 3
-                    p.setWidth(2);
-                    p.setHeight(2);
-                    p.setBgColor(0xf8b090);
-                    p.setParent(playfieldEl.getPresentation());
-                    playfieldEl.addFood(food);
-                }
-    }
-
-    // パワーエサを作成
-    void createEnergizerElements() {
-        for (Position c : p) {
-            int d = getDotElementIndex(c.y * 8, c.x * 8);
-            Food f = getDotElement(d);
-            if (f == null)
-                continue;
-            // document.getElementById(d).className = "pcm-e";
-            Presentation p = f.getPresentation();
-            p.setLeftOffset(0);
-            p.setTopOffset(0);
-            p.setWidth(8);
-            p.setHeight(8);
-            prepareElement(p, 0, 144);
-            playfield.get(Integer.valueOf(c.y * 8)).get(Integer.valueOf(c.x * 8)).setDot(2);
-        }
-    }
-
-    private Food getDotElement(int index) {
-        for (Food f : playfieldEl.getFoods()) {
-            if (f.getPresentation().getId() == index) {
-                return f;
-            }
-        }
-
-        return null;
-    }
-
-    void createFruitElement() {
-        fruitEl = new Fruit(sourceImage);
-//        fruitEl.getPresentation().setId("pcm-f");
-        Presentation p = fruitEl.getPresentation();
-        p.setWidth(32);
-        p.setHeight(16);
-        p.setLeft(getPlayfieldX(v[1]));
-        p.setTop(getPlayfieldY(v[0]));
-        p.setLeftOffset(-8);
-        p.setTopOffset(-4);
-        prepareElement(p, -32, -16);
-        fruitEl.getPresentation().setParent(playfieldEl.getPresentation());
-        playfieldEl.setFruit(fruitEl);
-    }
-
-    void createPlayfieldElements() {
-        doorEl = new Door();
-//        doorEl.getPresentation().setId("pcm-do");
-        doorEl.getPresentation().setWidth(19);
-        doorEl.getPresentation().setHeight(2);
-        doorEl.getPresentation().setLeft(279);
-        doorEl.getPresentation().setTop(46);
-        doorEl.getPresentation().setBgColor(0xffaaa5);
-        doorEl.getPresentation().setVisibility(false);
-        doorEl.getPresentation().setParent(playfieldEl.getPresentation());
-        playfieldEl.setDoor(doorEl);
-        createDotElements();
-        createEnergizerElements();
-        createFruitElement();
-    }
 
     void createActors() {
         int cnt = 0;
@@ -1258,27 +940,17 @@ public class PacmanGame {
 
     void createPlayfield() {
         playfieldEl = new PlayField(sourceImage);
-        Presentation p = playfieldEl.getPresentation();
-//        p.setId("pcm-p");
-        p.setLeft(45);
-        p.setWidth(464);
-        p.setHeight(136);
-        p.setParent(canvasEl.getPresentation());
+        playfieldEl.createPlayfield(canvasEl);
         canvasEl.setPlayfield(playfieldEl);
     }
 
     void resetPlayfield() {
-        dotsRemaining = 0;
-        dotsEaten = 0;
-        prepareElement(playfieldEl.getPresentation(), 256, 0);
-        determinePlayfieldDimensions();
-        preparePlayfield();
-        preparePaths();
-        prepareAllowedDirections();
-        createPlayfieldElements();
+        playfieldEl.resetPlayfield();
+        doorEl = playfieldEl.getDoor();
+        fruitEl = playfieldEl.getFruit();
         createActorElements();
     }
-
+    
     void canvasClicked(float b, float c) {
         // TODO: actorsがロードされる前にクリックされるケースに対処する
         if (handleSoundIconClick(b, c)) {
@@ -1578,31 +1250,40 @@ public class PacmanGame {
     }
 
     public void dotEaten(int[] c) {
-        dotsRemaining--;
-        dotsEaten++;
+        playfieldEl.decrementDotsRemaining();
+        playfieldEl.incrementDotsEaten();
         player.c(CurrentSpeed.PACMAN_EATING_DOT);
         playDotEatingSound();
-        if (playfield.get(Integer.valueOf(c[0])).get(Integer.valueOf(c[1])).getDot() == 2) { // パワーエサを食べたとき
+        if (getPathElement(c[1], c[0]).getDot() == 2) { // パワーエサを食べたとき
             switchMainGhostMode(GhostMode.FRIGHTENED, false);
             addToScore(50);
         } else
             addToScore(10); // 普通のエサ
 
-        Food d = getDotElement(getDotElementIndex(c[0], c[1]));
+        Food d = playfieldEl.getDotElement(getDotElementIndex(c[0], c[1]));
         // d.style.display = "none";
         d.setEaten(true);
         d.getPresentation().setVisibility(false);
-        playfield.get(Integer.valueOf(c[0])).get(Integer.valueOf(c[1])).setDot(0);
+        playfieldEl.clearDot(c[1], c[0]);
         updateCruiseElroySpeed();
         resetForcePenLeaveTime();
         figureOutPenLeaving();
-        if (dotsEaten == 70 || dotsEaten == 170)
+        if (playfieldEl.getDotsEaten() == 70 || playfieldEl.getDotsEaten() == 170)
             showFruit();
-        if (dotsRemaining == 0)
+        if (playfieldEl.getDotsRemaining() == 0)
             finishLevel();
         playAmbientSound();
     }
 
+    public PathElement getPathElement(int x, int y) {
+        return playfieldEl.getPathElement(x, y); 
+    }
+    
+    public int getDotsRemaining() {
+        return playfieldEl.getDotsRemaining(); 
+    }
+
+    
     int[] getFruitSprite(int b) {
         int c = b <= 4 ? 128 : 160;
         b = 128 + 16 * ((b - 1) % 4);
@@ -1681,9 +1362,9 @@ public class PacmanGame {
         float b = levels.ghostSpeed * 0.8f;
         if (!lostLifeOnThisLevel || ghosts[3].getMode() != GhostMode.IN_PEN) {
             LevelConfig c = levels;
-            if (dotsRemaining < c.elroyDotsLeftPart2)
+            if (playfieldEl.getDotsRemaining() < c.elroyDotsLeftPart2)
                 b = c.elroySpeedPart2 * 0.8f;
-            else if (dotsRemaining < c.elroyDotsLeftPart1)
+            else if (playfieldEl.getDotsRemaining() < c.elroyDotsLeftPart1)
                 b = c.elroySpeedPart1 * 0.8f;
         }
         if (b != cruiseElroySpeed) {
@@ -2411,11 +2092,11 @@ public class PacmanGame {
                         ? "ambient_eyes"
                         : mainGhostMode == GhostMode.FRIGHTENED
                             ? "ambient_fright"
-                            : dotsEaten > 241
+                            : playfieldEl.getDotsEaten() > 241
                                 ? "ambient_4"
-                                : dotsEaten > 207
+                                : playfieldEl.getDotsEaten() > 207
                                     ? "ambient_3"
-                                    : dotsEaten > 138
+                                    : playfieldEl.getDotsEaten() > 138
                                         ? "ambient_2" : "ambient_1";
             // else if (gameplayMode == 13) b = "cutscene";
 
@@ -2570,10 +2251,6 @@ public class PacmanGame {
         return sourceImage;
     }
     
-    public Map<Integer, Map<Integer, PathElement>> getPlayfield() {
-        return playfield;
-    }
-
     public PlayField getPlayfieldEl() {
         return playfieldEl;
     }
@@ -2689,11 +2366,7 @@ public class PacmanGame {
     public void setTilesChanged(boolean tilesChanged) {
         this.tilesChanged = tilesChanged;
     }
-
-    public int getDotsRemaining() {
-        return dotsRemaining;
-    }
-
+    
     public float getCruiseElroySpeed() {
         return cruiseElroySpeed;
     }

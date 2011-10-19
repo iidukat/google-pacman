@@ -10,17 +10,9 @@ public interface Entity extends Comparable<Entity>{
 
     float getTop();
     float getLeft();
-    
-    // height
-    // width
-    
-    // visibility
     boolean isVisible();
     void setVisibility(boolean visibility);
-    
-    // order
     int getDisplayOrder();
-    
     void draw(Canvas canvas);
     
     public static class Presentation {

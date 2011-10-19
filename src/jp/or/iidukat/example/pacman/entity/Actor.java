@@ -82,7 +82,7 @@ public abstract class Actor extends BaseEntity {
         el.setTopOffset(-4);
         el.setLeftOffset(-4);
         el.setParent(g.getPlayfieldEl().getPresentation());
-        g.prepareElement(el, 0, 0);
+        PacmanGame.prepareElement(el, 0, 0);
         g.getPlayfieldEl().addActor(this);
         this.elPos = new float[] {0, 0};
         this.elBackgroundPos = new int[] {0, 0};

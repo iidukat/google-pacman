@@ -160,11 +160,9 @@ public abstract class Ghost extends Actor {
         Move d = this.dir.getMove();
         int[] f = new int[] {c[0], c[1]};
         f[d.getAxis()] += d.getIncrement() * 8; // 進行方向へ1マス先取り
-        PathElement h = g.getPlayfield().get(Integer.valueOf(f[0]))
-                                        .get(Integer.valueOf(f[1]));
+        PathElement h = g.getPathElement(f[1], f[0]);
         if (b && !h.isIntersection())
-            h = g.getPlayfield().get(Integer.valueOf(c[0]))
-                                .get(Integer.valueOf(c[1])); // 交差点/行き止まり でなければ現在位置に戻る(反転済みの場合)
+            h = g.getPathElement(c[1], c[0]); // 交差点/行き止まり でなければ現在位置に戻る(反転済みの場合)
         
         if (h.isIntersection())
             switch (this.mode) {
@@ -296,14 +294,14 @@ public abstract class Ghost extends Actor {
 
     @Override
     void n() {
-        if (this.pos[0] == PacmanGame.getQ()[0].getY() * 8
-                && this.pos[1] == PacmanGame.getQ()[0].getX() * 8) { // 画面左から右へワープ
-            this.pos[0] = PacmanGame.getQ()[1].getY() * 8;
-            this.pos[1] = (PacmanGame.getQ()[1].getX() - 1) * 8;
-        } else if (this.pos[0] == PacmanGame.getQ()[1].getY() * 8
-                    && this.pos[1] == PacmanGame.getQ()[1].getX() * 8) { // 画面右から左へワープ
-            this.pos[0] = PacmanGame.getQ()[0].getY() * 8;
-            this.pos[1] = (PacmanGame.getQ()[0].getX() + 1) * 8;
+        if (this.pos[0] == PlayField.getQ()[0].getY() * 8
+                && this.pos[1] == PlayField.getQ()[0].getX() * 8) { // 画面左から右へワープ
+            this.pos[0] = PlayField.getQ()[1].getY() * 8;
+            this.pos[1] = (PlayField.getQ()[1].getX() - 1) * 8;
+        } else if (this.pos[0] == PlayField.getQ()[1].getY() * 8
+                    && this.pos[1] == PlayField.getQ()[1].getX() * 8) { // 画面右から左へワープ
+            this.pos[0] = PlayField.getQ()[0].getY() * 8;
+            this.pos[1] = (PlayField.getQ()[0].getX() + 1) * 8;
         }
         // モンスターが巣に入る
         if (this.mode == GhostMode.EATEN
@@ -344,9 +342,7 @@ public abstract class Ghost extends Actor {
         this.lastGoodTilePos = new int[] {b[0], b[1]};
     
         // トンネル通過[モンスターが食べられた時以外](currentSpeed:2) or それ以外(currentSpeed:0)
-        if (g.getPlayfield().get(Integer.valueOf(b[0]))
-                            .get(Integer.valueOf(b[1]))
-                            .isTunnel()
+        if (g.getPathElement(b[1], b[0]).isTunnel()
                 && this.mode != GhostMode.EATEN)
             this.c(CurrentSpeed.PASSING_TUNNEL);
         else
@@ -362,8 +358,7 @@ public abstract class Ghost extends Actor {
         this.n();
         this.i(false); // モンスターの交差点/行き止まりでの進行方向決定
         PathElement b =
-            g.getPlayfield().get(Integer.valueOf((int) this.pos[0]))
-                            .get(Integer.valueOf((int) this.pos[1]));
+            g.getPathElement((int) this.pos[1], (int) this.pos[0]);
         if (b.isIntersection()) // 行き止まり/交差点にて
             if (this.nextDir != Direction.NONE && b.getAllowedDir().contains(this.nextDir)) { // nextDirで指定された方向へ移動可能
                 if (this.dir != Direction.NONE) this.lastActiveDir = this.dir;
@@ -439,9 +434,7 @@ public abstract class Ghost extends Actor {
         } else { // 通常時の画像表示
             Direction ndir = this.nextDir;
             if (ndir == Direction.NONE
-                || g.getPlayfield().get(Integer.valueOf(this.tilePos[0]))
-                                    .get(Integer.valueOf(this.tilePos[1]))
-                                    .isTunnel()) {
+                || g.getPathElement(this.tilePos[1], this.tilePos[0]).isTunnel()) {
                 ndir = this.dir;
             }
             
