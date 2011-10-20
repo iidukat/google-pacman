@@ -11,6 +11,7 @@ import jp.or.iidukat.example.pacman.PacmanGame;
 import jp.or.iidukat.example.pacman.PathElement;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.util.FloatMath;
 
 public class PlayField extends BaseEntity {
 
@@ -147,8 +148,8 @@ public class PlayField extends BaseEntity {
         return v;
     }
 
-    private final Bitmap sourceImage;
-    
+    private final PacmanGame game;
+
     private int playfieldWidth;
     private int playfieldHeight;
     private int dotsRemaining;
@@ -162,11 +163,12 @@ public class PlayField extends BaseEntity {
     private Ready ready;
     private List<KillScreenTile> killScreenTiles = new ArrayList<KillScreenTile>();
     private GameOver gameover;
-//    private final List<Entity> entities = new ArrayList<Entity>();
 
-    public PlayField(Bitmap sourceImage) {
-        super(sourceImage);
-        this.sourceImage = sourceImage;
+    // private final List<Entity> entities = new ArrayList<Entity>();
+
+    public PlayField(PacmanGame game) {
+        super(game.getSourceImage());
+        this.game = game;
     }
 
     public Map<Integer, Map<Integer, PathElement>> getPlayfield() {
@@ -175,11 +177,12 @@ public class PlayField extends BaseEntity {
 
     public void createPlayfield(PacmanCanvas canvasEl) {
         Presentation p = getPresentation();
-//        p.setId("pcm-p");
+        // p.setId("pcm-p");
         p.setLeft(45);
         p.setWidth(464);
         p.setHeight(136);
-        p.setParent(canvasEl.getPresentation());
+
+        setParent(canvasEl);
     }
 
     public void resetPlayfield() {
@@ -192,7 +195,7 @@ public class PlayField extends BaseEntity {
         prepareAllowedDirections();
         createPlayfieldElements();
     }
-    
+
     void determinePlayfieldDimensions() {
         playfieldWidth = 0;
         playfieldHeight = 0;
@@ -230,8 +233,7 @@ public class PlayField extends BaseEntity {
             if (c.w > 0) {
                 int f = c.y * 8;
                 for (int h = c.x * 8; h <= (c.x + c.w - 1) * 8; h += 8) {
-                    PathElement pe = playfield.get(Integer.valueOf(f)).get(
-                            Integer.valueOf(h));
+                    PathElement pe = playfield.get(Integer.valueOf(f)).get(Integer.valueOf(h));
                     pe.setPath(true);
                     if (pe.getDot() == 0) {
                         pe.setDot(1);
@@ -241,7 +243,8 @@ public class PlayField extends BaseEntity {
                 }
                 playfield.get(Integer.valueOf(f)).get(Integer.valueOf(c.x * 8))
                         .setIntersection(true);
-                playfield.get(Integer.valueOf(f)).get(Integer.valueOf((c.x + c.w - 1) * 8))
+                playfield.get(Integer.valueOf(f))
+                        .get(Integer.valueOf((c.x + c.w - 1) * 8))
                         .setIntersection(true);
             } else {
                 int h = c.x * 8;
@@ -258,19 +261,21 @@ public class PlayField extends BaseEntity {
                 }
                 playfield.get(Integer.valueOf(c.y * 8)).get(Integer.valueOf(h))
                         .setIntersection(true);
-                playfield.get(Integer.valueOf((c.y + c.h - 1) * 8)).get(Integer.valueOf(h))
-                        .setIntersection(true);
+                playfield.get(Integer.valueOf((c.y + c.h - 1) * 8))
+                        .get(Integer.valueOf(h)).setIntersection(true);
             }
         }
         for (Path p : o)
             if (p.w != 0)
                 for (int h = p.x * 8; h <= (p.x + p.w - 1) * 8; h += 8) {
-                    playfield.get(Integer.valueOf(p.y * 8)).get(Integer.valueOf(h)).setDot(0);
+                    playfield.get(Integer.valueOf(p.y * 8))
+                            .get(Integer.valueOf(h)).setDot(0);
                     dotsRemaining--;
                 }
             else
                 for (int f = p.y * 8; f <= (p.y + p.h - 1) * 8; f += 8) {
-                    playfield.get(Integer.valueOf(f)).get(Integer.valueOf(p.x * 8)).setDot(0);
+                    playfield.get(Integer.valueOf(f))
+                            .get(Integer.valueOf(p.x * 8)).setDot(0);
                     dotsRemaining--;
                 }
     }
@@ -278,15 +283,20 @@ public class PlayField extends BaseEntity {
     void prepareAllowedDirections() {
         for (int b = 8; b <= playfieldHeight * 8; b += 8)
             for (int c = 8; c <= playfieldWidth * 8; c += 8) {
-                PathElement pe = playfield.get(Integer.valueOf(b)).get(Integer.valueOf(c));
+                PathElement pe = playfield.get(Integer.valueOf(b)).get(
+                        Integer.valueOf(c));
                 EnumSet<Direction> allowedDir = EnumSet.noneOf(Direction.class);
-                if (playfield.get(Integer.valueOf(b - 8)).get(Integer.valueOf(c)).isPath())
+                if (playfield.get(Integer.valueOf(b - 8))
+                        .get(Integer.valueOf(c)).isPath())
                     allowedDir.add(Direction.UP);
-                if (playfield.get(Integer.valueOf(b + 8)).get(Integer.valueOf(c)).isPath())
+                if (playfield.get(Integer.valueOf(b + 8))
+                        .get(Integer.valueOf(c)).isPath())
                     allowedDir.add(Direction.DOWN);
-                if (playfield.get(Integer.valueOf(b)).get(Integer.valueOf(c - 8)).isPath())
+                if (playfield.get(Integer.valueOf(b))
+                        .get(Integer.valueOf(c - 8)).isPath())
                     allowedDir.add(Direction.LEFT);
-                if (playfield.get(Integer.valueOf(b)).get(Integer.valueOf(c + 8)).isPath())
+                if (playfield.get(Integer.valueOf(b))
+                        .get(Integer.valueOf(c + 8)).isPath())
                     allowedDir.add(Direction.RIGHT);
                 pe.setAllowedDir(allowedDir);
             }
@@ -294,23 +304,15 @@ public class PlayField extends BaseEntity {
 
     // エサを作成
     void createDotElements() {
-        clearFoods();
+        foods.clear();
         for (int b = 8; b <= playfieldHeight * 8; b += 8)
             for (int c = 8; c <= playfieldWidth * 8; c += 8)
                 if (playfield.get(Integer.valueOf(b)).get(Integer.valueOf(c))
                         .getDot() != 0) {
-                    Food food = new Food(sourceImage);
-                    Presentation p = food.getPresentation();
-                    p.setId(PacmanGame.getDotElementIndex(b, c));
-                    p.setLeft(c + -32); 
-                    p.setLeftOffset(3);// margin-left: 3
-                    p.setTop(b + 0);
-                    p.setTopOffset(3); // margint-top: 3
-                    p.setWidth(2);
-                    p.setHeight(2);
-                    p.setBgColor(0xf8b090);
-                    p.setParent(getPresentation());
-                    addFood(food);
+                    Food food = new Food(game.getSourceImage());
+                    food.init(b, c);
+                    food.setParent(this);
+                    foods.add(food);
                 }
     }
 
@@ -321,20 +323,16 @@ public class PlayField extends BaseEntity {
             Food f = getDotElement(d);
             if (f == null)
                 continue;
-            // document.getElementById(d).className = "pcm-e";
-            Presentation p = f.getPresentation();
-            p.setLeftOffset(0);
-            p.setTopOffset(0);
-            p.setWidth(8);
-            p.setHeight(8);
-            PacmanGame.prepareElement(p, 0, 144);
-            playfield.get(Integer.valueOf(c.y * 8)).get(Integer.valueOf(c.x * 8)).setDot(2);
+
+            f.toEnergizer();
+            playfield.get(Integer.valueOf(c.y * 8))
+                    .get(Integer.valueOf(c.x * 8)).setDot(2);
         }
     }
 
     public Food getDotElement(int index) {
         for (Food f : foods) {
-            if (f.getPresentation().getId() == index) {
+            if (f.getId() == index) {
                 return f;
             }
         }
@@ -343,61 +341,78 @@ public class PlayField extends BaseEntity {
     }
 
     void createFruitElement() {
-        fruit = new Fruit(sourceImage);
-//        fruitEl.getPresentation().setId("pcm-f");
-        Presentation p = fruit.getPresentation();
-        p.setWidth(32);
-        p.setHeight(16);
-        p.setLeft(PacmanGame.getPlayfieldX(v[1]));
-        p.setTop(PacmanGame.getPlayfieldY(v[0]));
-        p.setLeftOffset(-8);
-        p.setTopOffset(-4);
-        PacmanGame.prepareElement(p, -32, -16);
-        fruit.getPresentation().setParent(getPresentation());
+        fruit = new Fruit(game.getSourceImage(), game.getLevels().getFruit());
+        fruit.initOnPlayfield(v);
+        fruit.setParent(this);
     }
 
     void createPlayfieldElements() {
-        door = new Door();
-//        doorEl.getPresentation().setId("pcm-do");
-        Presentation dp = door.getPresentation();
-        dp.setWidth(19);
-        dp.setHeight(2);
-        dp.setLeft(279);
-        dp.setTop(46);
-        dp.setBgColor(0xffaaa5);
-        dp.setVisibility(false);
-        dp.setParent(getPresentation());
+        door = new Door(getPresentation().getSourceImage());
+        door.init();
+        door.setVisibility(false);
+        door.setParent(this);
         createDotElements();
         createEnergizerElements();
         createFruitElement();
     }
-    
+
     public int getDotsRemaining() {
         return dotsRemaining;
     }
-    
+
     public void decrementDotsRemaining() {
-    	dotsRemaining--;
+        dotsRemaining--;
     }
-    
+
     public int getDotsEaten() {
-    	return dotsEaten;
+        return dotsEaten;
     }
-    
+
     public void incrementDotsEaten() {
-    	dotsEaten++;
+        dotsEaten++;
     }
-    
+
     public PathElement getPathElement(int x, int y) {
-        return playfield.get(Integer.valueOf(y))
-                        .get(Integer.valueOf(x));
+        return playfield.get(Integer.valueOf(y)).get(Integer.valueOf(x));
     }
-    
+
     public void clearDot(int x, int y) {
         playfield.get(Integer.valueOf(y)).get(Integer.valueOf(x)).setDot(0);
     }
 
-    
+    private int killScreenTileX;
+    private int killScreenTileY;
+
+    private void createKillScreenElement(int b, int c, int d, int f, boolean h) {
+        KillScreenTile j = new KillScreenTile(game.getSourceImage());
+        j.init(b, c, d, f);
+        if (h) {
+            // j.style.background = "url(src/pacman10-hp-sprite-2.png) -" +
+            // killScreenTileX + "px -" + killScreenTileY + "px no-repeat";
+            j.setBgPos(killScreenTileX, killScreenTileY);
+            killScreenTileY += 8;
+        } else {
+            j.setBgColor(0x000000); // j.style.background = "black";
+        }
+        killScreenTiles.add(j);
+        j.setParent(this); // playfieldEl.appendChild(j)
+    }
+
+    public void killScreen() {
+        createKillScreenElement(272, 0, 200, 80, false);
+        createKillScreenElement(280, 80, 192, 56, false);
+        killScreenTileX = 80;
+        killScreenTileY = 0;
+        for (int b = 280; b <= 472; b += 8)
+            for (int c = 0; c <= 136; c += 8) {
+                if (game.rand() < 0.03) {
+                    killScreenTileX = (int) FloatMath.floor(game.rand() * 25) * 10;
+                    killScreenTileY = (int) FloatMath.floor(game.rand() * 2) * 10;
+                }
+                createKillScreenElement(b, c, 8, 8, true);
+            }
+    }
+
     public void draw(Canvas c) {
         if (!isVisible())
             return;
@@ -423,28 +438,28 @@ public class PlayField extends BaseEntity {
         for (KillScreenTile tile : killScreenTiles) {
             tile.draw(c);
         }
-        
+
         if (ready != null) {
             ready.draw(c);
         }
-        
+
         if (gameover != null) {
             gameover.draw(c);
         }
 
-//        for (Entity e : entities) {
-//            e.draw(c);
-//        }
+        // for (Entity e : entities) {
+        // e.draw(c);
+        // }
     }
-    
+
     public void addActor(Actor actor) {
         actors.add(actor);
     }
-    
+
     public Door getDoor() {
         return door;
     }
-    
+
     public void setDoor(Door door) {
         this.door = door;
     }
@@ -456,7 +471,7 @@ public class PlayField extends BaseEntity {
     public void setFruit(Fruit fruit) {
         this.fruit = fruit;
     }
-    
+
     public Ready getReady() {
         return ready;
     }
@@ -469,18 +484,6 @@ public class PlayField extends BaseEntity {
         return foods;
     }
 
-    public void addFood(Food food) {
-        foods.add(food);
-    }
-    
-    public void clearFoods() {
-        foods.clear();
-    }
-    
-    public void addKillScreenTile(KillScreenTile tile) {
-        killScreenTiles.add(tile);
-    }
-    
     public GameOver getGameover() {
         return gameover;
     }
@@ -490,13 +493,34 @@ public class PlayField extends BaseEntity {
     }
 
     public static class Food extends BaseEntity {
-        
+
         private boolean eaten = false;
 
         public Food(Bitmap sourceImage) {
             super(sourceImage);
         }
-        
+
+        void init(int y, int x) {
+            setId(PacmanGame.getDotElementIndex(y, x));
+            Presentation p = getPresentation();
+            p.setLeft(x + -32);
+            p.setLeftOffset(3);// margin-left: 3
+            p.setTop(y + 0);
+            p.setTopOffset(3); // margint-top: 3
+            p.setWidth(2);
+            p.setHeight(2);
+            p.setBgColor(0xf8b090);
+        }
+
+        void toEnergizer() {
+            Presentation p = getPresentation();
+            p.setLeftOffset(0);
+            p.setTopOffset(0);
+            p.setWidth(8);
+            p.setHeight(8);
+            PacmanGame.prepareElement(p, 0, 144);
+        }
+
         @Override
         public void draw(Canvas c) {
             if (eaten || !isVisible())
@@ -518,13 +542,22 @@ public class PlayField extends BaseEntity {
         public void setEaten(boolean eaten) {
             this.eaten = eaten;
         }
-        
+
     }
 
     public static class Ready extends BaseEntity {
-    
+
         public Ready(Bitmap sourceImage) {
             super(sourceImage);
+        }
+
+        public void init() {
+            Presentation p = getPresentation();
+            p.setWidth(48);
+            p.setHeight(8);
+            p.setLeft(264);
+            p.setTop(80);
+            PacmanGame.prepareElement(p, 160, 0);
         }
         
         @Override
@@ -537,11 +570,20 @@ public class PlayField extends BaseEntity {
     }
 
     public static class GameOver extends BaseEntity {
-        
+
         public GameOver(Bitmap sourceImage) {
             super(sourceImage);
         }
-        
+
+        public void init() {
+            Presentation p = getPresentation();
+            p.setWidth(80);
+            p.setHeight(8);
+            p.setLeft(248);
+            p.setTop(80);
+            PacmanGame.prepareElement(p, 8, 152);
+        }
+
         @Override
         public void draw(Canvas c) {
             if (!isVisible())
@@ -550,16 +592,37 @@ public class PlayField extends BaseEntity {
             getPresentation().drawBitmap(c);
         }
     }
-    
+
     public static class KillScreenTile extends BaseEntity {
-        
+
         public KillScreenTile(Bitmap sourceImage) {
             super(sourceImage);
+        }
+
+        void init(int left, int top, int width, int height) {
+            Presentation p = getPresentation();
+            p.setLeft(left); // j.style.left = b + "px";
+            p.setTop(top); // j.style.top = c + "px";
+            p.setWidth(width); // j.style.width = d + "px";
+            p.setHeight(height); // j.style.height = f + "px";
+            // j.style.zIndex = 119;
+        }
+        
+        void setBgPos(int x, int y) {
+            Presentation p = getPresentation();
+            p.setBgPosX(x);
+            p.setBgPosY(y);
+        	
+        }
+        
+        void setBgColor(int color) {
+            getPresentation().setBgColor(color);
         }
         
         @Override
         public void draw(Canvas c) {
-            if (!isVisible()) return;
+            if (!isVisible())
+                return;
 
             // TODO: 要見直し
             Presentation p = getPresentation();

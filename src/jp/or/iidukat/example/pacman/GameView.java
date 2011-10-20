@@ -50,10 +50,8 @@ public class GameView extends View {
 
     @Override
     public void onDraw(Canvas canvas) {
-        game.getCanvasEl().getPresentation()
-                        .setLeft((canvasWidth - CANVAS_WIDTH) / 2);
-        game.getCanvasEl().getPresentation()
-                        .setTop((canvasHeight - CANVAS_HEIGHT) / 2);
+        game.getCanvasEl().setLeft((canvasWidth - CANVAS_WIDTH) / 2);
+        game.getCanvasEl().setTop((canvasHeight - CANVAS_HEIGHT) / 2);
         game.getCanvasEl().draw(canvas);
     }
 

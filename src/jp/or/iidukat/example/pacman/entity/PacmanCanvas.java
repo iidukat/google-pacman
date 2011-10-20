@@ -1,5 +1,6 @@
 package jp.or.iidukat.example.pacman.entity;
 
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 
 public class PacmanCanvas extends BaseEntity {
@@ -12,7 +13,18 @@ public class PacmanCanvas extends BaseEntity {
     private Level level;
     
     private CutsceneCanvas cutsceneCanvas;
+    
+    public PacmanCanvas(Bitmap sourceImage) {
+        super(sourceImage);
+    }
 
+    public void init() {
+        Presentation p = getPresentation();
+        p.setWidth(554);
+        p.setHeight(136);
+        p.setBgColor(0x000000);
+    }
+    
     @Override
     public void draw(Canvas c) {
         if (!isVisible()) return;
@@ -103,6 +115,14 @@ public class PacmanCanvas extends BaseEntity {
 
     public void setCutsceneCanvas(CutsceneCanvas cutsceneCanvas) {
         this.cutsceneCanvas = cutsceneCanvas;
+    }
+
+    public void setTop(float top) {
+        getPresentation().setTop(top);
+    }
+    
+    public void setLeft(float left) {
+        getPresentation().setLeft(left);
     }
 
     public void reset() {

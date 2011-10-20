@@ -87,7 +87,7 @@ public class SoundPlayer {
                     if (count == ambientResources.length) {
                         if (success) {
                             ambientPoolAvailable = true;
-                            game.soundAvailable = soundPoolAvailable && ambientPoolAvailable;                            
+                            game.soundAvailable = soundPoolAvailable && ambientPoolAvailable;
                         }
                     }
                 }
