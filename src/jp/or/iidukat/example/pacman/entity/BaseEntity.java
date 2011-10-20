@@ -95,7 +95,6 @@ abstract class BaseEntity implements Entity {
     }
 
     public class PresentationImpl implements Presentation {
-        private int id;
         private int width;
         private int height;
         private float left;
@@ -319,7 +318,6 @@ abstract class BaseEntity implements Entity {
 
         @Override
         public float[] getAbsolutePos() {
-            // TODO: 要修正
             Presentation b = this;
             float[] c = { 0, 0 };
             do {
@@ -329,6 +327,27 @@ abstract class BaseEntity implements Entity {
             return c;
         }
         
+        @Override
+        public void prepareBkPos(int x, int y) {
+            bgPosX = getCorrectedSpritePos(x);
+            bgPosY = getCorrectedSpritePos(y);
+        }
+
+        @Override
+        public void changeBkPos(int x, int y, boolean f) {
+            if (f) {
+                bgPosX = getCorrectedSpritePos(x);
+                bgPosY = getCorrectedSpritePos(y);
+            } else {
+                bgPosX = x;
+                bgPosY = y;
+            }
+        }
+
+        private int getCorrectedSpritePos(int p) {
+            return p / 8 * 10 + 2;
+        }
+
         @Override
         public Bitmap getSourceImage() {
             return sourceImage;

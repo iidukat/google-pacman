@@ -3,7 +3,6 @@ package jp.or.iidukat.example.pacman.entity;
 import java.util.ArrayList;
 import java.util.List;
 
-import jp.or.iidukat.example.pacman.PacmanGame;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 
@@ -55,7 +54,7 @@ public class Lives extends BaseEntity {
             p.setWidth(16);
             p.setHeight(12);
             p.setTop(top); // margin-bottom: 3px
-            PacmanGame.prepareElement(p, 64, 129);
+            p.prepareBkPos(64, 129);
         }
         
         @Override

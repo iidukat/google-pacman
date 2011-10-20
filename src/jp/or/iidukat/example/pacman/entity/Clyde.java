@@ -62,7 +62,7 @@ public class Clyde extends Ghost {
         }
         // Playerと距離が近ければ追尾する。遠ければScatterモードでの受け持ち場所を目指す。
         Actor b = g.getPlayer();
-        float distance = PacmanGame.getDistance(b.tilePos, this.tilePos);
+        float distance = PlayField.getDistance(b.tilePos, this.tilePos);
         this.targetPos = distance > 64
             ? new float[] { b.tilePos[0], b.tilePos[1] }
             : this.scatterPos;

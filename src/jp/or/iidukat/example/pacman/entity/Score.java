@@ -3,7 +3,6 @@ package jp.or.iidukat.example.pacman.entity;
 import java.util.ArrayList;
 import java.util.List;
 
-import jp.or.iidukat.example.pacman.PacmanGame;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 
@@ -80,23 +79,15 @@ public class Score extends BaseEntity {
             p.setLeft(0);
             p.setWidth(8);
             p.setHeight(8);
-            PacmanGame.prepareElement(p, 48, 0);
+            p.prepareBkPos(48, 0);
         }
 
         void update(int n) {
-            PacmanGame.changeElementBkPos(
-                                        getPresentation(),
-                                        8 + 8 * n,
-                                        144,
-                                        true);
+            getPresentation().changeBkPos(8 + 8 * n, 144, true);
         }
         
         void updateToBlank() {
-            PacmanGame.changeElementBkPos(
-                                        getPresentation(),
-                                        48,
-                                        0,
-                                        true);
+            getPresentation().changeBkPos(48, 0, true);
         }
 
         @Override

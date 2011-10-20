@@ -188,7 +188,7 @@ public class PlayField extends BaseEntity {
     public void resetPlayfield() {
         dotsRemaining = 0;
         dotsEaten = 0;
-        PacmanGame.prepareElement(getPresentation(), 256, 0);
+        getPresentation().prepareBkPos(256, 0);
         determinePlayfieldDimensions();
         preparePlayfield();
         preparePaths();
@@ -319,7 +319,7 @@ public class PlayField extends BaseEntity {
     // パワーエサを作成
     void createEnergizerElements() {
         for (Position c : p) {
-            int d = PacmanGame.getDotElementIndex(c.y * 8, c.x * 8);
+            int d = getDotElementIndex(c.y * 8, c.x * 8);
             Food f = getDotElement(d);
             if (f == null)
                 continue;
@@ -413,6 +413,26 @@ public class PlayField extends BaseEntity {
             }
     }
 
+    public static float getPlayfieldX(float b) {
+        return b + -32;
+    }
+
+    public static float getPlayfieldY(float b) {
+        return b + 0;
+    }
+
+    public static float getDistance(int[] b, int[] c) {
+        return FloatMath.sqrt((c[1] - b[1]) * (c[1] - b[1]) + (c[0] - b[0]) * (c[0] - b[0]));
+    }
+
+    public static float getDistance(float[] b, float[] c) {
+        return FloatMath.sqrt((c[1] - b[1]) * (c[1] - b[1]) + (c[0] - b[0]) * (c[0] - b[0]));
+    }
+    
+    public static int getDotElementIndex(int b, int c) {
+        return 1000 * b + c;
+    }
+    
     public void draw(Canvas c) {
         if (!isVisible())
             return;
@@ -501,7 +521,7 @@ public class PlayField extends BaseEntity {
         }
 
         void init(int y, int x) {
-            setId(PacmanGame.getDotElementIndex(y, x));
+            setId(getDotElementIndex(y, x));
             Presentation p = getPresentation();
             p.setLeft(x + -32);
             p.setLeftOffset(3);// margin-left: 3
@@ -518,7 +538,7 @@ public class PlayField extends BaseEntity {
             p.setTopOffset(0);
             p.setWidth(8);
             p.setHeight(8);
-            PacmanGame.prepareElement(p, 0, 144);
+            p.prepareBkPos(0, 144);
         }
 
         @Override
@@ -557,7 +577,7 @@ public class PlayField extends BaseEntity {
             p.setHeight(8);
             p.setLeft(264);
             p.setTop(80);
-            PacmanGame.prepareElement(p, 160, 0);
+            p.prepareBkPos(160, 0);
         }
         
         @Override
@@ -581,7 +601,7 @@ public class PlayField extends BaseEntity {
             p.setHeight(8);
             p.setLeft(248);
             p.setTop(80);
-            PacmanGame.prepareElement(p, 8, 152);
+            p.prepareBkPos(8, 152);
         }
 
         @Override

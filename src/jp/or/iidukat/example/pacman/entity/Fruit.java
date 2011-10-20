@@ -1,6 +1,5 @@
 package jp.or.iidukat.example.pacman.entity;
 
-import jp.or.iidukat.example.pacman.PacmanGame;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 
@@ -17,34 +16,34 @@ public class Fruit extends BaseEntity {
         Presentation p = getPresentation();
         p.setWidth(32);
         p.setHeight(16);
-        p.setLeft(PacmanGame.getPlayfieldX(pos[1]));
-        p.setTop(PacmanGame.getPlayfieldY(pos[0]));
+        p.setLeft(PlayField.getPlayfieldX(pos[1]));
+        p.setTop(PlayField.getPlayfieldY(pos[0]));
         p.setLeftOffset(-8);
         p.setTopOffset(-4);
-        PacmanGame.prepareElement(p, -32, -16);
+        p.prepareBkPos(-32, -16);
     }
     
     void initOnLevel(int top) {
         int[] fs = getSprite();
         Presentation p = getPresentation();
-        PacmanGame.prepareElement(p, fs[0], fs[1]);
+        p.prepareBkPos(fs[0], fs[1]);
         p.setWidth(32);
         p.setHeight(16);
         p.setTop(top);
     }
     
     public void hide() {
-        PacmanGame.changeElementBkPos(getPresentation(), 32, 16, true);
+        getPresentation().changeBkPos(32, 16, true);
     }
 
     public void show() {
         int[] b = getSprite();
-        PacmanGame.changeElementBkPos(getPresentation(), b[0], b[1], true);
+        getPresentation().changeBkPos(b[0], b[1], true);
     }
 
     public void eaten() {
         int[] c = getScoreSprite();
-        PacmanGame.changeElementBkPos(getPresentation(), c[0], c[1], true);
+        getPresentation().changeBkPos(c[0], c[1], true);
     }
     
     private int[] getSprite() {

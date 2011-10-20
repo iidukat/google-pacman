@@ -1,6 +1,5 @@
 package jp.or.iidukat.example.pacman.entity;
 
-import jp.or.iidukat.example.pacman.PacmanGame;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 
@@ -16,7 +15,7 @@ public class ScoreLabel extends BaseEntity {
         p.setTop(0);
         p.setWidth(48);
         p.setHeight(8);
-        PacmanGame.prepareElement(p, 160, 56);
+        p.prepareBkPos(160, 56);
     }
 
     @Override

@@ -10,12 +10,12 @@ public class Door extends BaseEntity {
     }
     
     void init() {
-      Presentation p = getPresentation();
-      p.setWidth(19);
-      p.setHeight(2);
-      p.setLeft(279);
-      p.setTop(46);
-      p.setBgColor(0xffaaa5);
+        Presentation p = getPresentation();
+        p.setWidth(19);
+        p.setHeight(2);
+        p.setLeft(279);
+        p.setTop(46);
+        p.setBgColor(0xffaaa5);
     }
     
     @Override

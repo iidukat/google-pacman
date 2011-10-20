@@ -17,7 +17,6 @@ import jp.or.iidukat.example.pacman.entity.CutsceneCanvas;
 import jp.or.iidukat.example.pacman.entity.CutscenePacman;
 import jp.or.iidukat.example.pacman.entity.CutsceneSteak;
 import jp.or.iidukat.example.pacman.entity.Door;
-import jp.or.iidukat.example.pacman.entity.Entity.Presentation;
 import jp.or.iidukat.example.pacman.entity.Fruit;
 import jp.or.iidukat.example.pacman.entity.Ghost;
 import jp.or.iidukat.example.pacman.entity.Ghost.GhostMode;
@@ -856,47 +855,6 @@ public class PacmanGame {
         this.randSeed = b;
     }
 
-    public static float getDistance(int[] b, int[] c) {
-        return FloatMath.sqrt((c[1] - b[1]) * (c[1] - b[1]) + (c[0] - b[0]) * (c[0] - b[0]));
-    }
-
-    public static float getDistance(float[] b, float[] c) {
-        return FloatMath.sqrt((c[1] - b[1]) * (c[1] - b[1]) + (c[0] - b[0]) * (c[0] - b[0]));
-    }
-
-    public static float getPlayfieldX(float b) {
-        return b + -32;
-    }
-
-    public static float getPlayfieldY(float b) {
-        return b + 0;
-    }
-
-    static int getCorrectedSpritePos(int b) {
-        return b / 8 * 10 + 2;
-    }
-
-    public static int getDotElementIndex(int b, int c) {
-        return 1000 * b + c;
-    }
-    
-    public static void prepareElement(Presentation b, int c, int d) {
-        c = getCorrectedSpritePos(c);
-        d = getCorrectedSpritePos(d);
-        b.setBgPosX(c);
-        b.setBgPosY(d);
-    }
-
-    public static void changeElementBkPos(Presentation b, int c, int d, boolean f) {
-        if (f) {
-            c = getCorrectedSpritePos(c);
-            d = getCorrectedSpritePos(d);
-        }
-        b.setBgPosX(c);
-        b.setBgPosY(d);
-    }
-
-
     void createActors() {
         int cnt = 0;
         player = new Pacman(cnt++, this);
@@ -948,8 +906,8 @@ public class PacmanGame {
         float[] d = canvasEl.getAbsolutePos();
         b -= d[1] - -32;
         c -= d[0] - 0;
-        float f = getPlayfieldX(player.getPos()[1] + player.getPosDelta()[1]) + 16;
-        float h = getPlayfieldY(player.getPos()[0] + player.getPosDelta()[0]) + 32;
+        float f = PlayField.getPlayfieldX(player.getPos()[1] + player.getPosDelta()[1]) + 16;
+        float h = PlayField.getPlayfieldY(player.getPos()[0] + player.getPosDelta()[0]) + 32;
         float j = Math.abs(b - f);
         float k = Math.abs(c - h);
         if (j > 8 && k < j)
@@ -1212,7 +1170,8 @@ public class PacmanGame {
         } else
             addToScore(10); // 普通のエサ
 
-        Food d = playfieldEl.getDotElement(getDotElementIndex(c[0], c[1]));
+        Food d = playfieldEl.getDotElement(
+                            PlayField.getDotElementIndex(c[0], c[1]));
         // d.style.display = "none";
         d.setEaten(true);
         d.setVisibility(false);
@@ -1604,9 +1563,9 @@ public class PacmanGame {
                 break;
             case LEVEL_COMPLETED:
                 if (FloatMath.floor(gameplayModeTime / (timing[11] / 8)) % 2 == 0)
-                    changeElementBkPos(playfieldEl.getPresentation(), 322, 2, false);
+                    playfieldEl.getPresentation().changeBkPos(322, 2, false);
                 else
-                    changeElementBkPos(playfieldEl.getPresentation(), 322, 138, false);
+                    playfieldEl.getPresentation().changeBkPos(322, 138, false);
             }
 
             if (gameplayModeTime <= 0) {

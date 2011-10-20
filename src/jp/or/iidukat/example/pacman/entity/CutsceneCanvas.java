@@ -20,6 +20,14 @@ public class CutsceneCanvas extends BaseEntity {
         p.setWidth(464);
         p.setHeight(136);
     }
+
+    public static float getFieldX(float b) {
+        return b + -32;
+    }
+
+    public static float getFieldY(float b) {
+        return b + 0;
+    }
     
     @Override
     public void draw(Canvas c) {

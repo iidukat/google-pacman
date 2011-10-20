@@ -55,6 +55,8 @@ public interface Entity extends Comparable<Entity>{
         void setOrder(int order);
         Presentation getParent();
         float[] getAbsolutePos();
+        void prepareBkPos(int x, int y);
+        void changeBkPos(int x, int y, boolean f);
         Bitmap getSourceImage();
     }
 }

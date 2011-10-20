@@ -182,7 +182,7 @@ public abstract class Ghost extends Actor {
                             d = k.getMove();
                             float[] x = new float[] {(float) f[0], (float) f[1]};
                             x[d.getAxis()] += d.getIncrement();
-                            distance = PacmanGame.getDistance(x, new float[] {this.targetPos[0], this.targetPos[1]});
+                            distance = PlayField.getDistance(x, new float[] {this.targetPos[0], this.targetPos[1]});
                             if (distance < max) {
                                 max = distance;
                                 nDir = k;

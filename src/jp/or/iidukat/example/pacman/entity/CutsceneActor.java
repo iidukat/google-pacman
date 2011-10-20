@@ -29,7 +29,7 @@ public abstract class CutsceneActor extends BaseEntity {
         el.setLeftOffset(-4);
         el.setTopOffset(-4);
         // actor.getEl().setId("actor" + c);
-        g.prepareElement(el, 0, 0);
+        el.prepareBkPos(0, 0);
         elBackgroundPos = new int[] { 0, 0 };
         elPos = new float[] { 0, 0 };
         float[] start = getStartPoint(getCutscene());
@@ -68,14 +68,14 @@ public abstract class CutsceneActor extends BaseEntity {
             this.elBackgroundPos[1] = b[1];
             b[0] *= 16;
             b[1] *= 16;
-            g.changeElementBkPos(getPresentation(), b[1], b[0], true);
+            getPresentation().changeBkPos(b[1], b[0], true);
         }
     }
 
     // 位置移動
     public void k() {
-        float b = PacmanGame.getPlayfieldX(this.pos[1] + this.posDelta[1]);
-        float c = PacmanGame.getPlayfieldY(this.pos[0] + this.posDelta[0]);
+        float b = CutsceneCanvas.getFieldX(this.pos[1] + this.posDelta[1]);
+        float c = CutsceneCanvas.getFieldY(this.pos[0] + this.posDelta[0]);
         if (this.elPos[0] != c || this.elPos[1] != b) {
             this.elPos[0] = c;
             this.elPos[1] = b;

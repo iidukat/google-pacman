@@ -82,7 +82,7 @@ public abstract class Actor extends BaseEntity {
         el.setTopOffset(-4);
         el.setLeftOffset(-4);
         setParent(g.getPlayfieldEl());
-        PacmanGame.prepareElement(el, 0, 0);
+        el.prepareBkPos(0, 0);
         g.getPlayfieldEl().addActor(this);
         this.elPos = new float[] {0, 0};
         this.elBackgroundPos = new int[] {0, 0};
@@ -122,8 +122,8 @@ public abstract class Actor extends BaseEntity {
     
     // 位置移動
     public void k() {
-        float b = PacmanGame.getPlayfieldX(this.pos[1] + this.posDelta[1]);
-        float c = PacmanGame.getPlayfieldY(this.pos[0] + this.posDelta[0]);
+        float b = PlayField.getPlayfieldX(this.pos[1] + this.posDelta[1]);
+        float c = PlayField.getPlayfieldY(this.pos[0] + this.posDelta[0]);
         if (this.elPos[0] != c || this.elPos[1] != b) {
             this.elPos[0] = c;
             this.elPos[1] = b;
@@ -149,7 +149,7 @@ public abstract class Actor extends BaseEntity {
             this.elBackgroundPos[1] = b[1];
             b[0] *= 16;
             b[1] *= 16;
-            g.changeElementBkPos(getPresentation(), b[1], b[0], true);
+            getPresentation().changeBkPos(b[1], b[0], true);
         }
     }
     
