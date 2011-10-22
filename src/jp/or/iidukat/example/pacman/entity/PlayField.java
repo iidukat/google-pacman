@@ -465,6 +465,13 @@ public class PlayField extends BaseEntity {
                 createKillScreenElement(b, c, 8, 8, true);
             }
     }
+    
+    public void blink(float gameplayModeTime, float interval) {
+        if (FloatMath.floor(gameplayModeTime / (interval / 8)) % 2 == 0)
+            getPresentation().changeBkPos(322, 2, false);
+        else
+            getPresentation().changeBkPos(322, 138, false);
+    }
 
     public static float getPlayfieldX(float b) {
         return b + -32;

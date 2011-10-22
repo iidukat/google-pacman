@@ -1,5 +1,6 @@
 package jp.or.iidukat.example.pacman.entity;
 
+import jp.or.iidukat.example.pacman.GameplayMode;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 
@@ -18,6 +19,15 @@ public class ScoreLabel extends BaseEntity {
         p.prepareBkPos(160, 56);
     }
 
+    public void update(GameplayMode gameplayMode, long globalTime, float interval) {
+        if (gameplayMode != GameplayMode.CUTSCENE) {
+            if (globalTime % (interval * 2) == 0)
+                setVisibility(true);
+            else if (globalTime % (interval * 2) == interval)
+                setVisibility(false);
+        }
+    }
+    
     @Override
     public void draw(Canvas c) {
         if (!isVisible())

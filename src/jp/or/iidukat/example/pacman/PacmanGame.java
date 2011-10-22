@@ -1465,20 +1465,7 @@ public class PacmanGame {
     }
 
     void blinkScoreLabels() {
-        if (gameplayMode != GameplayMode.CUTSCENE) {
-            boolean modify = true;
-            boolean b = false;
-
-            if (globalTime % (timing[17] * 2) == 0)
-                b = true;
-            else if (globalTime % (timing[17] * 2) == timing[17])
-                b = false;
-            else
-                modify = false;
-
-            if (modify)
-                scoreLabelEl.setVisibility(b);
-        }
+        scoreLabelEl.update(gameplayMode, globalTime, timing[17]);
     }
 
     void finishFrightMode() {
@@ -1496,10 +1483,8 @@ public class PacmanGame {
                     actor.b();
                 break;
             case LEVEL_COMPLETED:
-                if (FloatMath.floor(gameplayModeTime / (timing[11] / 8)) % 2 == 0)
-                    playfieldEl.getPresentation().changeBkPos(322, 2, false);
-                else
-                    playfieldEl.getPresentation().changeBkPos(322, 138, false);
+                playfieldEl.blink(gameplayModeTime, timing[11]);
+                break;
             }
 
             if (gameplayModeTime <= 0) {
