@@ -592,7 +592,7 @@ public class PlayField extends BaseEntity {
         }
     }
 
-    public static class Food extends DotElement {
+    static class Food extends DotElement {
 
         public Food(Bitmap sourceImage) {
             super(sourceImage);
@@ -747,7 +747,6 @@ public class PlayField extends BaseEntity {
             if (!isVisible())
                 return;
 
-            // TODO: 要見直し
             Presentation p = getPresentation();
             if (bgImage) {
                 p.drawBitmap(c);

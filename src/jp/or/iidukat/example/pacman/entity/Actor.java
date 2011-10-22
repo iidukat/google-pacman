@@ -73,9 +73,7 @@ public abstract class Actor extends BaseEntity {
     
     abstract InitPosition getInitPosition();
     
-    // Actor表示に使用するdivタグを生成: 表示位置、バックグランドのオフセットはダミー値
-    public void createElement() {
-        // this.el.className = "pcm-ac";
+    public void init() {
         Presentation el = getPresentation();
         el.setWidth(16);
         el.setHeight(16);

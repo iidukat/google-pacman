@@ -69,6 +69,9 @@ public class PacmanGame {
         0.26f
     };
 
+    private static final int[] C = { 90, 45, 30, }; // fps オプション
+    private static final int D = C[0]; // 本来想定されているfps
+
     public static class LevelConfig {
         private final float ghostSpeed;
         private final float ghostTunnelSpeed;
@@ -81,7 +84,7 @@ public class PacmanGame {
         private final float elroySpeedPart1;
         private final int elroyDotsLeftPart2;
         private final float elroySpeedPart2;
-        private int frightTime;
+        private final int frightTime;
         private int frightTotalTime;
         private final int frightBlinkCount;
         private final int fruit;
@@ -104,7 +107,6 @@ public class PacmanGame {
             private int elroyDotsLeftPart2;
             private float elroySpeedPart2;
             private int frightTime;
-            private int frightTotalTime;
             private int frightBlinkCount;
             private int fruit;
             private int fruitScore;
@@ -173,11 +175,6 @@ public class PacmanGame {
                 return this;
             }
 
-            Builder frightTotalTime(int val) {
-                this.frightTotalTime = val;
-                return this;
-            }
-
             Builder frightBlinkCount(int val) {
                 this.frightBlinkCount = val;
                 return this;
@@ -230,8 +227,6 @@ public class PacmanGame {
             this.elroySpeedPart1 = builder.elroySpeedPart1;
             this.elroyDotsLeftPart2 = builder.elroyDotsLeftPart2;
             this.elroySpeedPart2 = builder.elroySpeedPart2;
-            this.frightTime = builder.frightTime;
-            this.frightTotalTime = builder.frightTotalTime;
             this.frightBlinkCount = builder.frightBlinkCount;
             this.fruit = builder.fruit;
             this.fruitScore = builder.fruitScore;
@@ -239,6 +234,8 @@ public class PacmanGame {
             this.penForceTime = builder.penForceTime;
             this.penLeavingLimits = builder.penLeavingLimits;
             this.cutsceneId = builder.cutsceneId;
+            
+            this.frightTime = builder.frightTime * D;
         }
 
         public float getGhostSpeed() {
@@ -742,9 +739,6 @@ public class PacmanGame {
         B = Collections.unmodifiableMap(css);
     }
 
-    private static final int[] C = { 90, 45, 30, }; // fps オプション
-    private static final int D = C[0]; // 本来想定されているfps
-
     private final Context context;
     GameView view;
     private Bitmap sourceImage;
@@ -775,7 +769,7 @@ public class PacmanGame {
     private int lives = 3;
     private int level = 0;
     private int killScreenLevel = DEFAULT_KILL_SCREEN_LEVEL;
-    private LevelConfig levels;
+    private LevelConfig levelConfig;
     private boolean paused = false;
     private long globalTime = 0;
 
@@ -876,10 +870,10 @@ public class PacmanGame {
     }
 
     private void createActorElements() {
-        player.createElement();
+        player.init();
 
         for (Actor ghost : ghosts)
-            ghost.createElement();
+            ghost.init();
     }
 
     private void createPlayfield() {
@@ -989,7 +983,7 @@ public class PacmanGame {
         gameplayModeTime = 0;
         fruitTime = 0;
         ghostModeSwitchPos = 0;
-        ghostModeTime = levels.ghostModeSwitchTimes[0] * D;
+        ghostModeTime = levelConfig.ghostModeSwitchTimes[0] * D;
         ghostExitingPenNow = false;
         ghostEyesCount = 0;
         tilesChanged = false;
@@ -1027,13 +1021,9 @@ public class PacmanGame {
 
     private void newLevel(boolean b) {
         level++;
-        levels = level >= z.length ? z[z.length - 1] : z[level];
-        // start issue 14: Ghosts stay blue permanently on restart
-        if ((levels.frightTime > 0) && (levels.frightTime <= 6))
-            levels.frightTime = Math.round(levels.frightTime * D); // z配列を定義する際にこの処理を行っておくべきでは?
-        // end issue 14
-        levels.frightTotalTime =
-            levels.frightTime + ((int) timing[1]) * (levels.frightBlinkCount * 2 - 1);
+        levelConfig = level >= z.length ? z[z.length - 1] : z[level];
+        levelConfig.frightTotalTime =
+            levelConfig.frightTime + ((int) timing[1]) * (levelConfig.frightBlinkCount * 2 - 1);
         for (Ghost ghost : ghosts)
             ghost.setDotCount(0);
         alternatePenLeavingScheme = false;
@@ -1061,7 +1051,7 @@ public class PacmanGame {
     // MainGhostMode切り替え
     // b: 切り替え先のモード c: 開始直後フラグ(trueなら開始直後)
     private void switchMainGhostMode(GhostMode b, boolean c) {
-        if (b == GhostMode.FRIGHTENED && levels.frightTime == 0)
+        if (b == GhostMode.FRIGHTENED && levelConfig.frightTime == 0)
             for (Ghost ghost : ghosts) {
                 ghost.setReverseDirectionsNext(true); // frightTimeが0なら、ブルーモードになってもモンスターは反対に向きを変えるだけ
             }
@@ -1077,13 +1067,13 @@ public class PacmanGame {
             switch (b) {
             case CHASE:
             case SCATTER:
-                currentPlayerSpeed = levels.playerSpeed * 0.8f;
-                currentDotEatingSpeed = levels.dotEatingSpeed * 0.8f;
+                currentPlayerSpeed = levelConfig.playerSpeed * 0.8f;
+                currentDotEatingSpeed = levelConfig.dotEatingSpeed * 0.8f;
                 break;
             case FRIGHTENED:
-                currentPlayerSpeed = levels.playerFrightSpeed * 0.8f;
-                currentDotEatingSpeed = levels.dotEatingFrightSpeed * 0.8f;
-                frightModeTime = levels.frightTotalTime;
+                currentPlayerSpeed = levelConfig.playerFrightSpeed * 0.8f;
+                currentDotEatingSpeed = levelConfig.dotEatingFrightSpeed * 0.8f;
+                frightModeTime = levelConfig.frightTotalTime;
                 modeScoreMultiplier = 1;
                 break;
             }
@@ -1131,23 +1121,23 @@ public class PacmanGame {
         } else if (ghosts[1].getMode() == GhostMode.IN_PEN
                 || ghosts[1].getMode() == GhostMode.EATEN) {
             ghosts[1].incrementDotCount();
-            if (ghosts[1].getDotCount() >= levels.penLeavingLimits[1])
+            if (ghosts[1].getDotCount() >= levelConfig.penLeavingLimits[1])
                 ghosts[1].setFreeToLeavePen(true);
         } else if (ghosts[2].getMode() == GhostMode.IN_PEN
                 || ghosts[2].getMode() == GhostMode.EATEN) {
             ghosts[2].incrementDotCount();
-            if (ghosts[2].getDotCount() >= levels.penLeavingLimits[2])
+            if (ghosts[2].getDotCount() >= levelConfig.penLeavingLimits[2])
                 ghosts[2].setFreeToLeavePen(true);
         } else if (ghosts[3].getMode() == GhostMode.IN_PEN
                 || ghosts[3].getMode() == GhostMode.EATEN) {
             ghosts[3].incrementDotCount();
-            if (ghosts[3].getDotCount() >= levels.penLeavingLimits[3])
+            if (ghosts[3].getDotCount() >= levelConfig.penLeavingLimits[3])
                 ghosts[3].setFreeToLeavePen(true);
         }
     }
 
     private void resetForcePenLeaveTime() {
-        forcePenLeaveTime = levels.penForceTime * D;
+        forcePenLeaveTime = levelConfig.penForceTime * D;
     }
 
     public void dotEaten(int[] c) {
@@ -1197,7 +1187,7 @@ public class PacmanGame {
             fruitShown = false;
             fruitEl.eaten();
             fruitTime = (int) timing[14];
-            addToScore(levels.fruitScore);
+            addToScore(levelConfig.fruitScore);
         }
     }
 
@@ -1241,9 +1231,9 @@ public class PacmanGame {
     }
 
     public void updateCruiseElroySpeed() {
-        float b = levels.ghostSpeed * 0.8f;
+        float b = levelConfig.ghostSpeed * 0.8f;
         if (!lostLifeOnThisLevel || ghosts[3].getMode() != GhostMode.IN_PEN) {
-            LevelConfig c = levels;
+            LevelConfig c = levelConfig;
             if (playfieldEl.getDotsRemaining() < c.elroyDotsLeftPart2)
                 b = c.elroySpeedPart2 * 0.8f;
             else if (playfieldEl.getDotsRemaining() < c.elroyDotsLeftPart1)
@@ -1414,7 +1404,7 @@ public class PacmanGame {
         canvasEl.setCutsceneCanvas(cutsceneCanvasEl);
         cutscene = B.get(Integer.valueOf(cutsceneId));
         cutsceneSequenceId = -1;
-        frightModeTime = levels.frightTotalTime;
+        frightModeTime = levelConfig.frightTotalTime;
         List<CutsceneActor> cas = new ArrayList<CutsceneActor>();
         for (Class<?> actorType : cutscene.actors) {
             CutsceneActor actor = CutsceneActorFactory.getInstance()
@@ -1567,8 +1557,8 @@ public class PacmanGame {
                     changeGameplayMode(GameplayMode.TRANSITION_INTO_NEXT_SCENE);
                     break;
                 case TRANSITION_INTO_NEXT_SCENE:
-                    if (levels.cutsceneId != 0) {
-                        cutsceneId = levels.cutsceneId;
+                    if (levelConfig.cutsceneId != 0) {
+                        cutsceneId = levelConfig.cutsceneId;
                         changeGameplayMode(GameplayMode.CUTSCENE);
                     } else {
                         // canvasEl.style.visibility = "";
@@ -1601,8 +1591,8 @@ public class PacmanGame {
             if (ghostModeTime <= 0) {
                 ghostModeTime = 0;
                 ghostModeSwitchPos++;
-                if (ghostModeSwitchPos < levels.ghostModeSwitchTimes.length) {
-                    ghostModeTime = levels.ghostModeSwitchTimes[ghostModeSwitchPos] * D;
+                if (ghostModeSwitchPos < levelConfig.ghostModeSwitchTimes.length) {
+                    ghostModeTime = levelConfig.ghostModeSwitchTimes[ghostModeSwitchPos] * D;
                     switch (mainGhostMode) {
                     case SCATTER:
                         switchMainGhostMode(GhostMode.CHASE, false);
@@ -2008,7 +1998,7 @@ public class PacmanGame {
     }
 
     public LevelConfig getLevels() {
-        return levels;
+        return levelConfig;
     }
 
     public Pacman getPlayer() {
