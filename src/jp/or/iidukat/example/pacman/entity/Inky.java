@@ -26,10 +26,10 @@ public class Inky extends Ghost {
                 new MoveInPen(37.6f, 7.625f, Direction.UP, 7, 0.48f),
             });            
         m.put(
-            GhostMode.EXITING_FROM_PEN,
+            GhostMode.LEAVING_PEN,
             new MoveInPen[] {
-                new MoveInPen(37.6f, 7, Direction.RIGHT, 39.5f, y),
-                new MoveInPen(39.5f, 7, Direction.UP, 4, y),
+                new MoveInPen(37.6f, 7, Direction.RIGHT, 39.5f, EXIT_PEN_SPEED),
+                new MoveInPen(39.5f, 7, Direction.UP, 4, EXIT_PEN_SPEED),
             });            
         m.put(
             GhostMode.ENTERING_PEN,
@@ -38,10 +38,10 @@ public class Inky extends Ghost {
                 new MoveInPen(39.5f, 7, Direction.LEFT, 37.625f, 1.6f),
             });            
         m.put(
-            GhostMode.RE_EXITING_FROM_PEN,
+            GhostMode.RE_LEAVING_FROM_PEN,
             new MoveInPen[] {
-                new MoveInPen(37.6f, 7, Direction.RIGHT, 39.5f, y),
-                new MoveInPen(39.5f, 7, Direction.UP, 4, y),
+                new MoveInPen(37.6f, 7, Direction.RIGHT, 39.5f, EXIT_PEN_SPEED),
+                new MoveInPen(39.5f, 7, Direction.UP, 4, EXIT_PEN_SPEED),
             });            
         MOVES_IN_PEN = Collections.unmodifiableMap(m);
     }

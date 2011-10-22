@@ -26,14 +26,14 @@ public class Pinky extends Ghost {
                 new MoveInPen(39.5f, 6.375f, Direction.DOWN, 7, 0.48f),
             });
         m.put(
-            GhostMode.EXITING_FROM_PEN,
-            new MoveInPen[] { new MoveInPen(39.5f, 7, Direction.UP, 4, y) });
+            GhostMode.LEAVING_PEN,
+            new MoveInPen[] { new MoveInPen(39.5f, 7, Direction.UP, 4, EXIT_PEN_SPEED) });
         m.put(
             GhostMode.ENTERING_PEN,
             new MoveInPen[] { new MoveInPen(39.5f, 4, Direction.DOWN, 7, 1.6f) });
         m.put(
-            GhostMode.RE_EXITING_FROM_PEN,
-            new MoveInPen[] { new MoveInPen(39.5f, 7, Direction.UP, 4, y) });
+            GhostMode.RE_LEAVING_FROM_PEN,
+            new MoveInPen[] { new MoveInPen(39.5f, 7, Direction.UP, 4, EXIT_PEN_SPEED) });
 
         MOVES_IN_PEN = Collections.unmodifiableMap(m);
     }

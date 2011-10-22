@@ -12,8 +12,8 @@ public abstract class Ghost extends Actor {
 
     public static enum GhostMode {
         NONE(0), CHASE(1), SCATTER(2), FRIGHTENED(4), 
-        EATEN(8), IN_PEN(16), EXITING_FROM_PEN(32),
-        ENTERING_PEN(64), RE_EXITING_FROM_PEN(128);
+        EATEN(8), IN_PEN(16), LEAVING_PEN(32),
+        ENTERING_PEN(64), RE_LEAVING_FROM_PEN(128);
         
         private final int mode;
         
@@ -26,9 +26,8 @@ public abstract class Ghost extends Actor {
         }
     }
     
-    // 配列Aの要素のspeedプロパティで使用される
-    static float y = 0.8f * 0.4f;
-
+    static final float EXIT_PEN_SPEED = 0.8f * 0.4f;
+    
     static class MoveInPen {
         final float x;
         final float y;
@@ -86,7 +85,7 @@ public abstract class Ghost extends Actor {
                 && (b == GhostMode.IN_PEN || c == GhostMode.IN_PEN))
             g.updateCruiseElroySpeed();
         switch (c) {
-        case EXITING_FROM_PEN:
+        case LEAVING_PEN:
             g.setGhostExitingPenNow(false);
             break;
         case EATEN:
@@ -116,14 +115,14 @@ public abstract class Ghost extends Actor {
             this.targetPos = new float[] {s[0], s[1]};
             this.freeToLeavePen = this.followingRoutine = false;
             break;
-        case EXITING_FROM_PEN:
+        case LEAVING_PEN:
             this.followingRoutine = true;
             this.routineMoveId = -1;
             g.setGhostExitingPenNow(true);
             break;
         case IN_PEN:
         case ENTERING_PEN:
-        case RE_EXITING_FROM_PEN:
+        case RE_LEAVING_FROM_PEN:
             this.followingRoutine = true;
             this.routineMoveId = -1;
             break;
@@ -213,22 +212,22 @@ public abstract class Ghost extends Actor {
         this.routineMoveId++;
         if (this.routineMoveId == getMovesInPen().length) // ルーチンの最後に到達
             if (this.mode == GhostMode.IN_PEN && this.freeToLeavePen && !g.isGhostExitingPenNow()) { // 外に出る条件が満たされた
-                if (this.eatenInThisFrightMode) this.a(GhostMode.RE_EXITING_FROM_PEN);
-                else this.a(GhostMode.EXITING_FROM_PEN);
+                if (this.eatenInThisFrightMode) this.a(GhostMode.RE_LEAVING_FROM_PEN);
+                else this.a(GhostMode.LEAVING_PEN);
                 return;
-            } else if (this.mode == GhostMode.EXITING_FROM_PEN
-                        || this.mode == GhostMode.RE_EXITING_FROM_PEN) { // 将に外に出むとす
+            } else if (this.mode == GhostMode.LEAVING_PEN
+                        || this.mode == GhostMode.RE_LEAVING_FROM_PEN) { // 将に外に出むとす
                 this.pos = new float[] { s[0], s[1] + 4 };
                 this.dir = this.modeChangedWhileInPen ? Direction.RIGHT : Direction.LEFT;
                 GhostMode b = g.getMainGhostMode();
-                if (this.mode == GhostMode.RE_EXITING_FROM_PEN
+                if (this.mode == GhostMode.RE_LEAVING_FROM_PEN
                         && b == GhostMode.FRIGHTENED)
                     b = g.getLastMainGhostMode();
                 this.a(b);
                 return;
             } else if (this.mode == GhostMode.ENTERING_PEN) { // 食べられて巣に入る
                 if (this instanceof Blinky || this.freeToLeavePen)
-                    this.a(GhostMode.RE_EXITING_FROM_PEN); // アカベエはすぐに巣から出てくる
+                    this.a(GhostMode.RE_LEAVING_FROM_PEN); // アカベエはすぐに巣から出てくる
                 else {
                     this.eatenInThisFrightMode = true;
                     this.a(GhostMode.IN_PEN);
@@ -401,7 +400,7 @@ public abstract class Ghost extends Actor {
             c = 11;
 //              this.el.className = "pcm-ac pcm-n"
         } else if (this.mode == GhostMode.FRIGHTENED
-                      || (this.mode == GhostMode.IN_PEN || this.mode == GhostMode.EXITING_FROM_PEN)
+                      || (this.mode == GhostMode.IN_PEN || this.mode == GhostMode.LEAVING_PEN)
                           && g.getMainGhostMode() == GhostMode.FRIGHTENED
                           && !this.eatenInThisFrightMode) {
             // ブルーモード.ただし、食べられてはいない

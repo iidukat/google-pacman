@@ -8,8 +8,6 @@ import android.graphics.RectF;
 
 public interface Entity extends Comparable<Entity>{
 
-    int getId();
-    void setId(int id);
     float getTop();
     float getLeft();
     float[] getAbsolutePos();
@@ -22,7 +20,6 @@ public interface Entity extends Comparable<Entity>{
     void draw(Canvas canvas);
     
     public interface Presentation {
-        boolean hasBackground();
         void drawBitmap(Canvas c);
         void drawRectShape(Canvas c);
         int getWidth();

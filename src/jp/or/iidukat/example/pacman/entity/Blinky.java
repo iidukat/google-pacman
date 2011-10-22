@@ -21,8 +21,8 @@ public class Blinky extends Ghost {
             GhostMode.ENTERING_PEN,
             new MoveInPen[] { new MoveInPen(39.5f, 4, Direction.DOWN, 7, 1.6f) });
         m.put(
-            GhostMode.RE_EXITING_FROM_PEN,
-            new MoveInPen[] { new MoveInPen(39.5f, 7, Direction.UP, 4, y) });
+            GhostMode.RE_LEAVING_FROM_PEN,
+            new MoveInPen[] { new MoveInPen(39.5f, 7, Direction.UP, 4, EXIT_PEN_SPEED) });
 
         MOVES_IN_PEN = Collections.unmodifiableMap(m);
     }

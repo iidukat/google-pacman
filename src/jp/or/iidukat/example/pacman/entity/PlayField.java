@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import jp.or.iidukat.example.pacman.Direction;
+import jp.or.iidukat.example.pacman.GameplayMode;
 import jp.or.iidukat.example.pacman.PacmanGame;
 import jp.or.iidukat.example.pacman.PathElement;
 import android.graphics.Bitmap;
@@ -158,7 +159,9 @@ public class PlayField extends BaseEntity {
 
     private List<Actor> actors = new ArrayList<Actor>();
     private Door door;
-    private List<Food> foods = new ArrayList<Food>();
+    private Map<Integer, Map<Integer, DotElement>> foods =
+                    new HashMap<Integer, Map<Integer, DotElement>>();
+    private List<Energizer> energizers = new ArrayList<Energizer>();
     private Fruit fruit;
     private Ready ready;
     private List<KillScreenTile> killScreenTiles = new ArrayList<KillScreenTile>();
@@ -196,7 +199,7 @@ public class PlayField extends BaseEntity {
         createPlayfieldElements();
     }
 
-    void determinePlayfieldDimensions() {
+    private void determinePlayfieldDimensions() {
         playfieldWidth = 0;
         playfieldHeight = 0;
         for (Path c : n) {
@@ -212,7 +215,7 @@ public class PlayField extends BaseEntity {
         }
     }
 
-    void preparePlayfield() {
+    private void preparePlayfield() {
         playfield = new HashMap<Integer, Map<Integer, PathElement>>();
         for (int b = 0; b <= playfieldHeight + 1; b++) {
             Map<Integer, PathElement> row = new HashMap<Integer, PathElement>();
@@ -227,7 +230,7 @@ public class PlayField extends BaseEntity {
         }
     }
 
-    void preparePaths() {
+    private void preparePaths() {
         for (Path c : n) {
             boolean d = c.tunnel;
             if (c.w > 0) {
@@ -280,7 +283,7 @@ public class PlayField extends BaseEntity {
                 }
     }
 
-    void prepareAllowedDirections() {
+    private void prepareAllowedDirections() {
         for (int b = 8; b <= playfieldHeight * 8; b += 8)
             for (int c = 8; c <= playfieldWidth * 8; c += 8) {
                 PathElement pe = playfield.get(Integer.valueOf(b)).get(
@@ -303,41 +306,81 @@ public class PlayField extends BaseEntity {
     }
 
     // エサを作成
-    void createDotElements() {
+    private void createDotElements() {
         foods.clear();
-        for (int b = 8; b <= playfieldHeight * 8; b += 8)
-            for (int c = 8; c <= playfieldWidth * 8; c += 8)
-                if (playfield.get(Integer.valueOf(b)).get(Integer.valueOf(c))
-                        .getDot() != 0) {
-                    Food food = new Food(game.getSourceImage());
-                    food.init(b, c);
-                    food.setParent(this);
-                    foods.add(food);
+        for (int b = 8; b <= playfieldHeight * 8; b += 8) {
+            Map<Integer, DotElement> row = new HashMap<Integer, DotElement>();
+            foods.put(Integer.valueOf(b), row);
+            for (int c = 8; c <= playfieldWidth * 8; c += 8) {
+                if (playfield.get(Integer.valueOf(b)).get(Integer.valueOf(c)).getDot() != 0) {
+                    DotElement dot = new Food(game.getSourceImage());
+                    dot.init(c, b);
+                    dot.setParent(this);
+                    row.put(Integer.valueOf(c), dot);
                 }
+            }
+        }
     }
 
     // パワーエサを作成
-    void createEnergizerElements() {
+    private void createEnergizerElements() {
+        energizers.clear();
         for (Position c : p) {
-            int d = getDotElementIndex(c.y * 8, c.x * 8);
-            Food f = getDotElement(d);
+            int x = c.x * 8;
+            int y = c.y * 8;
+            DotElement f = removeDotElement(x, y);
             if (f == null)
                 continue;
 
-            f.toEnergizer();
-            playfield.get(Integer.valueOf(c.y * 8))
-                    .get(Integer.valueOf(c.x * 8)).setDot(2);
+            Energizer e = new Energizer(getPresentation().getSourceImage());
+            e.init(x, y);
+            e.setParent(this);
+            putDotElement(x, y, e);
+            energizers.add(e);
+            
+            playfield.get(Integer.valueOf(y))
+                    .get(Integer.valueOf(x)).setDot(2);
         }
     }
 
-    public Food getDotElement(int index) {
-        for (Food f : foods) {
-            if (f.getId() == index) {
-                return f;
+    public DotElement getDotElement(final int x, final int y) {
+        return iterateDotElements(x, y, new DotElementHandler() {
+            @Override
+            public DotElement handle(Map<Integer, DotElement> row) {
+                return row.get(Integer.valueOf(x)); 
             }
-        }
+        }); 
+    }
 
-        return null;
+    private DotElement removeDotElement(final int x, final int y) {
+        return iterateDotElements(x, y, new DotElementHandler() {
+            @Override
+            public DotElement handle(Map<Integer, DotElement> row) {
+                return row.remove(Integer.valueOf(x)); 
+            }
+        }); 
+    }
+
+    private DotElement putDotElement(final int x, final int y, final DotElement f) {
+        return iterateDotElements(x, y, new DotElementHandler() {
+            @Override
+            public DotElement handle(Map<Integer, DotElement> row) {
+                return row.put(Integer.valueOf(x), f); 
+            }
+        }); 
+    }
+    
+    private DotElement iterateDotElements(int x, int y, DotElementHandler h) {
+        Map<Integer, DotElement> row = foods.get(Integer.valueOf(y));
+        if (row == null) {
+            return null;
+        }
+        return h.handle(row);
+        
+    }
+    
+    private static interface DotElementHandler {
+        DotElement handle(Map<Integer, DotElement> row);
     }
 
     void createFruitElement() {
@@ -377,7 +420,18 @@ public class PlayField extends BaseEntity {
     }
 
     public void clearDot(int x, int y) {
+        DotElement d = getDotElement(x, y);
+        d.setEaten(true);
+        d.setVisibility(false);
         playfield.get(Integer.valueOf(y)).get(Integer.valueOf(x)).setDot(0);
+    }
+
+    public void blinkEnergizers(GameplayMode gameplayMode,
+                                long globalTime,
+                                float interval) {
+        for (Energizer e : energizers) {
+            e.update(gameplayMode, globalTime, interval);
+        }
     }
 
     private int killScreenTileX;
@@ -387,8 +441,7 @@ public class PlayField extends BaseEntity {
         KillScreenTile j = new KillScreenTile(game.getSourceImage());
         j.init(b, c, d, f);
         if (h) {
-            // j.style.background = "url(src/pacman10-hp-sprite-2.png) -" +
-            // killScreenTileX + "px -" + killScreenTileY + "px no-repeat";
+            // j.style.background = "url(src/pacman10-hp-sprite-2.png) -" + killScreenTileX + "px -" + killScreenTileY + "px no-repeat";
             j.setBgPos(killScreenTileX, killScreenTileY);
             killScreenTileY += 8;
         } else {
@@ -428,11 +481,7 @@ public class PlayField extends BaseEntity {
     public static float getDistance(float[] b, float[] c) {
         return FloatMath.sqrt((c[1] - b[1]) * (c[1] - b[1]) + (c[0] - b[0]) * (c[0] - b[0]));
     }
-    
-    public static int getDotElementIndex(int b, int c) {
-        return 1000 * b + c;
-    }
-    
+
     public void draw(Canvas c) {
         if (!isVisible())
             return;
@@ -443,8 +492,10 @@ public class PlayField extends BaseEntity {
             door.draw(c);
         }
 
-        for (Food f : foods) {
-            f.draw(c);
+        for (Map<Integer, DotElement> row : foods.values()) {
+            for (DotElement f : row.values()) {
+                f.draw(c);
+            }
         }
 
         if (fruit != null) {
@@ -500,10 +551,6 @@ public class PlayField extends BaseEntity {
         this.ready = ready;
     }
 
-    public List<Food> getFoods() {
-        return foods;
-    }
-
     public GameOver getGameover() {
         return gameover;
     }
@@ -512,48 +559,29 @@ public class PlayField extends BaseEntity {
         this.gameover = gameover;
     }
 
-    public static class Food extends BaseEntity {
+    public abstract static class DotElement extends BaseEntity {
 
-        private boolean eaten = false;
+        private boolean eaten;
 
-        public Food(Bitmap sourceImage) {
+        public DotElement(Bitmap sourceImage) {
             super(sourceImage);
         }
 
-        void init(int y, int x) {
-            setId(getDotElementIndex(y, x));
+        void init(int x, int y) {
             Presentation p = getPresentation();
             p.setLeft(x + -32);
-            p.setLeftOffset(3);// margin-left: 3
             p.setTop(y + 0);
-            p.setTopOffset(3); // margint-top: 3
-            p.setWidth(2);
-            p.setHeight(2);
-            p.setBgColor(0xf8b090);
         }
-
-        void toEnergizer() {
-            Presentation p = getPresentation();
-            p.setLeftOffset(0);
-            p.setTopOffset(0);
-            p.setWidth(8);
-            p.setHeight(8);
-            p.prepareBkPos(0, 144);
-        }
-
+        
         @Override
         public void draw(Canvas c) {
             if (eaten || !isVisible())
                 return;
 
-            // TODO: 要見直し
-            Presentation p = getPresentation();
-            if (p.hasBackground()) {
-                p.drawBitmap(c);
-            } else {
-                p.drawRectShape(c);
-            }
+            doDraw(c);
         }
+        
+        abstract void doDraw(Canvas c);
 
         public boolean isEaten() {
             return eaten;
@@ -562,7 +590,79 @@ public class PlayField extends BaseEntity {
         public void setEaten(boolean eaten) {
             this.eaten = eaten;
         }
+    }
 
+    public static class Food extends DotElement {
+
+        public Food(Bitmap sourceImage) {
+            super(sourceImage);
+        }
+
+        @Override
+        void init(int x, int y) {
+            super.init(x, y);
+            Presentation p = getPresentation();
+            p.setLeftOffset(3);// margin-left: 3
+            p.setTopOffset(3); // margint-top: 3
+            p.setWidth(2);
+            p.setHeight(2);
+            p.setBgColor(0xf8b090);
+        }
+
+        @Override
+        void doDraw(Canvas c) {
+            getPresentation().drawRectShape(c);
+        }
+    }
+    
+    static class Energizer extends DotElement {
+        
+        public Energizer(Bitmap sourceImage) {
+            super(sourceImage);
+        }
+
+        @Override
+        void init(int x, int y) {
+            super.init(x, y);
+            Presentation p = getPresentation();
+            p.setWidth(8);
+            p.setHeight(8);
+            p.prepareBkPos(0, 144);
+        }
+
+        void update(GameplayMode gameplayMode, long globalTime, float interval) {
+            switch (gameplayMode) {
+            case NEWGAME_STARTING:
+            case NEWGAME_STARTED:
+            case GAME_RESTARTING:
+            case GAME_RESTARTED:
+            case LEVEL_BEING_COMPLETED:
+            case LEVEL_COMPLETED:
+            case TRANSITION_INTO_NEXT_SCENE:
+                setVisibility(true);
+                break;
+            case GAMEOVER:
+            case KILL_SCREEN:
+                setVisibility(false);
+                break;
+            default:
+                blink(globalTime, interval);
+                break;
+            }
+        }
+
+        private void blink(long globalTime, float interval) {
+            if (globalTime % (interval * 2) == 0) {
+                setVisibility(true);
+            } else if (globalTime % (interval * 2) == interval) {
+                setVisibility(false);
+            }
+        }
+
+        @Override
+        void doDraw(Canvas c) {
+            getPresentation().drawBitmap(c);
+        }
     }
 
     public static class Ready extends BaseEntity {
@@ -579,7 +679,7 @@ public class PlayField extends BaseEntity {
             p.setTop(80);
             p.prepareBkPos(160, 0);
         }
-        
+
         @Override
         public void draw(Canvas c) {
             if (!isVisible())
@@ -615,6 +715,8 @@ public class PlayField extends BaseEntity {
 
     public static class KillScreenTile extends BaseEntity {
 
+        private boolean bgImage;
+
         public KillScreenTile(Bitmap sourceImage) {
             super(sourceImage);
         }
@@ -627,18 +729,19 @@ public class PlayField extends BaseEntity {
             p.setHeight(height); // j.style.height = f + "px";
             // j.style.zIndex = 119;
         }
-        
+
         void setBgPos(int x, int y) {
+            bgImage = true;
             Presentation p = getPresentation();
             p.setBgPosX(x);
             p.setBgPosY(y);
-        	
+
         }
-        
+
         void setBgColor(int color) {
             getPresentation().setBgColor(color);
         }
-        
+
         @Override
         public void draw(Canvas c) {
             if (!isVisible())
@@ -646,7 +749,7 @@ public class PlayField extends BaseEntity {
 
             // TODO: 要見直し
             Presentation p = getPresentation();
-            if (p.hasBackground()) {
+            if (bgImage) {
                 p.drawBitmap(c);
             } else {
                 p.drawRectShape(c);

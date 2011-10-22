@@ -10,20 +10,9 @@ abstract class BaseEntity implements Entity {
     
     private final Presentation presentation;
     private Entity parent;
-    private int id;
 
     public BaseEntity(Bitmap sourceImage) {
         presentation = new PresentationImpl(sourceImage);
-    }
-    
-    @Override
-    public int getId() {
-        return id;
-    }
-
-    @Override
-    public void setId(int id) {
-        this.id = id;
     }
     
     @Override
@@ -115,11 +104,6 @@ abstract class BaseEntity implements Entity {
             this.sourceImage = sourceImage;
         }
 
-        @Override
-        public boolean hasBackground() {
-            return !Float.isNaN(bgPosX) && !Float.isNaN(bgPosY);
-        }
-        
         @Override
         public void drawBitmap(Canvas c) {
             float top = 0;

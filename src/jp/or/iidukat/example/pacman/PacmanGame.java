@@ -27,7 +27,6 @@ import jp.or.iidukat.example.pacman.entity.Pacman;
 import jp.or.iidukat.example.pacman.entity.PacmanCanvas;
 import jp.or.iidukat.example.pacman.entity.Pinky;
 import jp.or.iidukat.example.pacman.entity.PlayField;
-import jp.or.iidukat.example.pacman.entity.PlayField.Food;
 import jp.or.iidukat.example.pacman.entity.PlayField.GameOver;
 import jp.or.iidukat.example.pacman.entity.PlayField.Ready;
 import jp.or.iidukat.example.pacman.entity.Score;
@@ -43,10 +42,10 @@ public class PacmanGame {
 
     private static final String TAG = "PacmanGame";
     private static final int DEFAULT_KILL_SCREEN_LEVEL = 256;
-
+    
     // レベル再開後、一定数のエサが食べられるとモンスターが巣から出てくる
     // そのしきい値をモンスター毎に設定
-    private static final int[] m = { 0, 7, 17, 32 };
+    private static final int[] FOOD_LIMITS_PEN_LEAVING = { 0, 7, 17, 32 };
 
     // イベント時間管理テーブル. index 7, 8しか使わない
     private static final float[] w = {
@@ -271,7 +270,7 @@ public class PacmanGame {
         }
         
         public int getFruit() {
-        	return fruit;
+            return fruit;
         }
 
     }
@@ -706,6 +705,7 @@ public class PacmanGame {
                 .build(),
     };
     
+
     // Cutscene Animation
     private static class Cutscene {
         private final Class<?>[] actors;
@@ -713,7 +713,7 @@ public class PacmanGame {
 
         Cutscene(Class<?>[] actors, float[] sequenceTimes) {
             this.actors = actors;
-            this.sequenceTimes= sequenceTimes;
+            this.sequenceTimes = sequenceTimes;
         }
     }
 
@@ -754,6 +754,7 @@ public class PacmanGame {
     private boolean soundReady;
     private boolean graphicsReady;
     private long randSeed;
+
     private PacmanCanvas canvasEl;
     private PlayField playfieldEl;
     private CutsceneCanvas cutsceneCanvasEl;
@@ -790,9 +791,7 @@ public class PacmanGame {
     private boolean tilesChanged = false;
     private int dotEatingChannel;
     private int dotEatingSoundPart;
-
     private GameplayMode gameplayMode;
-
     private float[] timing;
     private boolean alternatePenLeavingScheme;
     private int alternateDotCount;
@@ -807,9 +806,7 @@ public class PacmanGame {
     private Map<Float, Boolean[]> speedIntervals;
 
     private int modeScoreMultiplier;
-
     private boolean fruitShown;
-
     private int ghostBeingEatenId;
 
     private boolean pacManSound = true;
@@ -851,11 +848,11 @@ public class PacmanGame {
         return (randSeed = c % b) / (float) b;
     }
 
-    void seed(long b) {
+    private void seed(long b) {
         this.randSeed = b;
     }
 
-    void createActors() {
+    private void createActors() {
         int cnt = 0;
         player = new Pacman(cnt++, this);
 
@@ -871,42 +868,42 @@ public class PacmanGame {
 
     }
 
-    void restartActors() {
+    private void restartActors() {
         player.A();
 
         for (Actor ghost : ghosts)
             ghost.A();
     }
 
-    void createActorElements() {
+    private void createActorElements() {
         player.createElement();
 
         for (Actor ghost : ghosts)
             ghost.createElement();
     }
 
-    void createPlayfield() {
+    private void createPlayfield() {
         playfieldEl = new PlayField(this);
         playfieldEl.createPlayfield(canvasEl);
         canvasEl.setPlayfield(playfieldEl);
     }
 
-    void resetPlayfield() {
+    private void resetPlayfield() {
         playfieldEl.resetPlayfield();
         doorEl = playfieldEl.getDoor();
         fruitEl = playfieldEl.getFruit();
         createActorElements();
     }
-    
-    void canvasClicked(float b, float c) {
+
+    private void canvasClicked(float b, float c) {
         if (handleSoundIconClick(b, c)) {
             return;
         }
 
         float[] d = canvasEl.getAbsolutePos();
-        b -= d[1] - -32;
-        c -= d[0] - 0;
-        float f = PlayField.getPlayfieldX(player.getPos()[1] + player.getPosDelta()[1]) + 16;
+        b -= d[1];
+        c -= d[0];
+        float f = PlayField.getPlayfieldX(player.getPos()[1] + player.getPosDelta()[1]) + 48;
         float h = PlayField.getPlayfieldY(player.getPos()[0] + player.getPosDelta()[0]) + 32;
         float j = Math.abs(b - f);
         float k = Math.abs(c - h);
@@ -916,7 +913,7 @@ public class PacmanGame {
             player.setRequestedDir(c > h ? Direction.DOWN : Direction.UP);
     }
 
-    boolean handleSoundIconClick(float b, float c) {
+    private boolean handleSoundIconClick(float b, float c) {
         if (!soundAvailable)
             return false;
 
@@ -968,13 +965,13 @@ public class PacmanGame {
         cancelTouch();
     }
 
-    void cancelTouch() {
+    private void cancelTouch() {
         touchStartX = Float.NaN;
         touchStartY = Float.NaN;
         touchCanceld = true;
     }
 
-    void startGameplay() {
+    private void startGameplay() {
         score = 0;
         extraLifeAwarded = false;
         lives = 3;
@@ -985,7 +982,7 @@ public class PacmanGame {
     }
 
     // b true:新規ゲーム false:ゲーム再開(プレイヤー死亡後or新レベル)
-    void restartGameplay(boolean b) {
+    private void restartGameplay(boolean b) {
         seed(0);
         frightModeTime = 0;
         intervalTime = 0;
@@ -1013,28 +1010,22 @@ public class PacmanGame {
 //        changeGameplayMode(GameplayMode.LEVEL_COMPLETED); // for Cutscene debug
     }
 
-    void newGame() {
+    private void newGame() {
         createChrome();
         createPlayfield();
         createActors();
         startGameplay();
     }
 
-    void insertCoin() {
-        if (gameplayMode == GameplayMode.GAMEOVER
-                || gameplayMode == GameplayMode.KILL_SCREEN)
-            newGame();
-    }
-
-    void killScreen() {
+    private void killScreen() {
         seed(0);
         // canvasEl.style.visibility = "";
         canvasEl.setVisibility(true);
         playfieldEl.killScreen();
         changeGameplayMode(GameplayMode.KILL_SCREEN);
     }
-    
-    void newLevel(boolean b) {
+
+    private void newLevel(boolean b) {
         level++;
         levels = level >= z.length ? z[z.length - 1] : z[level];
         // start issue 14: Ghosts stay blue permanently on restart
@@ -1054,7 +1045,7 @@ public class PacmanGame {
             killScreen();
     }
 
-    void newLife() {
+    private void newLife() {
         lostLifeOnThisLevel = true;
         alternatePenLeavingScheme = true;
         alternateDotCount = 0;
@@ -1069,7 +1060,7 @@ public class PacmanGame {
 
     // MainGhostMode切り替え
     // b: 切り替え先のモード c: 開始直後フラグ(trueなら開始直後)
-    void switchMainGhostMode(GhostMode b, boolean c) {
+    private void switchMainGhostMode(GhostMode b, boolean c) {
         if (b == GhostMode.FRIGHTENED && levels.frightTime == 0)
             for (Ghost ghost : ghosts) {
                 ghost.setReverseDirectionsNext(true); // frightTimeが0なら、ブルーモードになってもモンスターは反対に向きを変えるだけ
@@ -1105,8 +1096,8 @@ public class PacmanGame {
                     ghost.setEatenInThisFrightMode(false);
                 if (ghost.getMode() != GhostMode.EATEN
                         && ghost.getMode() != GhostMode.IN_PEN
-                        && ghost.getMode() != GhostMode.EXITING_FROM_PEN
-                        && ghost.getMode() != GhostMode.RE_EXITING_FROM_PEN
+                        && ghost.getMode() != GhostMode.LEAVING_PEN
+                        && ghost.getMode() != GhostMode.RE_LEAVING_FROM_PEN
                         && ghost.getMode() != GhostMode.ENTERING_PEN || c) {
                     // ゲーム再開直後(c:true)以外では, モンスターのモードが8, 16, 32, 64,
                     // 128ならモード更新対象とならない
@@ -1127,14 +1118,14 @@ public class PacmanGame {
         }
     }
 
-    void figureOutPenLeaving() {
+    private void figureOutPenLeaving() {
         if (alternatePenLeavingScheme) { // レベル再開後のみ食べられたエサの数によりモンスターが出撃するタイミングを管理
             alternateDotCount++;
-            if (alternateDotCount == m[1])
+            if (alternateDotCount == FOOD_LIMITS_PEN_LEAVING[1])
                 ghosts[1].setFreeToLeavePen(true);
-            else if (alternateDotCount == m[2])
+            else if (alternateDotCount == FOOD_LIMITS_PEN_LEAVING[2])
                 ghosts[2].setFreeToLeavePen(true);
-            else if (alternateDotCount == m[3])
+            else if (alternateDotCount == FOOD_LIMITS_PEN_LEAVING[3])
                 if (ghosts[3].getMode() == GhostMode.IN_PEN)
                     alternatePenLeavingScheme = false;
         } else if (ghosts[1].getMode() == GhostMode.IN_PEN
@@ -1155,7 +1146,7 @@ public class PacmanGame {
         }
     }
 
-    void resetForcePenLeaveTime() {
+    private void resetForcePenLeaveTime() {
         forcePenLeaveTime = levels.penForceTime * D;
     }
 
@@ -1170,11 +1161,6 @@ public class PacmanGame {
         } else
             addToScore(10); // 普通のエサ
 
-        Food d = playfieldEl.getDotElement(
-                            PlayField.getDotElementIndex(c[0], c[1]));
-        // d.style.display = "none";
-        d.setEaten(true);
-        d.setVisibility(false);
         playfieldEl.clearDot(c[1], c[0]);
         updateCruiseElroySpeed();
         resetForcePenLeaveTime();
@@ -1187,19 +1173,19 @@ public class PacmanGame {
     }
 
     public PathElement getPathElement(int x, int y) {
-        return playfieldEl.getPathElement(x, y); 
-    }
-    
-    public int getDotsRemaining() {
-        return playfieldEl.getDotsRemaining(); 
+        return playfieldEl.getPathElement(x, y);
     }
 
-    void hideFruit() {
+    public int getDotsRemaining() {
+        return playfieldEl.getDotsRemaining();
+    }
+
+    private void hideFruit() {
         fruitShown = false;
         fruitEl.hide();
     }
 
-    void showFruit() {
+    private void showFruit() {
         fruitShown = true;
         fruitEl.show();
         fruitTime = (int) timing[15] + (int) ((timing[16] - timing[15]) * rand());
@@ -1215,18 +1201,18 @@ public class PacmanGame {
         }
     }
 
-    void updateActorTargetPositions() {
+    private void updateActorTargetPositions() {
         for (Ghost ghost : ghosts)
             ghost.B();
     }
 
-    void moveActors() {
+    private void moveActors() {
         player.move();
         for (Actor actor : ghosts)
             actor.move();
     }
 
-    void ghostDies(int b) {
+    private void ghostDies(int b) {
         playSound("eating_ghost", 0);
         addToScore(200 * modeScoreMultiplier);
         modeScoreMultiplier *= 2;
@@ -1234,11 +1220,11 @@ public class PacmanGame {
         changeGameplayMode(GameplayMode.GHOST_DIED);
     }
 
-    void playerDies() {
+    private void playerDies() {
         changeGameplayMode(GameplayMode.PLAYER_DYING);
     }
 
-    void detectCollisions() {
+    private void detectCollisions() {
         tilesChanged = false;
         for (int b = 0; b < 4; b++)
             if (ghosts[b].getTilePos()[0] == player.getTilePos()[0]
@@ -1248,8 +1234,8 @@ public class PacmanGame {
                     return;
                 } else if (ghosts[b].getMode() != GhostMode.EATEN
                         && ghosts[b].getMode() != GhostMode.IN_PEN
-                        && ghosts[b].getMode() != GhostMode.EXITING_FROM_PEN
-                        && ghosts[b].getMode() != GhostMode.RE_EXITING_FROM_PEN
+                        && ghosts[b].getMode() != GhostMode.LEAVING_PEN
+                        && ghosts[b].getMode() != GhostMode.RE_LEAVING_FROM_PEN
                         && ghosts[b].getMode() != GhostMode.ENTERING_PEN)
                     playerDies();
     }
@@ -1292,11 +1278,11 @@ public class PacmanGame {
         return speedIntervals.get(speed);
     }
 
-    void finishLevel() {
+    private void finishLevel() {
         changeGameplayMode(GameplayMode.LEVEL_BEING_COMPLETED);
     }
 
-    void changeGameplayMode(GameplayMode b) {
+    private void changeGameplayMode(GameplayMode b) {
         gameplayMode = b;
         if (b != GameplayMode.CUTSCENE) {
             player.b();
@@ -1381,7 +1367,7 @@ public class PacmanGame {
         }
     }
 
-    void showChrome(boolean b) {
+    private void showChrome(boolean b) {
         if (scoreLabelEl != null)
             scoreLabelEl.setVisibility(b); // showElementById("pcm-sc-1-l", b);
 
@@ -1395,7 +1381,7 @@ public class PacmanGame {
             soundEl.setVisibility(b);// showElementById("pcm-so", b);
     }
 
-    boolean toggleSound() {
+    private boolean toggleSound() {
         if (pacManSound) {
             userDisabledSound = true;
             stopAllAudio();
@@ -1408,7 +1394,7 @@ public class PacmanGame {
         return false;
     }
 
-    public void updateSoundIcon() {
+    private void updateSoundIcon() {
         if (soundEl != null)
             if (pacManSound)
                 soundEl.turnOn();
@@ -1416,15 +1402,15 @@ public class PacmanGame {
                 soundEl.turnOff();
     }
 
-    void startCutscene() {
+    private void startCutscene() {
         playfieldEl.setVisibility(false);
         canvasEl.setVisibility(true);
-        
+
         showChrome(false);
         cutsceneCanvasEl = new CutsceneCanvas(sourceImage);
         cutsceneCanvasEl.init();
         cutsceneCanvasEl.setParent(canvasEl);
-        
+
         canvasEl.setCutsceneCanvas(cutsceneCanvasEl);
         cutscene = B.get(Integer.valueOf(cutsceneId));
         cutsceneSequenceId = -1;
@@ -1444,7 +1430,7 @@ public class PacmanGame {
         playCutsceneTrack();
     }
 
-    void stopCutscene() {
+    private void stopCutscene() {
         stopCutsceneTrack();
         playfieldEl.setVisibility(true);
         canvasEl.setCutsceneCanvas(null);
@@ -1452,7 +1438,7 @@ public class PacmanGame {
         newLevel(false);
     }
 
-    void cutsceneNextSequence() {
+    private void cutsceneNextSequence() {
         cutsceneSequenceId++;
         if (cutscene.sequenceTimes.length == cutsceneSequenceId)
             stopCutscene();
@@ -1466,68 +1452,26 @@ public class PacmanGame {
         }
     }
 
-    void checkCutscene() {
+    private void checkCutscene() {
         if (cutsceneTime <= 0)
             cutsceneNextSequence();
     }
 
-    void advanceCutscene() {
+    private void advanceCutscene() {
         for (CutsceneActor actor : cutsceneActors) {
             actor.move();
         }
         cutsceneTime--;
     }
 
-    void updateActorPositions() {
+    private void updateActorPositions() {
         player.k();
         for (Actor actor : ghosts)
             actor.k();
     }
 
-    // TODO: パワーエサの取得方法を再考する
-    void blinkEnergizers() {
-        switch (gameplayMode) {
-        case NEWGAME_STARTING:
-        case NEWGAME_STARTED:
-        case GAME_RESTARTING:
-        case GAME_RESTARTED:
-        case LEVEL_BEING_COMPLETED:
-        case LEVEL_COMPLETED:
-        case TRANSITION_INTO_NEXT_SCENE:
-            // playfieldEl.className = "";
-            for (Food f : playfieldEl.getFoods()) {
-                if (f.getPresentation().hasBackground()) {
-                    f.setVisibility(true);
-                }
-            }
-            break;
-        case GAMEOVER:
-        case KILL_SCREEN:
-            // playfieldEl.className = "blk";
-            for (Food f : playfieldEl.getFoods()) {
-                if (f.getPresentation().hasBackground()) {
-                    f.setVisibility(false);
-                }
-            }
-            break;
-        default:
-            if (globalTime % (timing[0] * 2) == 0) {
-                // playfieldEl.className = "";
-                for (Food f : playfieldEl.getFoods()) {
-                    if (f.getPresentation().hasBackground()) {
-                        f.setVisibility(true);
-                    }
-                }
-            } else if (globalTime % (timing[0] * 2) == timing[0]) {
-                // playfieldEl.className = "blk";
-                for (Food f : playfieldEl.getFoods()) {
-                    if (f.getPresentation().hasBackground()) {
-                        f.setVisibility(false);
-                    }
-                }
-            }
-            break;
-        }
+    private void blinkEnergizers() {
+        playfieldEl.blinkEnergizers(gameplayMode, globalTime, timing[0]);
     }
 
     void blinkScoreLabels() {
@@ -1582,7 +1526,7 @@ public class PacmanGame {
                     for (Ghost ghost : ghosts)
                         if (ghost.getMode() == GhostMode.FRIGHTENED
                                 || (ghost.getMode() == GhostMode.IN_PEN
-                                || ghost.getMode() == GhostMode.RE_EXITING_FROM_PEN)
+                                || ghost.getMode() == GhostMode.RE_LEAVING_FROM_PEN)
                                 && !ghost.isEatenInThisFrightMode()) {
                             c = true;
                             break;
@@ -1720,7 +1664,11 @@ public class PacmanGame {
             }
             checkCutscene();
             blinkScoreLabels();
-        } else
+        } else {
+            if (!isUserDisabledSound()) { // サウンドアイコンの更新
+                setPacManSound(true);
+                updateSoundIcon();
+              }
             for (int i = 0; i < tickMultiplier + c; i++) { // tickMultiplierと処理地縁に応じて複数回のロジックを実行
                 moveActors();
                 if (gameplayMode == GameplayMode.ORDINARY_PLAYING)
@@ -1735,7 +1683,7 @@ public class PacmanGame {
                 blinkScoreLabels();
                 handleTimers();
             }
-
+        }
         setTimeout();
     }
 
@@ -1781,22 +1729,22 @@ public class PacmanGame {
         scoreLabelEl.init();
         scoreLabelEl.setParent(canvasEl);
         canvasEl.setScoreLabel(scoreLabelEl);
-        
+
         scoreEl = new Score(sourceImage, scoreDigits);
         scoreEl.init();
         scoreEl.setParent(canvasEl);
         canvasEl.setScore(scoreEl);
-        
+
         livesEl = new Lives(sourceImage);
         livesEl.init();
         livesEl.setParent(canvasEl);
         canvasEl.setLives(livesEl);
-        
+
         levelEl = new Level(sourceImage);
         levelEl.init();
         levelEl.setParent(canvasEl);
         canvasEl.setLevel(levelEl);
-        
+
         if (soundAvailable) {
             soundEl = new Sound(sourceImage);
             soundEl.init();
@@ -1972,12 +1920,12 @@ public class PacmanGame {
             newGame();
         }
     }
-    
+
     void startNewGame() {
         setDefaultKillScreenLevel();
         start();
     }
-    
+
     void showKillScreen() {
         setKillScreenLevel(1);
         start();
@@ -2042,7 +1990,7 @@ public class PacmanGame {
     public Bitmap getSourceImage() {
         return sourceImage;
     }
-    
+
     public PlayField getPlayfieldEl() {
         return playfieldEl;
     }
@@ -2142,7 +2090,7 @@ public class PacmanGame {
     public boolean isTilesChanged() {
         return tilesChanged;
     }
-    
+
     public int getCutsceneId() {
         return cutsceneId;
     }
@@ -2158,7 +2106,7 @@ public class PacmanGame {
     public void setTilesChanged(boolean tilesChanged) {
         this.tilesChanged = tilesChanged;
     }
-    
+
     public float getCruiseElroySpeed() {
         return cruiseElroySpeed;
     }

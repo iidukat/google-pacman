@@ -255,10 +255,6 @@ public class Pacman extends Actor {
 
     // 位置, 速度の決定
     void z(Direction b) {
-        if (!g.isUserDisabledSound()) { // サウンドアイコンの更新
-            g.setPacManSound(true);
-            g.updateSoundIcon();
-        }
         if (this.dir == b.getOpposite()) {
             this.dir = b;
             this.posDelta = new float[] {0, 0};
