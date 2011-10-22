@@ -3,8 +3,22 @@ package jp.or.iidukat.example.pacman;
 import java.util.EnumSet;
 
 public class PathElement {
+    public enum Dot {
+        NONE(0), FOOD(1), ENERGIZER(2);
+        
+        private int dot;
+        
+        Dot(int dot) {
+            this.dot = dot;
+        }
+        
+        public int getDot() {
+            return dot;
+        }
+    }
+    
     private boolean path;
-    private int dot;
+    private Dot dot;
     private boolean intersection;
     private boolean tunnel;
     private EnumSet<Direction> allowedDir;
@@ -17,11 +31,11 @@ public class PathElement {
         this.allowedDir = allowedDir;
     }
     
-    public int getDot() {
+    public Dot getDot() {
         return dot;
     }
     
-    public void setDot(int dot) {
+    public void setDot(Dot dot) {
         this.dot = dot;
     }
 

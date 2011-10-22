@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import jp.or.iidukat.example.pacman.PathElement.Dot;
 import jp.or.iidukat.example.pacman.entity.Actor;
 import jp.or.iidukat.example.pacman.entity.Blinky;
 import jp.or.iidukat.example.pacman.entity.Clyde;
@@ -1145,7 +1146,7 @@ public class PacmanGame {
         playfieldEl.incrementDotsEaten();
         player.c(CurrentSpeed.PACMAN_EATING_DOT);
         playDotEatingSound();
-        if (getPathElement(c[1], c[0]).getDot() == 2) { // パワーエサを食べたとき
+        if (getPathElement(c[1], c[0]).getDot() == Dot.ENERGIZER) { // パワーエサを食べたとき
             switchMainGhostMode(GhostMode.FRIGHTENED, false);
             addToScore(50);
         } else

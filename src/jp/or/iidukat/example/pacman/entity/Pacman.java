@@ -6,6 +6,7 @@ import jp.or.iidukat.example.pacman.GameplayMode;
 import jp.or.iidukat.example.pacman.Move;
 import jp.or.iidukat.example.pacman.PacmanGame;
 import jp.or.iidukat.example.pacman.PathElement;
+import jp.or.iidukat.example.pacman.PathElement.Dot;
 import android.util.FloatMath;
 
 public class Pacman extends Actor {
@@ -119,7 +120,7 @@ public class Pacman extends Actor {
             this.c(CurrentSpeed.NORMAL);
         
         // プレイヤーがエサを食べる
-        if (g.getPathElement(b[1], b[0]).getDot() != 0)
+        if (g.getPathElement(b[1], b[0]).getDot() != Dot.NONE)
             g.dotEaten(b);
         
         this.tilePos[0] = b[0];

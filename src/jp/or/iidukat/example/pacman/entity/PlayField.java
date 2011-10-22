@@ -10,6 +10,7 @@ import jp.or.iidukat.example.pacman.Direction;
 import jp.or.iidukat.example.pacman.GameplayMode;
 import jp.or.iidukat.example.pacman.PacmanGame;
 import jp.or.iidukat.example.pacman.PathElement;
+import jp.or.iidukat.example.pacman.PathElement.Dot;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.util.FloatMath;
@@ -222,7 +223,7 @@ public class PlayField extends BaseEntity {
             for (int c = -2; c <= playfieldWidth + 1; c++) {
                 PathElement p = new PathElement();
                 p.setPath(false);
-                p.setDot(0);
+                p.setDot(Dot.NONE);
                 p.setIntersection(false);
                 row.put(Integer.valueOf(c * 8), p);
             }
@@ -238,8 +239,8 @@ public class PlayField extends BaseEntity {
                 for (int h = c.x * 8; h <= (c.x + c.w - 1) * 8; h += 8) {
                     PathElement pe = playfield.get(Integer.valueOf(f)).get(Integer.valueOf(h));
                     pe.setPath(true);
-                    if (pe.getDot() == 0) {
-                        pe.setDot(1);
+                    if (pe.getDot() == Dot.NONE) {
+                        pe.setDot(Dot.FOOD);
                         dotsRemaining++;
                     }
                     pe.setTunnel(!d || h != c.x * 8 && h != (c.x + c.w - 1) * 8 ? d : false);
@@ -256,8 +257,8 @@ public class PlayField extends BaseEntity {
                     if (pe.isPath())
                         pe.setIntersection(true);
                     pe.setPath(true);
-                    if (pe.getDot() == 0) {
-                        pe.setDot(1);
+                    if (pe.getDot() == Dot.NONE) {
+                        pe.setDot(Dot.FOOD);
                         dotsRemaining++;
                     }
                     pe.setTunnel(!d || f != c.y * 8 && f != (c.y + c.h - 1) * 8 ? d : false);
@@ -272,13 +273,13 @@ public class PlayField extends BaseEntity {
             if (p.w != 0)
                 for (int h = p.x * 8; h <= (p.x + p.w - 1) * 8; h += 8) {
                     playfield.get(Integer.valueOf(p.y * 8))
-                            .get(Integer.valueOf(h)).setDot(0);
+                            .get(Integer.valueOf(h)).setDot(Dot.NONE);
                     dotsRemaining--;
                 }
             else
                 for (int f = p.y * 8; f <= (p.y + p.h - 1) * 8; f += 8) {
                     playfield.get(Integer.valueOf(f))
-                            .get(Integer.valueOf(p.x * 8)).setDot(0);
+                            .get(Integer.valueOf(p.x * 8)).setDot(Dot.NONE);
                     dotsRemaining--;
                 }
     }
@@ -312,7 +313,7 @@ public class PlayField extends BaseEntity {
             Map<Integer, DotElement> row = new HashMap<Integer, DotElement>();
             foods.put(Integer.valueOf(b), row);
             for (int c = 8; c <= playfieldWidth * 8; c += 8) {
-                if (playfield.get(Integer.valueOf(b)).get(Integer.valueOf(c)).getDot() != 0) {
+                if (playfield.get(Integer.valueOf(b)).get(Integer.valueOf(c)).getDot() != Dot.NONE) {
                     DotElement dot = new Food(game.getSourceImage());
                     dot.init(c, b);
                     dot.setParent(this);
@@ -339,7 +340,7 @@ public class PlayField extends BaseEntity {
             energizers.add(e);
             
             playfield.get(Integer.valueOf(y))
-                    .get(Integer.valueOf(x)).setDot(2);
+                    .get(Integer.valueOf(x)).setDot(Dot.ENERGIZER);
         }
     }
 
@@ -423,7 +424,8 @@ public class PlayField extends BaseEntity {
         DotElement d = getDotElement(x, y);
         d.setEaten(true);
         d.setVisibility(false);
-        playfield.get(Integer.valueOf(y)).get(Integer.valueOf(x)).setDot(0);
+        playfield.get(Integer.valueOf(y)).get(Integer.valueOf(x))
+                .setDot(Dot.NONE);
     }
 
     public void blinkEnergizers(GameplayMode gameplayMode,
