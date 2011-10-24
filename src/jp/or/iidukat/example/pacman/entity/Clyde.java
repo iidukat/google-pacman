@@ -6,6 +6,7 @@ import java.util.Map;
 
 import jp.or.iidukat.example.pacman.Direction;
 import jp.or.iidukat.example.pacman.PacmanGame;
+import android.graphics.Bitmap;
 
 public class Clyde extends Ghost {
 
@@ -45,8 +46,8 @@ public class Clyde extends Ghost {
         MOVES_IN_PEN = Collections.unmodifiableMap(m);
     }
 
-    public Clyde(int b, PacmanGame g) {
-        super(b, g);
+    public Clyde(Bitmap sourceImage, int b, PacmanGame g) {
+        super(sourceImage, b, g);
     }
     
     @Override
@@ -62,7 +63,7 @@ public class Clyde extends Ghost {
         }
         // Playerと距離が近ければ追尾する。遠ければScatterモードでの受け持ち場所を目指す。
         Actor b = g.getPlayer();
-        float distance = PlayField.getDistance(b.tilePos, this.tilePos);
+        float distance = Playfield.getDistance(b.tilePos, this.tilePos);
         this.targetPos = distance > 64
             ? new float[] { b.tilePos[0], b.tilePos[1] }
             : this.scatterPos;

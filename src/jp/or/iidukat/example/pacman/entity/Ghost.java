@@ -6,6 +6,7 @@ import jp.or.iidukat.example.pacman.GameplayMode;
 import jp.or.iidukat.example.pacman.Move;
 import jp.or.iidukat.example.pacman.PacmanGame;
 import jp.or.iidukat.example.pacman.PathElement;
+import android.graphics.Bitmap;
 import android.util.FloatMath;
 
 public abstract class Ghost extends Actor {
@@ -55,8 +56,8 @@ public abstract class Ghost extends Actor {
     boolean reverseDirectionsNext;
     private int dotCount;
 
-    public Ghost(int b, PacmanGame g) {
-        super(b, g);
+    public Ghost(Bitmap sourceImage, int b, PacmanGame g) {
+        super(sourceImage, b, g);
     }
 
     // Actorを再配置
@@ -181,7 +182,7 @@ public abstract class Ghost extends Actor {
                             d = k.getMove();
                             float[] x = new float[] {(float) f[0], (float) f[1]};
                             x[d.getAxis()] += d.getIncrement();
-                            distance = PlayField.getDistance(x, new float[] {this.targetPos[0], this.targetPos[1]});
+                            distance = Playfield.getDistance(x, new float[] {this.targetPos[0], this.targetPos[1]});
                             if (distance < max) {
                                 max = distance;
                                 nDir = k;
@@ -293,14 +294,14 @@ public abstract class Ghost extends Actor {
 
     @Override
     void n() {
-        if (this.pos[0] == PlayField.getQ()[0].getY() * 8
-                && this.pos[1] == PlayField.getQ()[0].getX() * 8) { // 画面左から右へワープ
-            this.pos[0] = PlayField.getQ()[1].getY() * 8;
-            this.pos[1] = (PlayField.getQ()[1].getX() - 1) * 8;
-        } else if (this.pos[0] == PlayField.getQ()[1].getY() * 8
-                    && this.pos[1] == PlayField.getQ()[1].getX() * 8) { // 画面右から左へワープ
-            this.pos[0] = PlayField.getQ()[0].getY() * 8;
-            this.pos[1] = (PlayField.getQ()[0].getX() + 1) * 8;
+        if (this.pos[0] == Playfield.getQ()[0].getY() * 8
+                && this.pos[1] == Playfield.getQ()[0].getX() * 8) { // 画面左から右へワープ
+            this.pos[0] = Playfield.getQ()[1].getY() * 8;
+            this.pos[1] = (Playfield.getQ()[1].getX() - 1) * 8;
+        } else if (this.pos[0] == Playfield.getQ()[1].getY() * 8
+                    && this.pos[1] == Playfield.getQ()[1].getX() * 8) { // 画面右から左へワープ
+            this.pos[0] = Playfield.getQ()[0].getY() * 8;
+            this.pos[1] = (Playfield.getQ()[0].getX() + 1) * 8;
         }
         // モンスターが巣に入る
         if (this.mode == GhostMode.EATEN

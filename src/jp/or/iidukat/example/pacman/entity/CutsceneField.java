@@ -6,11 +6,11 @@ import java.util.List;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 
-public class CutsceneCanvas extends BaseEntity {
+public class CutsceneField extends BaseEntity {
 
     private List<CutsceneActor> actors = new ArrayList<CutsceneActor>();
     
-    public CutsceneCanvas(Bitmap sourceImage) {
+    public CutsceneField(Bitmap sourceImage) {
         super(sourceImage);
     }
     

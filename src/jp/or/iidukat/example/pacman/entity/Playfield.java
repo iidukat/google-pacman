@@ -15,7 +15,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.util.FloatMath;
 
-public class PlayField extends BaseEntity {
+public class Playfield extends BaseEntity {
 
     // パスの配列.左上:(5, 1), 左下:(5, 15), 右上:(60, 1), 右下:(60, 15).
     // 配列要素のオブジェクトのプロパティは(x, y, w) もしくは(x, y, h)
@@ -170,8 +170,8 @@ public class PlayField extends BaseEntity {
 
     // private final List<Entity> entities = new ArrayList<Entity>();
 
-    public PlayField(PacmanGame game) {
-        super(game.getSourceImage());
+    public Playfield(Bitmap sourceImage, PacmanGame game) {
+        super(sourceImage);
         this.game = game;
     }
 
@@ -314,7 +314,7 @@ public class PlayField extends BaseEntity {
             foods.put(Integer.valueOf(b), row);
             for (int c = 8; c <= playfieldWidth * 8; c += 8) {
                 if (playfield.get(Integer.valueOf(b)).get(Integer.valueOf(c)).getDot() != Dot.NONE) {
-                    DotElement dot = new Food(game.getSourceImage());
+                    DotElement dot = new Food(getPresentation().getSourceImage());
                     dot.init(c, b);
                     dot.setParent(this);
                     row.put(Integer.valueOf(c), dot);
@@ -385,7 +385,8 @@ public class PlayField extends BaseEntity {
     }
 
     void createFruitElement() {
-        fruit = new Fruit(game.getSourceImage(), game.getLevels().getFruit());
+        fruit = new Fruit(getPresentation().getSourceImage(),
+                            game.getLevels().getFruit());
         fruit.initOnPlayfield(v);
         fruit.setParent(this);
     }
@@ -440,7 +441,7 @@ public class PlayField extends BaseEntity {
     private int killScreenTileY;
 
     private void createKillScreenElement(int b, int c, int d, int f, boolean h) {
-        KillScreenTile j = new KillScreenTile(game.getSourceImage());
+        KillScreenTile j = new KillScreenTile(getPresentation().getSourceImage());
         j.init(b, c, d, f);
         if (h) {
             // j.style.background = "url(src/pacman10-hp-sprite-2.png) -" + killScreenTileX + "px -" + killScreenTileY + "px no-repeat";

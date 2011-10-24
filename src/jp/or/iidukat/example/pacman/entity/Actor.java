@@ -5,6 +5,7 @@ import jp.or.iidukat.example.pacman.Direction;
 import jp.or.iidukat.example.pacman.GameplayMode;
 import jp.or.iidukat.example.pacman.Move;
 import jp.or.iidukat.example.pacman.PacmanGame;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 
 public abstract class Actor extends BaseEntity {
@@ -62,8 +63,8 @@ public abstract class Actor extends BaseEntity {
     float tunnelSpeed;
     Boolean[] speedIntervals;
 
-    public Actor(int b, PacmanGame g) {
-        super(g.getSourceImage());
+    public Actor(Bitmap sourceImage, int b, PacmanGame g) {
+        super(sourceImage);
         this.id = b;
         this.g = g;
     }
@@ -120,8 +121,8 @@ public abstract class Actor extends BaseEntity {
     
     // 位置移動
     public void k() {
-        float b = PlayField.getPlayfieldX(this.pos[1] + this.posDelta[1]);
-        float c = PlayField.getPlayfieldY(this.pos[0] + this.posDelta[0]);
+        float b = Playfield.getPlayfieldX(this.pos[1] + this.posDelta[1]);
+        float c = Playfield.getPlayfieldY(this.pos[0] + this.posDelta[0]);
         if (this.elPos[0] != c || this.elPos[1] != b) {
             this.elPos[0] = c;
             this.elPos[1] = b;

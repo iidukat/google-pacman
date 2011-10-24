@@ -7,6 +7,7 @@ import java.util.Map;
 import jp.or.iidukat.example.pacman.Direction;
 import jp.or.iidukat.example.pacman.Move;
 import jp.or.iidukat.example.pacman.PacmanGame;
+import android.graphics.Bitmap;
 
 public class Inky extends Ghost {
 
@@ -46,8 +47,8 @@ public class Inky extends Ghost {
         MOVES_IN_PEN = Collections.unmodifiableMap(m);
     }
 
-    public Inky(int b, PacmanGame g) {
-        super(b, g);
+    public Inky(Bitmap sourceImage, int b, PacmanGame g) {
+        super(sourceImage, b, g);
     }
     
     @Override

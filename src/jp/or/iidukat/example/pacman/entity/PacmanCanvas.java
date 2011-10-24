@@ -3,16 +3,18 @@ package jp.or.iidukat.example.pacman.entity;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 
+import jp.or.iidukat.example.pacman.PacmanGame;
+
 public class PacmanCanvas extends BaseEntity {
     
-    private PlayField playfield;
+    private Playfield playfield;
     private ScoreLabel scoreLabel;
     private Score score;
     private Sound sound;
     private Lives lives;
     private Level level;
     
-    private CutsceneCanvas cutsceneCanvas;
+    private CutsceneField cutsceneField;
     
     public PacmanCanvas(Bitmap sourceImage) {
         super(sourceImage);
@@ -23,6 +25,69 @@ public class PacmanCanvas extends BaseEntity {
         p.setWidth(554);
         p.setHeight(136);
         p.setBgColor(0x000000);
+    }
+
+    public void createPlayfield(PacmanGame game) {
+        playfield = new Playfield(getPresentation().getSourceImage(),
+                                    game);
+        playfield.createPlayfield(this);
+        setPlayfield(playfield);
+    }
+
+    public void createScoreLabel() {
+        scoreLabel = new ScoreLabel(getPresentation().getSourceImage());
+        scoreLabel.init();
+        scoreLabel.setParent(this);
+        setScoreLabel(scoreLabel);
+    }
+    
+    public void createScore() {
+        score = new Score(getPresentation().getSourceImage());
+        score.init();
+        score.setParent(this);
+        setScore(score);
+    }
+    
+    public void createLevel() {
+        level = new Level(getPresentation().getSourceImage());
+        level.init();
+        level.setParent(this);
+        setLevel(level);
+    }
+
+    public void createLives() {
+        lives = new Lives(getPresentation().getSourceImage());
+        lives.init();
+        lives.setParent(this);
+        setLives(lives);
+    }
+    
+    public void createSoundIcon() {
+        sound = new Sound(getPresentation().getSourceImage());
+        sound.init();
+        sound.setParent(this);
+        setSound(sound);
+    }
+    
+    public void showChrome(boolean b) {
+        if (scoreLabel != null)
+            scoreLabel.setVisibility(b); // showElementById("pcm-sc-1-l", b);
+
+        if (score != null)
+            score.setVisibility(b); // showElementById("pcm-sc-1", b);
+
+        if (lives != null)
+            lives.setVisibility(b);// showElementById("pcm-li", b);
+
+        if (sound != null)
+            sound.setVisibility(b);// showElementById("pcm-so", b);
+    }
+    
+    public void createCutsceneField() {
+        cutsceneField =
+            new CutsceneField(getPresentation().getSourceImage());
+        cutsceneField.init();
+        cutsceneField.setParent(this);
     }
     
     @Override
@@ -56,12 +121,12 @@ public class PacmanCanvas extends BaseEntity {
             level.draw(c);
         }
         
-        if (cutsceneCanvas != null) {
-            cutsceneCanvas.draw(c);
+        if (cutsceneField != null) {
+            cutsceneField.draw(c);
         }
     }
 
-    public PlayField getPlayfield() {
+    public Playfield getPlayfield() {
         return playfield;
     }
 
@@ -81,7 +146,7 @@ public class PacmanCanvas extends BaseEntity {
         this.score = score;
     }
     
-    public void setPlayfield(PlayField playfield) {
+    public void setPlayfield(Playfield playfield) {
         this.playfield = playfield;
     }
 
@@ -109,12 +174,12 @@ public class PacmanCanvas extends BaseEntity {
         this.level = level;
     }
 
-    public CutsceneCanvas getCutsceneCanvas() {
-        return cutsceneCanvas;
+    public CutsceneField getCutsceneField() {
+        return cutsceneField;
     }
 
-    public void setCutsceneCanvas(CutsceneCanvas cutsceneCanvas) {
-        this.cutsceneCanvas = cutsceneCanvas;
+    public void setCutsceneField(CutsceneField cutsceneField) {
+        this.cutsceneField = cutsceneField;
     }
 
     public void setTop(float top) {
@@ -132,5 +197,7 @@ public class PacmanCanvas extends BaseEntity {
         sound = null;
         lives = null;
         level = null;
+        
+        cutsceneField = null;
     }
 }

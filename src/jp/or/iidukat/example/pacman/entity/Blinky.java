@@ -6,6 +6,7 @@ import java.util.Map;
 
 import jp.or.iidukat.example.pacman.Direction;
 import jp.or.iidukat.example.pacman.PacmanGame;
+import android.graphics.Bitmap;
 
 public class Blinky extends Ghost {
 
@@ -27,8 +28,8 @@ public class Blinky extends Ghost {
         MOVES_IN_PEN = Collections.unmodifiableMap(m);
     }
 
-    public Blinky(int b, PacmanGame g) {
-        super(b, g);
+    public Blinky(Bitmap sourceImage, int b, PacmanGame g) {
+        super(sourceImage, b, g);
     }
 
     @Override
