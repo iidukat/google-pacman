@@ -7,6 +7,7 @@ import java.util.Map;
 import jp.or.iidukat.example.pacman.Direction;
 import jp.or.iidukat.example.pacman.Move;
 import jp.or.iidukat.example.pacman.PacmanGame;
+import android.graphics.Bitmap;
 
 public class Inky extends Ghost {
 
@@ -46,8 +47,8 @@ public class Inky extends Ghost {
         MOVES_IN_PEN = Collections.unmodifiableMap(m);
     }
 
-    public Inky(int b, PacmanGame g) {
-        super(b, g);
+    public Inky(Bitmap sourceImage, int b, PacmanGame g) {
+        super(sourceImage, b, g);
     }
     
     @Override
@@ -63,9 +64,9 @@ public class Inky extends Ghost {
         }
         
         // PlayerをBLINKYと挟み撃ちにする
-        Actor b = g.getPlayer();
+        Actor b = g.getPacman();
         Move c = b.dir.getMove();
-        Actor d = g.getGhosts()[0];
+        Actor d = g.getBlinky();
         float[] f = new float[] { b.tilePos[0], b.tilePos[1] };
         f[c.getAxis()] += 16 * c.getIncrement();
         if (b.dir == Direction.UP) f[1] -= 16;

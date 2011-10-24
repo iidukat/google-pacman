@@ -8,6 +8,7 @@ import jp.or.iidukat.example.pacman.Direction;
 import jp.or.iidukat.example.pacman.PacmanGame;
 import jp.or.iidukat.example.pacman.entity.CutsceneActor.Cutscene.Sequence;
 import jp.or.iidukat.example.pacman.entity.CutsceneActor.Cutscene.StartPoint;
+import android.graphics.Bitmap;
 
 public class CutsceneSteak extends CutsceneActor {
 
@@ -33,8 +34,8 @@ public class CutsceneSteak extends CutsceneActor {
         CUTSCENES = Collections.unmodifiableMap(css);
     }
     
-    CutsceneSteak(PacmanGame g) {
-        super(g);
+    CutsceneSteak(Bitmap sourceImage, PacmanGame g) {
+        super(sourceImage, g);
     }
 
     @Override

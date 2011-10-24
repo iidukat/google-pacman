@@ -4,6 +4,7 @@ import jp.or.iidukat.example.pacman.Direction;
 import jp.or.iidukat.example.pacman.Move;
 import jp.or.iidukat.example.pacman.PacmanGame;
 import jp.or.iidukat.example.pacman.entity.CutsceneActor.Cutscene.StartPoint;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 
 public abstract class CutsceneActor extends BaseEntity {
@@ -16,8 +17,8 @@ public abstract class CutsceneActor extends BaseEntity {
     private Direction dir = Direction.NONE;
     private float speed;
 
-    CutsceneActor(PacmanGame g) {
-        super(g.getSourceImage());
+    CutsceneActor(Bitmap sourceImage, PacmanGame g) {
+        super(sourceImage);
         this.g = g;
     }
 
@@ -74,8 +75,8 @@ public abstract class CutsceneActor extends BaseEntity {
 
     // 位置移動
     public void k() {
-        float b = CutsceneCanvas.getFieldX(this.pos[1] + this.posDelta[1]);
-        float c = CutsceneCanvas.getFieldY(this.pos[0] + this.posDelta[0]);
+        float b = CutsceneField.getFieldX(this.pos[1] + this.posDelta[1]);
+        float c = CutsceneField.getFieldY(this.pos[0] + this.posDelta[0]);
         if (this.elPos[0] != c || this.elPos[1] != b) {
             this.elPos[0] = c;
             this.elPos[1] = b;

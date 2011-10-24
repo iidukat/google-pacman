@@ -7,6 +7,7 @@ import jp.or.iidukat.example.pacman.Move;
 import jp.or.iidukat.example.pacman.PacmanGame;
 import jp.or.iidukat.example.pacman.PathElement;
 import jp.or.iidukat.example.pacman.PathElement.Dot;
+import android.graphics.Bitmap;
 import android.util.FloatMath;
 
 public class Pacman extends Actor {
@@ -18,8 +19,8 @@ public class Pacman extends Actor {
     Direction requestedDir = Direction.NONE;
     private float dotEatingSpeed;
     
-    public Pacman(int b, PacmanGame g) {
-        super(b, g);
+    public Pacman(Bitmap sourceImage, int b, PacmanGame g) {
+        super(sourceImage, b, g);
     }
 
     // Actorを再配置
@@ -59,20 +60,20 @@ public class Pacman extends Actor {
 
     @Override
     void n() {
-        if (this.pos[0] == PlayField.getQ()[0].getY() * 8
-                && this.pos[1] == PlayField.getQ()[0].getX() * 8) { // 画面左から右へワープ
-            this.pos[0] = PlayField.getQ()[1].getY() * 8;
-            this.pos[1] = (PlayField.getQ()[1].getX() - 1) * 8;
-        } else if (this.pos[0] == PlayField.getQ()[1].getY() * 8
-                    && this.pos[1] == PlayField.getQ()[1].getX() * 8) { // 画面右から左へワープ
-            this.pos[0] = PlayField.getQ()[0].getY() * 8;
-            this.pos[1] = (PlayField.getQ()[0].getX() + 1) * 8;
+        if (this.pos[0] == Playfield.getQ()[0].getY() * 8
+                && this.pos[1] == Playfield.getQ()[0].getX() * 8) { // 画面左から右へワープ
+            this.pos[0] = Playfield.getQ()[1].getY() * 8;
+            this.pos[1] = (Playfield.getQ()[1].getX() - 1) * 8;
+        } else if (this.pos[0] == Playfield.getQ()[1].getY() * 8
+                    && this.pos[1] == Playfield.getQ()[1].getX() * 8) { // 画面右から左へワープ
+            this.pos[0] = Playfield.getQ()[0].getY() * 8;
+            this.pos[1] = (Playfield.getQ()[0].getX() + 1) * 8;
         }
         
         // プレイヤーがフルーツを食べる
-        if (this.pos[0] == PlayField.getV()[0]
-                && (this.pos[1] == PlayField.getV()[1]
-                    || this.pos[1] == PlayField.getV()[1] + 8))
+        if (this.pos[0] == Playfield.getV()[0]
+                && (this.pos[1] == Playfield.getV()[1]
+                    || this.pos[1] == Playfield.getV()[1] + 8))
             g.eatFruit();
     }
 

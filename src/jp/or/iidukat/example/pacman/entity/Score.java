@@ -7,12 +7,12 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 
 public class Score extends BaseEntity {
-    private final int scoreDigits;
+
+    private static final int DIGITS = 10;
     private List<Number> numbers = new ArrayList<Number>();
 
-    public Score(Bitmap sourceImage, int scoreDigits) {
+    public Score(Bitmap sourceImage) {
         super(sourceImage);
-        this.scoreDigits = scoreDigits;
     }
 
     public void init() {
@@ -25,9 +25,9 @@ public class Score extends BaseEntity {
     }
 
     private void initScoreNumbers() {
-        for (int b = 0; b < scoreDigits; b++) {
-            Score.Number c = new Score.Number(getPresentation()
-                    .getSourceImage());
+        for (int b = 0; b < DIGITS; b++) {
+            Score.Number c =
+                new Score.Number(getPresentation().getSourceImage());
             c.init(b * 8);
             c.setParent(this);
             numbers.add(c);
@@ -36,9 +36,9 @@ public class Score extends BaseEntity {
 
     public void update(long score) {
         String c = String.valueOf(score);
-        if (c.length() > scoreDigits)
-            c = c.substring(c.length() - scoreDigits);
-        for (int d = 0; d < scoreDigits; d++) {
+        if (c.length() > DIGITS)
+            c = c.substring(c.length() - DIGITS);
+        for (int d = 0; d < DIGITS; d++) {
             Score.Number f = getNumber(d);
             String h = null;
             if (d < c.length())

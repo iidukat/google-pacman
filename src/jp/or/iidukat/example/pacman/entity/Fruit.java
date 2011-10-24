@@ -16,8 +16,8 @@ public class Fruit extends BaseEntity {
         Presentation p = getPresentation();
         p.setWidth(32);
         p.setHeight(16);
-        p.setLeft(PlayField.getPlayfieldX(pos[1]));
-        p.setTop(PlayField.getPlayfieldY(pos[0]));
+        p.setLeft(Playfield.getPlayfieldX(pos[1]));
+        p.setTop(Playfield.getPlayfieldY(pos[0]));
         p.setLeftOffset(-8);
         p.setTopOffset(-4);
         p.prepareBkPos(-32, -16);

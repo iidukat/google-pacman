@@ -6,6 +6,7 @@ import java.util.Map;
 
 import jp.or.iidukat.example.pacman.Direction;
 import jp.or.iidukat.example.pacman.PacmanGame;
+import android.graphics.Bitmap;
 
 public class Blinky extends Ghost {
 
@@ -27,8 +28,8 @@ public class Blinky extends Ghost {
         MOVES_IN_PEN = Collections.unmodifiableMap(m);
     }
 
-    public Blinky(int b, PacmanGame g) {
-        super(b, g);
+    public Blinky(Bitmap sourceImage, int b, PacmanGame g) {
+        super(sourceImage, b, g);
     }
 
     @Override
@@ -40,10 +41,10 @@ public class Blinky extends Ghost {
     @Override
     public void B() {
         // Playerを追尾する
-        Actor b = g.getPlayer();
+        Actor b = g.getPacman();
         if (g.getDotsRemaining() < g.getLevels().getElroyDotsLeftPart1()
                 && this.mode == GhostMode.SCATTER
-                && (!g.isLostLifeOnThisLevel() || g.getGhosts()[3].mode != GhostMode.IN_PEN)) {
+                && (!g.isLostLifeOnThisLevel() || g.getClyde().mode != GhostMode.IN_PEN)) {
             this.targetPos = new float[] { b.tilePos[0], b.tilePos[1] };
         } else if (this.mode == GhostMode.CHASE) {
             this.targetPos = new float[] { b.tilePos[0], b.tilePos[1] };

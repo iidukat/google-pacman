@@ -5,6 +5,7 @@ import jp.or.iidukat.example.pacman.Direction;
 import jp.or.iidukat.example.pacman.GameplayMode;
 import jp.or.iidukat.example.pacman.Move;
 import jp.or.iidukat.example.pacman.PacmanGame;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 
 public abstract class Actor extends BaseEntity {
@@ -62,8 +63,8 @@ public abstract class Actor extends BaseEntity {
     float tunnelSpeed;
     Boolean[] speedIntervals;
 
-    public Actor(int b, PacmanGame g) {
-        super(g.getSourceImage());
+    public Actor(Bitmap sourceImage, int b, PacmanGame g) {
+        super(sourceImage);
         this.id = b;
         this.g = g;
     }
@@ -79,13 +80,10 @@ public abstract class Actor extends BaseEntity {
         el.setHeight(16);
         el.setTopOffset(-4);
         el.setLeftOffset(-4);
-        setParent(g.getPlayfieldEl());
         el.prepareBkPos(0, 0);
-        g.getPlayfieldEl().addActor(this);
         this.elPos = new float[] {0, 0};
         this.elBackgroundPos = new int[] {0, 0};
     }
-    
     
     // tilePosとposの差分が有意になったとき呼び出される
     abstract void p(int[] b);
@@ -120,8 +118,8 @@ public abstract class Actor extends BaseEntity {
     
     // 位置移動
     public void k() {
-        float b = PlayField.getPlayfieldX(this.pos[1] + this.posDelta[1]);
-        float c = PlayField.getPlayfieldY(this.pos[0] + this.posDelta[0]);
+        float b = Playfield.getPlayfieldX(this.pos[1] + this.posDelta[1]);
+        float c = Playfield.getPlayfieldY(this.pos[0] + this.posDelta[0]);
         if (this.elPos[0] != c || this.elPos[1] != b) {
             this.elPos[0] = c;
             this.elPos[1] = b;

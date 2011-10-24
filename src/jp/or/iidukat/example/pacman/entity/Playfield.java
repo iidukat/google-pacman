@@ -15,7 +15,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.util.FloatMath;
 
-public class PlayField extends BaseEntity {
+public class Playfield extends BaseEntity {
 
     // パスの配列.左上:(5, 1), 左下:(5, 15), 右上:(60, 1), 右下:(60, 15).
     // 配列要素のオブジェクトのプロパティは(x, y, w) もしくは(x, y, h)
@@ -158,20 +158,21 @@ public class PlayField extends BaseEntity {
     private int dotsEaten;
     private Map<Integer, Map<Integer, PathElement>> playfield;
 
-    private List<Actor> actors = new ArrayList<Actor>();
+    private Pacman pacman;
+    private Ghost[] ghosts;
+
     private Door door;
-    private Map<Integer, Map<Integer, DotElement>> foods =
-                    new HashMap<Integer, Map<Integer, DotElement>>();
-    private List<Energizer> energizers = new ArrayList<Energizer>();
+    private Map<Integer, Map<Integer, DotElement>> foods;
+    private Energizer[] energizers;
     private Fruit fruit;
     private Ready ready;
-    private List<KillScreenTile> killScreenTiles = new ArrayList<KillScreenTile>();
+    private KillScreenTile[] killScreenTiles;
     private GameOver gameover;
 
     // private final List<Entity> entities = new ArrayList<Entity>();
 
-    public PlayField(PacmanGame game) {
-        super(game.getSourceImage());
+    public Playfield(Bitmap sourceImage, PacmanGame game) {
+        super(sourceImage);
         this.game = game;
     }
 
@@ -179,17 +180,14 @@ public class PlayField extends BaseEntity {
         return playfield;
     }
 
-    public void createPlayfield(PacmanCanvas canvasEl) {
+    public void init() {
         Presentation p = getPresentation();
-        // p.setId("pcm-p");
         p.setLeft(45);
         p.setWidth(464);
         p.setHeight(136);
-
-        setParent(canvasEl);
     }
 
-    public void resetPlayfield() {
+    public void reset() {
         dotsRemaining = 0;
         dotsEaten = 0;
         getPresentation().prepareBkPos(256, 0);
@@ -308,13 +306,13 @@ public class PlayField extends BaseEntity {
 
     // エサを作成
     private void createDotElements() {
-        foods.clear();
+        foods = new HashMap<Integer, Map<Integer, DotElement>>();
         for (int b = 8; b <= playfieldHeight * 8; b += 8) {
             Map<Integer, DotElement> row = new HashMap<Integer, DotElement>();
             foods.put(Integer.valueOf(b), row);
             for (int c = 8; c <= playfieldWidth * 8; c += 8) {
                 if (playfield.get(Integer.valueOf(b)).get(Integer.valueOf(c)).getDot() != Dot.NONE) {
-                    DotElement dot = new Food(game.getSourceImage());
+                    DotElement dot = new Food(getPresentation().getSourceImage());
                     dot.init(c, b);
                     dot.setParent(this);
                     row.put(Integer.valueOf(c), dot);
@@ -325,7 +323,7 @@ public class PlayField extends BaseEntity {
 
     // パワーエサを作成
     private void createEnergizerElements() {
-        energizers.clear();
+        List<Energizer> es = new ArrayList<Energizer>();
         for (Position c : p) {
             int x = c.x * 8;
             int y = c.y * 8;
@@ -337,11 +335,12 @@ public class PlayField extends BaseEntity {
             e.init(x, y);
             e.setParent(this);
             putDotElement(x, y, e);
-            energizers.add(e);
+            es.add(e);
             
             playfield.get(Integer.valueOf(y))
                     .get(Integer.valueOf(x)).setDot(Dot.ENERGIZER);
         }
+        energizers = es.toArray(new Energizer[0]);
     }
 
     public DotElement getDotElement(final int x, final int y) {
@@ -384,20 +383,78 @@ public class PlayField extends BaseEntity {
         DotElement handle(Map<Integer, DotElement> row);
     }
 
-    void createFruitElement() {
-        fruit = new Fruit(game.getSourceImage(), game.getLevels().getFruit());
+    private void createFruitElement() {
+        fruit = new Fruit(getPresentation().getSourceImage(),
+                            game.getLevels().getFruit());
         fruit.initOnPlayfield(v);
         fruit.setParent(this);
     }
-
-    void createPlayfieldElements() {
+    
+    private void createDoorElement() {
         door = new Door(getPresentation().getSourceImage());
         door.init();
         door.setVisibility(false);
         door.setParent(this);
+    }
+
+    private void createActorElements() {
+        int cnt = 0;
+        pacman = new Pacman(
+                        getPresentation().getSourceImage(),
+                        cnt++,
+                        game);
+        pacman.init();
+        pacman.setParent(this);
+
+        {
+            List<Ghost> gs = new ArrayList<Ghost>();
+            gs.add(
+                new Blinky(
+                        getPresentation().getSourceImage(),
+                        cnt++,
+                        game));
+            gs.add(
+                new Pinky(
+                        getPresentation().getSourceImage(),
+                        cnt++,
+                        game));
+            gs.add(
+                new Inky(
+                        getPresentation().getSourceImage(),
+                        cnt++,
+                        game));
+            gs.add(
+                new Clyde(
+                        getPresentation().getSourceImage(),
+                        cnt++,
+                        game));
+
+            ghosts = gs.toArray(new Ghost[0]);
+            for (Ghost ghost : ghosts) {
+                ghost.init();
+                ghost.setParent(this);
+            }
+        }
+    }
+
+    private void createPlayfieldElements() {
         createDotElements();
         createEnergizerElements();
         createFruitElement();
+        createDoorElement();
+        createActorElements();
+    }
+    
+    public void createReadyElement() {
+        ready = new Ready(getPresentation().getSourceImage());
+        ready.init();
+        ready.setParent(this);
+    }
+    
+    public void createGameOverElement() {
+        gameover = new GameOver(getPresentation().getSourceImage());
+        gameover.init();
+        gameover.setParent(this);
     }
 
     public int getDotsRemaining() {
@@ -438,34 +495,39 @@ public class PlayField extends BaseEntity {
 
     private int killScreenTileX;
     private int killScreenTileY;
-
-    private void createKillScreenElement(int b, int c, int d, int f, boolean h) {
-        KillScreenTile j = new KillScreenTile(game.getSourceImage());
-        j.init(b, c, d, f);
-        if (h) {
-            // j.style.background = "url(src/pacman10-hp-sprite-2.png) -" + killScreenTileX + "px -" + killScreenTileY + "px no-repeat";
-            j.setBgPos(killScreenTileX, killScreenTileY);
-            killScreenTileY += 8;
-        } else {
-            j.setBgColor(0x000000); // j.style.background = "black";
-        }
-        killScreenTiles.add(j);
-        j.setParent(this); // playfieldEl.appendChild(j)
-    }
-
+    
     public void killScreen() {
-        createKillScreenElement(272, 0, 200, 80, false);
-        createKillScreenElement(280, 80, 192, 56, false);
+        List<KillScreenTile> tiles = new ArrayList<KillScreenTile>();
+        tiles.add(createKillScreenElement(272, 0, 200, 80, false));
+        tiles.add(createKillScreenElement(280, 80, 192, 56, false));
         killScreenTileX = 80;
         killScreenTileY = 0;
-        for (int b = 280; b <= 472; b += 8)
+        for (int b = 280; b <= 472; b += 8) {
             for (int c = 0; c <= 136; c += 8) {
                 if (game.rand() < 0.03) {
                     killScreenTileX = (int) FloatMath.floor(game.rand() * 25) * 10;
                     killScreenTileY = (int) FloatMath.floor(game.rand() * 2) * 10;
                 }
-                createKillScreenElement(b, c, 8, 8, true);
+                tiles.add(createKillScreenElement(b, c, 8, 8, true));
             }
+        }
+        killScreenTiles = tiles.toArray(new KillScreenTile[0]);
+    }
+
+    private KillScreenTile createKillScreenElement(
+                                int b, int c, int d, int f, boolean h) {
+        KillScreenTile result =
+                new KillScreenTile(getPresentation().getSourceImage());
+        result.init(b, c, d, f);
+        if (h) {
+            // j.style.background = "url(src/pacman10-hp-sprite-2.png) -" + killScreenTileX + "px -" + killScreenTileY + "px no-repeat";
+            result.setBgPos(killScreenTileX, killScreenTileY);
+            killScreenTileY += 8;
+        } else {
+            result.setBgColor(0x000000); // j.style.background = "black";
+        }
+        result.setParent(this); // playfieldEl.appendChild(j)
+        return result;
     }
     
     public void blink(float gameplayModeTime, float interval) {
@@ -511,12 +573,19 @@ public class PlayField extends BaseEntity {
             fruit.draw(c);
         }
 
-        for (Actor actor : actors) {
-            actor.draw(c);
+        if (pacman != null) {
+            pacman.draw(c);
+        }
+        if (ghosts != null) {
+            for (Actor ghost : ghosts) {
+                ghost.draw(c);
+            }
         }
 
-        for (KillScreenTile tile : killScreenTiles) {
-            tile.draw(c);
+        if (killScreenTiles != null) {
+            for (KillScreenTile tile : killScreenTiles) {
+                tile.draw(c);
+            }
         }
 
         if (ready != null) {
@@ -532,10 +601,14 @@ public class PlayField extends BaseEntity {
         // }
     }
 
-    public void addActor(Actor actor) {
-        actors.add(actor);
+    public Pacman getPacman() {
+        return pacman;
     }
-
+    
+    public Ghost[] getGhosts() {
+        return ghosts;
+    }
+    
     public Door getDoor() {
         return door;
     }

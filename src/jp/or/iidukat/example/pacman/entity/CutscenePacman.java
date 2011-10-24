@@ -8,6 +8,7 @@ import jp.or.iidukat.example.pacman.Direction;
 import jp.or.iidukat.example.pacman.PacmanGame;
 import jp.or.iidukat.example.pacman.entity.CutsceneActor.Cutscene.Move;
 import jp.or.iidukat.example.pacman.entity.CutsceneActor.Cutscene.StartPoint;
+import android.graphics.Bitmap;
 
 public class CutscenePacman extends CutsceneActor {
 
@@ -76,8 +77,8 @@ public class CutscenePacman extends CutsceneActor {
 
     private Mode mode;
     
-    CutscenePacman(PacmanGame g) {
-        super(g);
+    CutscenePacman(Bitmap sourceImage, PacmanGame g) {
+        super(sourceImage, g);
     }
 
     @Override

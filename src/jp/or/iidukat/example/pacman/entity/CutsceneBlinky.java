@@ -9,6 +9,7 @@ import jp.or.iidukat.example.pacman.GameplayMode;
 import jp.or.iidukat.example.pacman.PacmanGame;
 import jp.or.iidukat.example.pacman.entity.CutsceneActor.Cutscene.Move;
 import jp.or.iidukat.example.pacman.entity.CutsceneActor.Cutscene.StartPoint;
+import android.graphics.Bitmap;
 import android.util.FloatMath;
 
 public class CutsceneBlinky extends CutsceneActor {
@@ -83,8 +84,8 @@ public class CutsceneBlinky extends CutsceneActor {
     
     private Mode mode;
     
-    CutsceneBlinky(PacmanGame g) {
-        super(g);
+    CutsceneBlinky(Bitmap sourceImage, PacmanGame g) {
+        super(sourceImage, g);
     }
     
     @Override

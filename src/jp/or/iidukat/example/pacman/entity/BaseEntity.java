@@ -112,7 +112,8 @@ abstract class BaseEntity implements Entity {
             do {
                 top += p.getTop();
                 left += p.getLeft();
-            } while ((p = p.getParent()) != null);
+            } while (p != p.getParent()
+                        && (p = p.getParent()) != null);
 
             // TODO: floatをintに変更して問題ないかどうか検討すること
             src.set(
@@ -136,7 +137,8 @@ abstract class BaseEntity implements Entity {
             do {
                 top += p.getTop();
                 left += p.getLeft();
-            } while ((p = p.getParent()) != null);
+            } while (p != p.getParent()
+                        && (p = p.getParent()) != null);
 
             dest.set(
                     left,
@@ -307,7 +309,8 @@ abstract class BaseEntity implements Entity {
             do {
                 c[0] += b.getTop();
                 c[1] += b.getLeft();
-            } while ((b = b.getParent()) != null);
+            } while (b != b.getParent()
+                        && (b = b.getParent()) != null);
             return c;
         }
         
