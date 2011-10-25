@@ -1,5 +1,9 @@
 package jp.or.iidukat.example.pacman.entity;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -9,20 +13,16 @@ import android.graphics.RectF;
 abstract class BaseEntity implements Entity {
     
     private final Presentation presentation;
+    private final List<Entity> drawQueue;
     private Entity parent;
 
     public BaseEntity(Bitmap sourceImage) {
-        presentation = new PresentationImpl(sourceImage);
-    }
-    
-    @Override
-    public float getTop() {
-        return presentation.getTop();
+        this(sourceImage, false);
     }
 
-    @Override
-    public float getLeft() {
-        return presentation.getLeft();
+    public BaseEntity(Bitmap sourceImage, boolean parent) {
+        presentation = new PresentationImpl(sourceImage);
+        drawQueue = parent ? new ArrayList<Entity>() : null;
     }
     
     @Override
@@ -38,6 +38,7 @@ abstract class BaseEntity implements Entity {
     @Override
     public void setParent(Entity parent) {
         this.parent = parent;
+        parent.addToDrawQueue(this);
     }
     
     @Override
@@ -49,32 +50,53 @@ abstract class BaseEntity implements Entity {
     public void setVisibility(boolean visibility) {
         presentation.setVisibility(visibility);
     }
+
+    @Override
+    public void draw(Canvas canvas) {
+        if (!isVisible()) {
+            return;
+        }
+        
+        doDraw(canvas);
+        
+        if (drawQueue != null) {
+            for (Entity entity : drawQueue) {
+                entity.draw(canvas);
+            }
+        }
+    }
+    
+    abstract void doDraw(Canvas canvas);
     
     @Override
-    public int getDisplayOrder() {
-        return presentation.getOrder();
+    public boolean addToDrawQueue(Entity entity) {
+        boolean added = drawQueue.add(entity);
+        if (added) {
+            Collections.sort(drawQueue);
+        }
+        return added;
+    }
+    
+    @Override
+    public boolean removeFromDrawQueue(Entity entity) {
+        return drawQueue.remove(entity);
+    }
+    
+    @Override
+    public void clearDrawQueue() {
+        drawQueue.clear();
     }
     
     @Override
     public int compareTo(Entity another) {
-        int o = getDisplayOrder();
-        int ao = another.getDisplayOrder();
+        int o = getPresentation().getOrder();
+        int ao = another.getPresentation().getOrder();
         if (o < ao) {
             return -1;
         } else if (o > ao) {
             return 1;
         } else {
-            float t = getTop();
-            float at = another.getTop();
-            if (t < at) {
-                return -1;
-            } else if (t > at) {
-                return 1;
-            } else {
-                float lt = getLeft();
-                float alt = another.getLeft();
-                return lt < alt ? -1 : lt > alt ? 1 : 0;
-            }
+            return 0;
         }
     }
     
@@ -90,8 +112,8 @@ abstract class BaseEntity implements Entity {
         private float top;
         private float leftOffset;
         private float topOffset;
-        private float bgPosX = Float.NaN;
-        private float bgPosY = Float.NaN;
+        private float bgPosX;
+        private float bgPosY;
         private int bgColor;
         private boolean visibility = true;
         private Rect src = new Rect();
@@ -100,56 +122,97 @@ abstract class BaseEntity implements Entity {
         private int order;
         private final Bitmap sourceImage;
         
+        private final float[] parentSize = new float[] { 0, 0 };
+        private final float[] adjustedSize = new float[] { 0, 0 };
+        private final float[] adjustedPos = new float[] { 0, 0 };
+        private final float[] adjustedBgPos = new float[] { 0, 0 };
+        
         PresentationImpl(Bitmap sourceImage) {
             this.sourceImage = sourceImage;
         }
 
         @Override
         public void drawBitmap(Canvas c) {
-            float top = 0;
-            float left = 0;
-            Presentation p = this;
-            do {
-                top += p.getTop();
-                left += p.getLeft();
-            } while (p != p.getParent()
-                        && (p = p.getParent()) != null);
 
-            // TODO: floatをintに変更して問題ないかどうか検討すること
+            if (!adjust()) {
+                return;
+            }
+
             src.set(
-                Math.round(bgPosX),
-                Math.round(bgPosY),
-                Math.round(bgPosX + width),
-                Math.round(bgPosY + height));
+                Math.round(adjustedBgPos[1]),
+                Math.round(adjustedBgPos[0]),
+                Math.round(adjustedBgPos[1] + adjustedSize[1]),
+                Math.round(adjustedBgPos[0] + adjustedSize[0]));
             dest.set(
-                    left,
-                    top,
-                    left + width,
-                    top + height);
+                    adjustedPos[1],
+                    adjustedPos[0],
+                    adjustedPos[1] + adjustedSize[1],
+                    adjustedPos[0] + adjustedSize[0]);
             c.drawBitmap(sourceImage, src, dest, null);
         }
         
         @Override
         public void drawRectShape(Canvas c) {
-            float top = 0;
-            float left = 0;
-            Presentation p = this;
-            do {
-                top += p.getTop();
-                left += p.getLeft();
-            } while (p != p.getParent()
-                        && (p = p.getParent()) != null);
-
+            if (!adjust()) {
+                return;
+            }
+            
             dest.set(
-                    left,
-                    top,
-                    left + width,
-                    top + height);
+                    adjustedPos[1],
+                    adjustedPos[0],
+                    adjustedPos[1] + adjustedSize[1],
+                    adjustedPos[0] + adjustedSize[0]);
             
             paint.setColor(bgColor);
             paint.setAlpha(0xff);
             
             c.drawRect(dest, paint);
+        }
+        
+        private boolean adjust() {
+            adjustedPos[0] = getTop();
+            adjustedPos[1] = getLeft();
+            adjustedSize[0] = height;
+            adjustedSize[1] = width;
+            adjustedBgPos[0] = bgPosY;
+            adjustedBgPos[1] = bgPosX; 
+
+            Presentation p = getParent();
+            if (p == null) {
+                return true;
+            }
+            parentSize[0] = p.getHeight();
+            parentSize[1] = p.getWidth();
+
+            for (int i = 0; i < 2; i++) {
+                if (!auxAdjust(i)) {
+                    return false;
+                }
+            }
+            
+            do {
+                adjustedPos[0] += p.getTop();
+                adjustedPos[1] += p.getLeft();
+            } while (p != p.getParent()
+                        && (p = p.getParent()) != null);
+            
+            return true;
+        }
+        
+        private boolean auxAdjust(int axis) {
+            if (0 <= adjustedPos[axis]
+                     && adjustedPos[axis] <= parentSize[axis] - adjustedSize[axis]) {
+            } else if (- adjustedSize[axis] <= adjustedPos[axis] && adjustedPos[axis] < 0 ) {
+                adjustedSize[axis] += adjustedPos[axis];
+                adjustedBgPos[axis] -= adjustedPos[axis];
+                adjustedPos[axis] = 0;
+            } else if (parentSize[axis] - adjustedSize[axis] < adjustedPos[axis]
+                        && adjustedPos[axis] < parentSize[axis]) {
+                adjustedSize[axis] = parentSize[axis] - adjustedPos[axis];
+            } else {
+                return false;
+            }
+            return true;
         }
 
         @Override
@@ -280,6 +343,7 @@ abstract class BaseEntity implements Entity {
         @Override
         public void setPaint(Paint paint) {
             this.paint = paint;
+            
         }
 
         @Override
@@ -289,7 +353,13 @@ abstract class BaseEntity implements Entity {
         
         @Override
         public void setOrder(int order) {
-            this.order = order;
+            if (this.order != order) {
+                this.order = order;
+                BaseEntity parent = (BaseEntity) BaseEntity.this.getParent();
+                if (parent != null && parent.drawQueue.contains(BaseEntity.this)) {
+                    Collections.sort(parent.drawQueue);
+                }
+            }
         }
         
         @Override

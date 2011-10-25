@@ -1,6 +1,7 @@
 package jp.or.iidukat.example.pacman.entity;
 
-import jp.or.iidukat.example.pacman.GameplayMode;
+import static jp.or.iidukat.example.pacman.PacmanGame.GameplayMode;
+
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 
@@ -29,10 +30,7 @@ public class ScoreLabel extends BaseEntity {
     }
     
     @Override
-    public void draw(Canvas c) {
-        if (!isVisible())
-            return;
-
+    void doDraw(Canvas c) {
         getPresentation().drawBitmap(c);
     }
 }

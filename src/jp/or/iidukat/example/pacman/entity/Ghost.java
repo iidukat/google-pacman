@@ -1,11 +1,12 @@
 package jp.or.iidukat.example.pacman.entity;
 
-import jp.or.iidukat.example.pacman.CurrentSpeed;
+import static jp.or.iidukat.example.pacman.Direction.Move;
+import static jp.or.iidukat.example.pacman.PacmanGame.GameplayMode;
+import static jp.or.iidukat.example.pacman.entity.Playfield.PathElement;
+
 import jp.or.iidukat.example.pacman.Direction;
-import jp.or.iidukat.example.pacman.GameplayMode;
-import jp.or.iidukat.example.pacman.Move;
 import jp.or.iidukat.example.pacman.PacmanGame;
-import jp.or.iidukat.example.pacman.PathElement;
+
 import android.graphics.Bitmap;
 import android.util.FloatMath;
 
@@ -399,7 +400,7 @@ public abstract class Ghost extends Actor {
                 break;
             }
             c = 11;
-//              this.el.className = "pcm-ac pcm-n"
+            getPresentation().setOrder(111);
         } else if (this.mode == GhostMode.FRIGHTENED
                       || (this.mode == GhostMode.IN_PEN || this.mode == GhostMode.LEAVING_PEN)
                           && g.getMainGhostMode() == GhostMode.FRIGHTENED

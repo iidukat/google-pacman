@@ -17,7 +17,7 @@ public class PacmanCanvas extends BaseEntity {
     private CutsceneField cutsceneField;
     
     public PacmanCanvas(Bitmap sourceImage) {
-        super(sourceImage);
+        super(sourceImage, true);
     }
 
     public void init() {
@@ -87,39 +87,7 @@ public class PacmanCanvas extends BaseEntity {
     }
     
     @Override
-    public void draw(Canvas c) {
-        if (!isVisible()) return;
-        
-//        presentation.drawRectShape(c);
-        
-        if (playfield != null) {
-            playfield.draw(c);
-        }
-        
-
-        if (scoreLabel != null) {
-            scoreLabel.draw(c);
-        }
-        
-        if (score != null) {
-            score.draw(c);
-        }
-        
-        if (sound != null) {
-            sound.draw(c);
-        }
-        
-        if (lives != null) {
-            lives.draw(c);
-        }
-        
-        if (level != null) {
-            level.draw(c);
-        }
-        
-        if (cutsceneField != null) {
-            cutsceneField.draw(c);
-        }
+    void doDraw(Canvas c) {
     }
 
     public Playfield getPlayfield() {
@@ -176,6 +144,11 @@ public class PacmanCanvas extends BaseEntity {
 
     public void setCutsceneField(CutsceneField cutsceneField) {
         this.cutsceneField = cutsceneField;
+    }
+    
+    public void removeCutsceneField() {
+        removeFromDrawQueue(cutsceneField);
+        cutsceneField = null;
     }
 
     public void setTop(float top) {

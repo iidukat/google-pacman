@@ -12,7 +12,7 @@ public class CutsceneField extends BaseEntity {
     private CutsceneActor[] actors;
     
     public CutsceneField(Bitmap sourceImage) {
-        super(sourceImage);
+        super(sourceImage, true);
     }
     
     public void init() {
@@ -51,14 +51,8 @@ public class CutsceneField extends BaseEntity {
     }
     
     @Override
-    public void draw(Canvas c) {
-        if (!isVisible()) return;
-        
+    void doDraw(Canvas c) {
         getPresentation().drawRectShape(c);
-        
-        for (CutsceneActor actor : actors) {
-            actor.draw(c);
-        }
     }
     
     public CutsceneActor[] getActors() {

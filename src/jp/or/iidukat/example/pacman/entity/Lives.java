@@ -10,7 +10,7 @@ public class Lives extends BaseEntity {
     private List<Life> lives = new ArrayList<Life>();
 
     public Lives(Bitmap sourceImage) {
-        super(sourceImage);
+        super(sourceImage, true);
     }
 
     public void init() {
@@ -22,7 +22,7 @@ public class Lives extends BaseEntity {
     }
 
     public void update(int liveCount) {
-        lives.clear();
+        clearLives();
         for (int b = 0; b < liveCount; b++) {
             Lives.Life life = new Lives.Life(getPresentation().getSourceImage());
             life.init(b * 15);
@@ -30,17 +30,14 @@ public class Lives extends BaseEntity {
             lives.add(life);
         }
     }
+    
+    private void clearLives() {
+        lives.clear();
+        clearDrawQueue();
+    }
 
     @Override
-    public void draw(Canvas c) {
-        if (!isVisible())
-            return;
-
-        // presentation.drawRectShape(c);
-
-        for (Life life : lives) {
-            life.draw(c);
-        }
+    void doDraw(Canvas c) {
     }
 
     public static class Life extends BaseEntity {
@@ -58,10 +55,7 @@ public class Lives extends BaseEntity {
         }
         
         @Override
-        public void draw(Canvas c) {
-            if (!isVisible())
-                return;
-
+        void doDraw(Canvas c) {
             getPresentation().drawBitmap(c);
         }
     }

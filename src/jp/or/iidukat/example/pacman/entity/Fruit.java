@@ -21,6 +21,7 @@ public class Fruit extends BaseEntity {
         p.setLeftOffset(-8);
         p.setTopOffset(-4);
         p.prepareBkPos(-32, -16);
+        p.setOrder(105);
     }
     
     void initOnLevel(int top) {
@@ -30,6 +31,7 @@ public class Fruit extends BaseEntity {
         p.setWidth(32);
         p.setHeight(16);
         p.setTop(top);
+        p.setOrder(105);
     }
     
     public void hide() {
@@ -59,9 +61,7 @@ public class Fruit extends BaseEntity {
     }    
     
     @Override
-    public void draw(Canvas c) {
-        if (!isVisible()) return;
-    
+    void doDraw(Canvas c) {
         getPresentation().drawBitmap(c);
     }
 }

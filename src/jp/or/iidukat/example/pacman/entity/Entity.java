@@ -8,16 +8,16 @@ import android.graphics.RectF;
 
 public interface Entity extends Comparable<Entity>{
 
-    float getTop();
-    float getLeft();
     float[] getAbsolutePos();
     Entity getParent();
     void setParent(Entity entity);
     boolean isVisible();
     void setVisibility(boolean visibility);
-    int getDisplayOrder();
     Presentation getPresentation();
     void draw(Canvas canvas);
+    boolean addToDrawQueue(Entity entity);
+    boolean removeFromDrawQueue(Entity entity);
+    void clearDrawQueue();
     
     public interface Presentation {
         void drawBitmap(Canvas c);

@@ -1,5 +1,10 @@
 package jp.or.iidukat.example.pacman;
 
+import static jp.or.iidukat.example.pacman.entity.Actor.CurrentSpeed;
+import static jp.or.iidukat.example.pacman.entity.Playfield.Door;
+import static jp.or.iidukat.example.pacman.entity.Playfield.PathElement;
+import static jp.or.iidukat.example.pacman.entity.Playfield.PathElement.Dot;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -7,14 +12,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import jp.or.iidukat.example.pacman.PathElement.Dot;
 import jp.or.iidukat.example.pacman.entity.Actor;
 import jp.or.iidukat.example.pacman.entity.CutsceneActor;
 import jp.or.iidukat.example.pacman.entity.CutsceneBlinky;
 import jp.or.iidukat.example.pacman.entity.CutsceneField;
 import jp.or.iidukat.example.pacman.entity.CutscenePacman;
 import jp.or.iidukat.example.pacman.entity.CutsceneSteak;
-import jp.or.iidukat.example.pacman.entity.Door;
 import jp.or.iidukat.example.pacman.entity.Fruit;
 import jp.or.iidukat.example.pacman.entity.Ghost;
 import jp.or.iidukat.example.pacman.entity.Ghost.GhostMode;
@@ -731,6 +734,24 @@ public class PacmanGame {
                 new float[] { 5.3f, 5.3f }));
         B = Collections.unmodifiableMap(css);
     }
+    
+    public static enum GameplayMode {
+        ORDINARY_PLAYING(0), GHOST_DIED(1), PLAYER_DYING(2), PLAYER_DIED(3),
+        NEWGAME_STARTING(4), NEWGAME_STARTED(5), GAME_RESTARTING(6), GAME_RESTARTED(7),
+        GAMEOVER(8), LEVEL_BEING_COMPLETED(9), LEVEL_COMPLETED(10),
+        TRANSITION_INTO_NEXT_SCENE(11), CUTSCENE(13), KILL_SCREEN(14);
+        
+        private final int mode;
+        
+        private GameplayMode(int mode) {
+            this.mode = mode;
+        }
+
+        public int getMode() {
+            return mode;
+        }
+
+    }
 
     private final Context context;
     GameView view;
@@ -842,6 +863,10 @@ public class PacmanGame {
     
     private void createReadyElement() {
         getPlayfieldEl().createReadyElement();
+    }
+    
+    private void removeReadyElement() {
+        getPlayfieldEl().removeReady();
     }
     
     private void createGameOverElement() {
@@ -1286,7 +1311,7 @@ public class PacmanGame {
             break;
         case GAMEOVER:
         case KILL_SCREEN:
-            getPlayfieldEl().setReady(null);
+            removeReadyElement();
             stopAllAudio();
             createGameOverElement();
             gameplayModeTime = timing[9];
@@ -1359,7 +1384,7 @@ public class PacmanGame {
     private void stopCutscene() {
         stopCutsceneTrack();
         getPlayfieldEl().setVisibility(true);
-        canvasEl.setCutsceneField(null);
+        canvasEl.removeCutsceneField();
         canvasEl.showChrome(true);
         newLevel(false);
     }
@@ -1435,6 +1460,7 @@ public class PacmanGame {
                     changeGameplayMode(GameplayMode.ORDINARY_PLAYING);
                     ghostEyesCount++;
                     playAmbientSound();
+                    ghosts[ghostBeingEatenId - 1].resetDisplayOrder();
                     ghosts[ghostBeingEatenId - 1].a(GhostMode.EATEN);
                     // ブルーモードのモンスターがいない場合、 ブルーモードを終了させる
                     boolean c = false;
@@ -1463,17 +1489,11 @@ public class PacmanGame {
                     break;
                 case GAME_RESTARTED:
                 case NEWGAME_STARTED:
-                    // document.getElementById("pcm-re");
-                    // google.dom.remove(b);
-                    getPlayfieldEl().setReady(null);
+                    getPlayfieldEl().removeReady();
                     changeGameplayMode(GameplayMode.ORDINARY_PLAYING);
                     break;
                 case GAMEOVER:
-                    // b = document.getElementById("pcm-go");
-                    // google.dom.remove(b);
-                    getPlayfieldEl().setGameover(null);
-                    // google.pacManQuery && google.pacManQuery(); //
-                    // google.pacManQueryというfunctionは存在しない
+                    getPlayfieldEl().removeGameover();
                     break;
                 case LEVEL_BEING_COMPLETED:
                     changeGameplayMode(GameplayMode.LEVEL_COMPLETED);

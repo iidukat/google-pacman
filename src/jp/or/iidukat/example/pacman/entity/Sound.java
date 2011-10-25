@@ -27,10 +27,7 @@ public class Sound extends BaseEntity {
     }
 
     @Override
-    public void draw(Canvas c) {
-        if (!isVisible())
-            return;
-
+    void doDraw(Canvas c) {
         getPresentation().drawBitmap(c);
     }
 }

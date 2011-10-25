@@ -1,15 +1,32 @@
 package jp.or.iidukat.example.pacman.entity;
 
-import jp.or.iidukat.example.pacman.CurrentSpeed;
+import static jp.or.iidukat.example.pacman.Direction.Move;
+import static jp.or.iidukat.example.pacman.PacmanGame.GameplayMode;
+
 import jp.or.iidukat.example.pacman.Direction;
-import jp.or.iidukat.example.pacman.GameplayMode;
-import jp.or.iidukat.example.pacman.Move;
 import jp.or.iidukat.example.pacman.PacmanGame;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 
 public abstract class Actor extends BaseEntity {
 
+    static final int DEFAULT_DISPLAY_ORDER = 110;
+    
+    public static enum CurrentSpeed {
+        NONE(-1), NORMAL(0), PACMAN_EATING_DOT(1), PASSING_TUNNEL(2);
+        
+        private final int mode;
+        
+        private CurrentSpeed(int mode) {
+            this.mode = mode;
+        }
+
+        public int getMode() {
+            return mode;
+        }
+
+    }
+    
     static class InitPosition {
         final float x;
         final float y;
@@ -75,12 +92,14 @@ public abstract class Actor extends BaseEntity {
     abstract InitPosition getInitPosition();
     
     public void init() {
-        Presentation el = getPresentation();
-        el.setWidth(16);
-        el.setHeight(16);
-        el.setTopOffset(-4);
-        el.setLeftOffset(-4);
-        el.prepareBkPos(0, 0);
+        Presentation p = getPresentation();
+        p.setWidth(16);
+        p.setHeight(16);
+        p.setTopOffset(-4);
+        p.setLeftOffset(-4);
+        p.prepareBkPos(0, 0);
+        p.setOrder(DEFAULT_DISPLAY_ORDER);
+        
         this.elPos = new float[] {0, 0};
         this.elBackgroundPos = new int[] {0, 0};
     }
@@ -150,12 +169,8 @@ public abstract class Actor extends BaseEntity {
     }
     
     @Override
-    public void draw(Canvas c) {
-        Presentation el = getPresentation();
-        if (!el.isVisible()) return;
-        
-        el.drawBitmap(c);
-
+    void doDraw(Canvas c) {
+        getPresentation().drawBitmap(c);
     }
 
     public int[] getTilePos() {
@@ -225,5 +240,9 @@ public abstract class Actor extends BaseEntity {
 
     public void setDir(Direction dir) {
         this.dir = dir;
+    }
+    
+    public void resetDisplayOrder() {
+        getPresentation().setOrder(DEFAULT_DISPLAY_ORDER);
     }
 }

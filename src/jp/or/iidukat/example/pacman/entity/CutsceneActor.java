@@ -1,7 +1,8 @@
 package jp.or.iidukat.example.pacman.entity;
 
+import static jp.or.iidukat.example.pacman.Direction.Move;
+
 import jp.or.iidukat.example.pacman.Direction;
-import jp.or.iidukat.example.pacman.Move;
 import jp.or.iidukat.example.pacman.PacmanGame;
 import jp.or.iidukat.example.pacman.entity.CutsceneActor.Cutscene.StartPoint;
 import android.graphics.Bitmap;
@@ -9,6 +10,8 @@ import android.graphics.Canvas;
 
 public abstract class CutsceneActor extends BaseEntity {
 
+    static final int DEFAULT_DISPLAY_ORDER = 110;
+    
     final PacmanGame g;
     private float[] pos;
     private float[] posDelta;
@@ -23,14 +26,14 @@ public abstract class CutsceneActor extends BaseEntity {
     }
 
     public void init() {
-        // d.className = "pcm-ac";
-        Presentation el = getPresentation();
-        el.setWidth(16);
-        el.setHeight(16);
-        el.setLeftOffset(-4);
-        el.setTopOffset(-4);
-        // actor.getEl().setId("actor" + c);
-        el.prepareBkPos(0, 0);
+        Presentation p = getPresentation();
+        p.setWidth(16);
+        p.setHeight(16);
+        p.setLeftOffset(-4);
+        p.setTopOffset(-4);
+        p.prepareBkPos(0, 0);
+        p.setOrder(DEFAULT_DISPLAY_ORDER);
+        
         elBackgroundPos = new int[] { 0, 0 };
         elPos = new float[] { 0, 0 };
         float[] start = getStartPoint(getCutscene());
@@ -44,13 +47,8 @@ public abstract class CutsceneActor extends BaseEntity {
     }
 
     @Override
-    public void draw(Canvas c) {
-        Presentation el = getPresentation();
-        if (!el.isVisible())
-            return;
-
-        el.drawBitmap(c);
-
+    void doDraw(Canvas c) {
+        getPresentation().drawBitmap(c);
     }
 
     public void move() {

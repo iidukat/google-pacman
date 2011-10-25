@@ -37,6 +37,12 @@ public class CutsceneSteak extends CutsceneActor {
     CutsceneSteak(Bitmap sourceImage, PacmanGame g) {
         super(sourceImage, g);
     }
+    
+    @Override
+    public void init() {
+        super.init();
+        getPresentation().setOrder(109);
+    }
 
     @Override
     Cutscene getCutscene() {

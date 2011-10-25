@@ -1,11 +1,12 @@
 package jp.or.iidukat.example.pacman.entity;
 
+import static jp.or.iidukat.example.pacman.Direction.Move;
+
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.Map;
 
 import jp.or.iidukat.example.pacman.Direction;
-import jp.or.iidukat.example.pacman.Move;
 import jp.or.iidukat.example.pacman.PacmanGame;
 import android.graphics.Bitmap;
 

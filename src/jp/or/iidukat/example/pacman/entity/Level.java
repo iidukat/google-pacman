@@ -11,7 +11,7 @@ public class Level extends BaseEntity {
     private List<Fruit> fruits = new ArrayList<Fruit>();
     
     public Level(Bitmap sourceImage) {
-        super(sourceImage);
+        super(sourceImage, true);
     }
     
     public void init() {
@@ -23,18 +23,11 @@ public class Level extends BaseEntity {
     }
     
     @Override
-    public void draw(Canvas c) {
-        if (!isVisible()) return;
-        
-//        presentation.drawRectShape(c); 
-        
-        for (Fruit f : fruits) {
-            f.draw(c);
-        }
+    void doDraw(Canvas c) {
     }
 
     public void update(int level, LevelConfig[] z) {
-        fruits.clear();
+        clearFruits();
         int top = (4 - Math.min(level, 4)) * 16 - 16;
         for (int b = level; b >= Math.max(level - 4 + 1, 1); b--) {
             int c = b >= z.length ? z[z.length - 1].getFruit() : z[b].getFruit();
@@ -44,5 +37,10 @@ public class Level extends BaseEntity {
             d.setParent(this);
             fruits.add(d);
         }
+    }
+    
+    private void clearFruits() {
+        fruits.clear();
+        clearDrawQueue();
     }
 }

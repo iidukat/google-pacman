@@ -12,7 +12,7 @@ public class Score extends BaseEntity {
     private List<Number> numbers = new ArrayList<Number>();
 
     public Score(Bitmap sourceImage) {
-        super(sourceImage);
+        super(sourceImage, true);
     }
 
     public void init() {
@@ -51,16 +51,8 @@ public class Score extends BaseEntity {
     }
 
     @Override
-    public void draw(Canvas c) {
-
-        if (!isVisible())
-            return;
-
+    void doDraw(Canvas c) {
         getPresentation().drawRectShape(c);
-
-        for (Number n : numbers) {
-            n.draw(c);
-        }
     }
 
     public Number getNumber(int index) {
@@ -91,10 +83,7 @@ public class Score extends BaseEntity {
         }
 
         @Override
-        public void draw(Canvas c) {
-            if (!isVisible())
-                return;
-
+        void doDraw(Canvas c) {
             getPresentation().drawBitmap(c);
         }
     }
