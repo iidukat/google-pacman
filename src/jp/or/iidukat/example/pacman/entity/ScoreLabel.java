@@ -1,7 +1,6 @@
 package jp.or.iidukat.example.pacman.entity;
 
-import static jp.or.iidukat.example.pacman.PacmanGame.GameplayMode;
-
+import jp.or.iidukat.example.pacman.PacmanGame.GameplayMode;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 

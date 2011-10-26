@@ -1,8 +1,7 @@
 package jp.or.iidukat.example.pacman.entity;
 
-import static jp.or.iidukat.example.pacman.Direction.Move;
-
 import jp.or.iidukat.example.pacman.Direction;
+import jp.or.iidukat.example.pacman.Direction.Move;
 import jp.or.iidukat.example.pacman.PacmanGame;
 import jp.or.iidukat.example.pacman.entity.CutsceneActor.Cutscene.StartPoint;
 import android.graphics.Bitmap;

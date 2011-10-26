@@ -1,12 +1,10 @@
 package jp.or.iidukat.example.pacman.entity;
 
-import static jp.or.iidukat.example.pacman.Direction.Move;
-import static jp.or.iidukat.example.pacman.PacmanGame.GameplayMode;
-import static jp.or.iidukat.example.pacman.entity.Playfield.PathElement;
-
 import jp.or.iidukat.example.pacman.Direction;
+import jp.or.iidukat.example.pacman.Direction.Move;
 import jp.or.iidukat.example.pacman.PacmanGame;
-
+import jp.or.iidukat.example.pacman.PacmanGame.GameplayMode;
+import jp.or.iidukat.example.pacman.entity.Playfield.PathElement;
 import android.graphics.Bitmap;
 import android.util.FloatMath;
 

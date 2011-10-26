@@ -1,8 +1,5 @@
 package jp.or.iidukat.example.pacman.entity;
 
-import static jp.or.iidukat.example.pacman.PacmanGame.GameplayMode;
-import static jp.or.iidukat.example.pacman.entity.Playfield.PathElement.Dot;
-
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -11,6 +8,8 @@ import java.util.Map;
 
 import jp.or.iidukat.example.pacman.Direction;
 import jp.or.iidukat.example.pacman.PacmanGame;
+import jp.or.iidukat.example.pacman.PacmanGame.GameplayMode;
+import jp.or.iidukat.example.pacman.entity.Playfield.PathElement.Dot;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.util.FloatMath;
