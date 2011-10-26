@@ -14,7 +14,6 @@ class SoundPlayer {
 
     private static final String TAG = "SoundPlayer";
     private final Context context;
-
     private static final int[] SOUND_RESOURCES = {
         R.raw.death,
         R.raw.eating_dot_1,
@@ -25,7 +24,6 @@ class SoundPlayer {
         R.raw.start_music,
     };
     private static final int SOUND_CHANNEL_COUNT = 5;
-    
     private static final int[] AMBIENT_RESOURCES = {
         R.raw.ambient_1,
         R.raw.ambient_2,
@@ -35,19 +33,16 @@ class SoundPlayer {
         R.raw.ambient_fright,
     };
     private static final int AMBIENT_CHANNEL_COUNT = 1;
-    
     private static final int CUTSCENE_RESOURCE_ID = R.raw.cutscene;
     
     private SoundPoolManager soundManager;
     private boolean soundAvailable;
-    
     private SoundPoolManager ambientManager;
     private boolean ambientAvailable;
-
-
     private AudioClip cutsceneAudioClip;
     private boolean cutsceneAmbientAvailable;
-
+    private String queuedAmbient;
+    
     SoundPlayer(Context context) {
         this.context = context;
     }
@@ -71,43 +66,60 @@ class SoundPlayer {
                 @Override
                 public void notifyAvailability() {
                     soundAvailable = true;
+                    if (isAvailable()) {
+                        playQueuedAmbient();
+                    }
                 }
             });
             ambientManager.init(new SoundPoolManager.AvailabilityNotifier() {
                 @Override
                 public void notifyAvailability() {
                     ambientAvailable = true;
+                    if (isAvailable()) {
+                        playQueuedAmbient();
+                    }
                 }
             });
         }
     }
 
     void playTrack(String track, int channel) {
-        if (soundAvailable) {
+        if (isAvailable()) {
             soundManager.playTrack(track, channel, false);
         }
     }
 
     void stopChannel(int channel) {
-        if (soundAvailable) {
+        if (isAvailable()) {
             soundManager.stopChannel(channel);
         }
     }
 
     void playAmbient(String track) {
-        if (ambientAvailable) {
+        if (isAvailable()) {
             ambientManager.playTrack(track, 0, true);
+            queuedAmbient = null;
+        } else {
+            queuedAmbient = track;
+        }
+    }
+    
+    private void playQueuedAmbient() {
+        if (queuedAmbient != null) {
+            ambientManager.playTrack(queuedAmbient, 0, true);
+            queuedAmbient = null;
         }
     }
 
     void stopAmbient() {
-        if (ambientAvailable) {
+       queuedAmbient = null;
+        if (isAvailable()) {
             ambientManager.stopChannel(0);
         }
     }
 
     void playCutsceneAmbient() {
-        if (cutsceneAmbientAvailable) {
+        if (isAvailable()) {
             try {
                 cutsceneAudioClip.loop();
             } catch (IllegalStateException e) {
@@ -118,7 +130,7 @@ class SoundPlayer {
     }
 
     void stopCutsceneAmbient() {
-        if (cutsceneAmbientAvailable) {
+        if (isAvailable()) {
             try {
                 cutsceneAudioClip.stop();
             } catch (IllegalStateException e) {
@@ -149,7 +161,7 @@ class SoundPlayer {
         private final Context context;
         private final int[] soundResources;
         private final int[] channels;
-        private final SoundPool soundPool;
+        private SoundPool soundPool;
         private final Map<String, Integer> soundIds;
 
         SoundPoolManager(
@@ -159,12 +171,15 @@ class SoundPlayer {
             this.context = context;
             this.soundResources = soundResources;
             this.channels = new int[channelCount];
-            this.soundPool =
-                new SoundPool(channelCount, AudioManager.STREAM_MUSIC, 0);
             this.soundIds = new HashMap<String, Integer>();
         }
 
         void init(final AvailabilityNotifier notifier) {
+            this.soundPool =
+                new SoundPool(
+                        channels.length,
+                        AudioManager.STREAM_MUSIC,
+                        0);
             soundPool.setOnLoadCompleteListener(new OnLoadCompleteListener() {
                 private int count = 0;
                 private boolean success = true;
@@ -190,23 +205,32 @@ class SoundPlayer {
         }
 
         void destroy() {
-            soundPool.release();
+            if (soundPool != null) {
+                soundPool.release();
+                soundPool = null;
+            }
+            
+            soundIds.clear();
             for (int i = 0; i < channels.length; i++) {
                 channels[i] = 0;
             }
         }
 
         void playTrack(String track, int channel, boolean repeat) {
-            if (channel >= channels.length) {
-                throw new IllegalArgumentException(
-                                "channel is too large. : " + channel);
+            if (soundPool == null) {
+                return;
             }
-
+            
             Integer id = soundIds.get(track);
             if (id == null) {
                 throw new IllegalArgumentException(
                                 "invalid track name. : " + track);
             }
+            if (channel >= channels.length) {
+                throw new IllegalArgumentException(
+                                "channel is too large. : " + channel);
+            }
+
             channels[channel] =
                 Integer.valueOf(
                     soundPool.play(
@@ -219,6 +243,10 @@ class SoundPlayer {
         }
 
         void stopChannel(int channel) {
+            if (soundPool == null) {
+                return;
+            }
+            
             if (channel >= channels.length) {
                 throw new IllegalArgumentException(
                                 "channel is too large. : " + channel);
@@ -274,8 +302,10 @@ class SoundPlayer {
         void stop() {
             mLoop = false;
             if (mPlaying) {
-                mPlayer.pause();
-                mPlayer.seekTo(0);
+                if (mPlayer != null) {
+                    mPlayer.pause();
+                    mPlayer.seekTo(0);
+                }
                 mPlaying = false;
             }
         }

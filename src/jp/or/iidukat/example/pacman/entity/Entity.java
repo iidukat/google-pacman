@@ -9,6 +9,8 @@ import android.graphics.RectF;
 public interface Entity extends Comparable<Entity>{
 
     float[] getAbsolutePos();
+    int getHeight();
+    int getWidth();
     Entity getParent();
     void setParent(Entity entity);
     boolean isVisible();

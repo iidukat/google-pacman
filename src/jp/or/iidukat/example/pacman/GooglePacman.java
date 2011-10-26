@@ -14,17 +14,24 @@ public class GooglePacman extends Activity implements OnClickListener {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        initGameView();
+        
+        PacmanGame game = initGame();
+        initGameView(game);
         initMainView();
         
         setVolumeControlStream(AudioManager.STREAM_MUSIC);
     }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        game.resume();
+    }
     
     @Override
-    public void onDestroy() {
-        game.destroy();
-        super.onDestroy();
+    public void onPause() {
+        game.pause();
+        super.onPause();
     }
     
     private void initMainView() {
@@ -38,16 +45,16 @@ public class GooglePacman extends Activity implements OnClickListener {
         exitButton.setOnClickListener(this);
     }
     
-    private void initGameView() {
-        initGame();
+    private void initGameView(PacmanGame game) {
         gameView = new GameView(this);
         game.view = gameView;
         gameView.game = game;
     }
     
-    private void initGame() {
-        this.game = new PacmanGame(this);
-        this.game.init();
+    private PacmanGame initGame() {
+        game = new PacmanGame(this);
+        game.init();
+        return game;
     }
     
     private void transitionToGameView() {

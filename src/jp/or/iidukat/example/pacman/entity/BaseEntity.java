@@ -27,7 +27,17 @@ abstract class BaseEntity implements Entity {
     
     @Override
     public float[] getAbsolutePos() {
-    	return presentation.getAbsolutePos();
+        return presentation.getAbsolutePos();
+    }
+    
+    @Override
+    public int getHeight() {
+        return presentation.getHeight();
+    }
+    
+    @Override
+    public int getWidth() {
+        return presentation.getWidth();
     }
     
     @Override

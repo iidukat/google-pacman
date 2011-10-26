@@ -1,10 +1,5 @@
 package jp.or.iidukat.example.pacman;
 
-import static jp.or.iidukat.example.pacman.entity.Actor.CurrentSpeed;
-import static jp.or.iidukat.example.pacman.entity.Playfield.Door;
-import static jp.or.iidukat.example.pacman.entity.Playfield.PathElement;
-import static jp.or.iidukat.example.pacman.entity.Playfield.PathElement.Dot;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -13,11 +8,13 @@ import java.util.List;
 import java.util.Map;
 
 import jp.or.iidukat.example.pacman.entity.Actor;
+import jp.or.iidukat.example.pacman.entity.Actor.CurrentSpeed;
 import jp.or.iidukat.example.pacman.entity.CutsceneActor;
 import jp.or.iidukat.example.pacman.entity.CutsceneBlinky;
 import jp.or.iidukat.example.pacman.entity.CutsceneField;
 import jp.or.iidukat.example.pacman.entity.CutscenePacman;
 import jp.or.iidukat.example.pacman.entity.CutsceneSteak;
+import jp.or.iidukat.example.pacman.entity.Entity;
 import jp.or.iidukat.example.pacman.entity.Fruit;
 import jp.or.iidukat.example.pacman.entity.Ghost;
 import jp.or.iidukat.example.pacman.entity.Ghost.GhostMode;
@@ -26,6 +23,9 @@ import jp.or.iidukat.example.pacman.entity.Lives;
 import jp.or.iidukat.example.pacman.entity.Pacman;
 import jp.or.iidukat.example.pacman.entity.PacmanCanvas;
 import jp.or.iidukat.example.pacman.entity.Playfield;
+import jp.or.iidukat.example.pacman.entity.Playfield.Door;
+import jp.or.iidukat.example.pacman.entity.Playfield.PathElement;
+import jp.or.iidukat.example.pacman.entity.Playfield.PathElement.Dot;
 import jp.or.iidukat.example.pacman.entity.Score;
 import jp.or.iidukat.example.pacman.entity.ScoreLabel;
 import jp.or.iidukat.example.pacman.entity.Sound;
@@ -757,9 +757,9 @@ public class PacmanGame {
     GameView view;
     private Bitmap sourceImage;
     private SoundPlayer soundPlayer;
-    private boolean ready;
-    private boolean soundReady;
-    private boolean graphicsReady;
+    
+    private boolean paused;
+    private boolean started;
     private long randSeed;
 
     private PacmanCanvas canvasEl;
@@ -776,7 +776,6 @@ public class PacmanGame {
     private int level = 0;
     private int killScreenLevel = DEFAULT_KILL_SCREEN_LEVEL;
     private LevelConfig levelConfig;
-    private boolean paused = false;
     private long globalTime = 0;
 
     private int frightModeTime = 0;
@@ -810,7 +809,6 @@ public class PacmanGame {
     private int ghostBeingEatenId;
 
     private boolean pacManSound = true;
-    private boolean userDisabledSound;
 
     private Cutscene cutscene;
     private int cutsceneId;
@@ -820,6 +818,7 @@ public class PacmanGame {
     private float tickInterval;
     private float lastTimeDelta;
     private long lastTime;
+    private long pausedTime;
     private int fpsChoice;
     private int fps;
     private boolean canDecreaseFps;
@@ -868,34 +867,36 @@ public class PacmanGame {
         getPlayfieldEl().createGameOverElement();
     }
 
-    private void canvasClicked(float b, float c) {
-        if (handleSoundIconClick(b, c)) {
+    private void canvasClicked(float x, float y) {
+        if (handleSoundIconClick(x, y)) {
             return;
         }
 
-        float[] d = canvasEl.getAbsolutePos();
-        b -= d[1];
-        c -= d[0];
+        float[] offset = canvasEl.getAbsolutePos();
+        float cx = x - offset[1];
+        float cy = y - offset[0];
         
         Pacman pacman = getPacman();
-        float f = Playfield.getPlayfieldX(pacman.getPos()[1] + pacman.getPosDelta()[1]) + 48;
-        float h = Playfield.getPlayfieldY(pacman.getPos()[0] + pacman.getPosDelta()[0]) + 32;
-        float j = Math.abs(b - f);
-        float k = Math.abs(c - h);
-        if (j > 8 && k < j)
-            pacman.setRequestedDir(b > f ? Direction.RIGHT : Direction.LEFT);
-        else if (k > 8 && j < k)
-            pacman.setRequestedDir(c > h ? Direction.DOWN : Direction.UP);
+        float px = Playfield.getPlayfieldX(pacman.getPos()[1] + pacman.getPosDelta()[1]) + 48;
+        float py = Playfield.getPlayfieldY(pacman.getPos()[0] + pacman.getPosDelta()[0]) + 32;
+        float xdiff = Math.abs(cx - px);
+        float ydiff = Math.abs(cy - py);
+        if (xdiff > 8 && ydiff < xdiff) {
+            pacman.setRequestedDir(cx > px ? Direction.RIGHT : Direction.LEFT);
+        } else if (ydiff > 8 && xdiff < ydiff) {
+            pacman.setRequestedDir(cy > py ? Direction.DOWN : Direction.UP);
+        }
     }
 
-    private boolean handleSoundIconClick(float b, float c) {
+    private boolean handleSoundIconClick(float x, float y) {
         if (!soundPlayer.isAvailable() || !getSoundEl().isVisible()) {
             return false;
         }
 
-        float[] d = getSoundEl().getAbsolutePos();
-        if (d[1] <= b && b <= d[1] + 12) {
-            if (d[0] <= c && c <= d[0] + 12) {
+        Entity soundEl = getSoundEl();
+        float[] pos = soundEl.getAbsolutePos();
+        if (pos[1] <= x && x <= pos[1] + soundEl.getWidth()) {
+            if (pos[0] <= y && y <= pos[0] + soundEl.getHeight()) {
                 toggleSound();
                 return true;
             }
@@ -954,7 +955,6 @@ public class PacmanGame {
         extraLifeAwarded = false;
         lives = 3;
         level = 0;
-        paused = false;
         globalTime = 0;
         newLevel(true);
     }
@@ -1336,26 +1336,28 @@ public class PacmanGame {
         }
     }
 
-    private boolean toggleSound() {
+    private void toggleSound() {
         if (pacManSound) {
-            userDisabledSound = true;
             stopAllAudio();
             pacManSound = false;
         } else {
             pacManSound = true;
             playAmbientSound();
         }
-        updateSoundIcon();
-        return false;
     }
 
     private void updateSoundIcon() {
         Sound soundEl = getSoundEl();
-        if (soundEl != null)
-            if (pacManSound)
+        if (soundPlayer.isAvailable()) {
+            soundEl.setVisibility(true);
+            if (pacManSound) {
                 soundEl.turnOn();
-            else
+            } else {
                 soundEl.turnOff();
+            }
+        } else {
+            soundEl.setVisibility(false);
+        }
     }
 
     private void startCutscene() {
@@ -1576,8 +1578,13 @@ public class PacmanGame {
     }
 
     void tick() {
-        long b = new Date().getTime();
-        lastTimeDelta += b - lastTime - tickInterval; // 処理遅延時間累計
+        long now = new Date().getTime();
+        if (paused) {
+            pausedTime = now;
+            return;
+        }
+
+        lastTimeDelta += now - lastTime - tickInterval; // 処理遅延時間累計
         if (lastTimeDelta > 100)
             lastTimeDelta = 100;
         if (canDecreaseFps && lastTimeDelta > 50) { // fpsを下げることができるなら、処理遅延時間50ms超の回数をカウント
@@ -1585,14 +1592,14 @@ public class PacmanGame {
             if (lastTimeSlownessCount == 20)
                 decreaseFps(); // 処理遅延時間50ms超 20回でfpsを下げる
         }
-        int c = 0;
+        int latencyMultiplyer = 0;
         if (lastTimeDelta > tickInterval) { // 処理遅延時間累計がtickインターバルより大きい場合、tickインターバル未満に値を切り詰める
-            c = (int) FloatMath.floor(lastTimeDelta / tickInterval);
-            lastTimeDelta -= tickInterval * c;
+            latencyMultiplyer = (int) FloatMath.floor(lastTimeDelta / tickInterval);
+            lastTimeDelta -= tickInterval * latencyMultiplyer;
         }
-        lastTime = b;
+        lastTime = now;
         if (gameplayMode == GameplayMode.CUTSCENE) { // Cutscene
-            for (int i = 0; i < tickMultiplier + c; i++) { // tickMultiplierと処理地縁に応じて複数回のロジックを実行
+            for (int i = 0; i < tickMultiplier + latencyMultiplyer; i++) { // tickMultiplierと処理遅延に応じて複数回のロジックを実行
                 advanceCutscene();
                 intervalTime = (intervalTime + 1) % D;
                 globalTime++;
@@ -1600,11 +1607,9 @@ public class PacmanGame {
             checkCutscene();
             blinkScoreLabels();
         } else {
-            if (!isUserDisabledSound()) { // サウンドアイコンの更新
-                setPacManSound(true);
-                updateSoundIcon();
-            }
-            for (int i = 0; i < tickMultiplier + c; i++) { // tickMultiplierと処理地縁に応じて複数回のロジックを実行
+            updateSoundIcon();
+            
+            for (int i = 0; i < tickMultiplier + latencyMultiplyer; i++) { // tickMultiplierと処理遅延に応じて複数回のロジックを実行
                 moveActors();
                 if (gameplayMode == GameplayMode.ORDINARY_PLAYING)
                     if (tilesChanged) {
@@ -1662,10 +1667,8 @@ public class PacmanGame {
         canvasEl.createScore();
         canvasEl.createLives();
         canvasEl.createLevel();
-        if (soundPlayer.isAvailable()) {
-            canvasEl.createSoundIcon();
-            updateSoundIcon();
-        }
+        canvasEl.createSoundIcon();
+        updateSoundIcon();
     }
 
     private String oldAmbient;
@@ -1678,7 +1681,7 @@ public class PacmanGame {
     // サウンド再生
     // b -> トラック, c -> チャンネル番号, d -> 再生中サウンド停止フラグ
     private void playSound(String b, int c, boolean d) {
-        if (!(!soundPlayer.isAvailable() || !pacManSound || paused)) {
+        if (pacManSound) {
             if (!d) {
                 stopSoundChannel(c);
             }
@@ -1687,16 +1690,12 @@ public class PacmanGame {
     }
 
     private void stopSoundChannel(int b) {
-        if (soundPlayer.isAvailable()) {
-            soundPlayer.stopChannel(b);
-        }
+        soundPlayer.stopChannel(b);
     }
     
     private void stopAmbient() {
-        if (soundPlayer.isAvailable()) {
-            soundPlayer.stopAmbient();
-            oldAmbient = null;
-        }
+        soundPlayer.stopAmbient();
+        oldAmbient = null;
     }
 
     private void stopAllAudio() {
@@ -1707,7 +1706,7 @@ public class PacmanGame {
     }
 
     private void playDotEatingSound() {
-        if (soundPlayer.isAvailable() && pacManSound) {
+        if (pacManSound) {
             if (gameplayMode == GameplayMode.ORDINARY_PLAYING) {
                 String c = dotEatingSoundPart == 1
                                 ? "eating_dot_1"
@@ -1720,7 +1719,7 @@ public class PacmanGame {
     }
 
     public void playAmbientSound() {
-        if (soundPlayer.isAvailable() && pacManSound) {
+        if (pacManSound) {
             String b = null;
             if (gameplayMode == GameplayMode.ORDINARY_PLAYING
                     || gameplayMode == GameplayMode.GHOST_DIED) {
@@ -1750,15 +1749,13 @@ public class PacmanGame {
     }
 
     private void playCutsceneTrack() {
-        if (soundPlayer.isAvailable() && pacManSound) {
+        if (pacManSound) {
             soundPlayer.playCutsceneAmbient();
         }
     }
 
     private void stopCutsceneTrack() {
-        if (soundPlayer.isAvailable()) {
-            soundPlayer.stopCutsceneAmbient();
-        }
+        soundPlayer.stopCutsceneAmbient();
     }
 
     private void initializeTickTimer() {
@@ -1776,7 +1773,7 @@ public class PacmanGame {
     }
 
     private void setTimeout() {
-        view.redrawHandler.sleep(Math.round(tickInterval)); // TODO: 要見直し
+        view.redrawHandler.sleep(Math.round(tickInterval));
     }
 
     private void decreaseFps() {
@@ -1793,23 +1790,11 @@ public class PacmanGame {
         canvasEl.init();
     }
 
-    private void everythingIsReady() {
-        if (!ready) {
-            ready = true;
-            createCanvasElement();
-            speedIntervals = new HashMap<Float, Boolean[]>();
-            fpsChoice = 0;
-            canDecreaseFps = true;
-            initializeTickTimer();
-        }
-    }
-
     // TODO: 要メソッド名見直し
     private void start() {
-        if (ready) {
-            setTimeout();
-            newGame();
-        }
+        started = true;
+        setTimeout();
+        newGame();
     }
 
     void startNewGame() {
@@ -1822,37 +1807,9 @@ public class PacmanGame {
         start();
     }
 
-    private void checkIfEverythingIsReady() {
-        if (soundReady && graphicsReady) {
-            everythingIsReady();
-        }
-    }
-
-    private void preloadImage() {
-        sourceImage = BitmapFactory.decodeResource(
-                                            context.getResources(),
-                                            R.drawable.pacman_sprite);
-        imageLoaded();
-    }
-
-    private void imageLoaded() {
-        graphicsReady = true;
-        checkIfEverythingIsReady();
-    }
-
-    private void prepareGraphics() {
-        graphicsReady = false;
-        preloadImage();
-    }
-
     private void prepareSound() {
-        soundReady = false;
-
         soundPlayer = new SoundPlayer(context);
         soundPlayer.init();
-
-        soundReady = true;
-        checkIfEverythingIsReady();
     }
 
     private void setKillScreenLevel(int level) {
@@ -1864,15 +1821,34 @@ public class PacmanGame {
     }
 
     void init() {
-        ready = false;
-        prepareGraphics();
-        prepareSound();
+        sourceImage =
+            BitmapFactory.decodeResource(
+                context.getResources(),
+                R.drawable.pacman_sprite);
+        createCanvasElement();
+        speedIntervals = new HashMap<Float, Boolean[]>();
+        fpsChoice = 0;
+        canDecreaseFps = true;
+        initializeTickTimer();
     }
-
-    void destroy() {
+    
+    void resume() {
+        prepareSound();
+        if (started && paused) {
+            lastTime += new Date().getTime() - pausedTime;
+            paused = false;
+            if (oldAmbient != null) {
+                soundPlayer.playAmbient(oldAmbient);
+            }
+            tick();
+        }
+    }
+    
+    void pause() {
+        paused = true;
         soundPlayer.destroy();
     }
-
+    
     public PacmanCanvas getCanvasEl() {
         return canvasEl;
     }
@@ -2072,10 +2048,6 @@ public class PacmanGame {
 
     public void decrementGhostEyesCount() {
         ghostEyesCount--;
-    }
-
-    public boolean isUserDisabledSound() {
-        return userDisabledSound;
     }
 
     public boolean isTilesChanged() {
