@@ -8,7 +8,7 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 
-public class GameView extends View {
+class GameView extends View {
 
     private static final int CANVAS_WIDTH = 554;
     private static final int CANVAS_HEIGHT = 136;
@@ -58,7 +58,6 @@ public class GameView extends View {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
 
-        // ここでタッチイベントを処理
         switch (event.getAction() & MotionEvent.ACTION_MASK) {
         case MotionEvent.ACTION_DOWN:
             game.handleTouchStart(event);
@@ -71,7 +70,6 @@ public class GameView extends View {
             break;
         }
 
-        // イベントが処理されたことを知らせる
         return true;
     }
 }

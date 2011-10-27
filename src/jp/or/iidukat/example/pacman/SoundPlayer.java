@@ -13,7 +13,6 @@ import android.util.Log;
 class SoundPlayer {
 
     private static final String TAG = "SoundPlayer";
-    private final Context context;
     private static final int[] SOUND_RESOURCES = {
         R.raw.death,
         R.raw.eating_dot_1,
@@ -35,6 +34,7 @@ class SoundPlayer {
     private static final int AMBIENT_CHANNEL_COUNT = 1;
     private static final int CUTSCENE_RESOURCE_ID = R.raw.cutscene;
     
+    private final Context context;
     private SoundPoolManager soundManager;
     private boolean soundAvailable;
     private SoundPoolManager ambientManager;
@@ -260,7 +260,7 @@ class SoundPlayer {
         }
     }
 
-    private class AudioClip {
+    private static class AudioClip {
 
         private final Context context;
         private MediaPlayer mPlayer;

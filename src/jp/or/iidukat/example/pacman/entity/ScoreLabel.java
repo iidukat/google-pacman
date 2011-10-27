@@ -19,17 +19,21 @@ public class ScoreLabel extends BaseEntity {
         p.prepareBkPos(160, 56);
     }
 
-    public void update(GameplayMode gameplayMode, long globalTime, float interval) {
+    public void update(
+                    GameplayMode gameplayMode,
+                    long globalTime,
+                    float interval) {
         if (gameplayMode != GameplayMode.CUTSCENE) {
-            if (globalTime % (interval * 2) == 0)
+            if (globalTime % (interval * 2) == 0) {
                 setVisibility(true);
-            else if (globalTime % (interval * 2) == interval)
+            } else if (globalTime % (interval * 2) == interval) {
                 setVisibility(false);
+            }
         }
     }
     
     @Override
-    void doDraw(Canvas c) {
-        getPresentation().drawBitmap(c);
+    void doDraw(Canvas canvas) {
+        getPresentation().drawBitmap(canvas);
     }
 }

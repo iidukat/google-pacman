@@ -7,7 +7,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 
 public class Lives extends BaseEntity {
-    private List<Life> lives = new ArrayList<Life>();
+    private final List<Life> lives = new ArrayList<Life>();
 
     public Lives(Bitmap sourceImage) {
         super(sourceImage, true);
@@ -23,9 +23,10 @@ public class Lives extends BaseEntity {
 
     public void update(int liveCount) {
         clearLives();
-        for (int b = 0; b < liveCount; b++) {
-            Lives.Life life = new Lives.Life(getPresentation().getSourceImage());
-            life.init(b * 15);
+        for (int i = 0; i < liveCount; i++) {
+            Lives.Life life =
+                new Lives.Life(getPresentation().getSourceImage());
+            life.init(i * 15);
             life.setParent(this);
             lives.add(life);
         }
@@ -33,11 +34,11 @@ public class Lives extends BaseEntity {
     
     private void clearLives() {
         lives.clear();
-        clearDrawQueue();
+        clearChildren();
     }
 
     @Override
-    void doDraw(Canvas c) {
+    void doDraw(Canvas canvas) {
     }
 
     public static class Life extends BaseEntity {
@@ -55,8 +56,8 @@ public class Lives extends BaseEntity {
         }
         
         @Override
-        void doDraw(Canvas c) {
-            getPresentation().drawBitmap(c);
+        void doDraw(Canvas canvas) {
+            getPresentation().drawBitmap(canvas);
         }
     }
 }

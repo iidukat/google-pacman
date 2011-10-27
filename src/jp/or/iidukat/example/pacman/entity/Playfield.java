@@ -54,7 +54,7 @@ public class Playfield extends BaseEntity {
         }
     }
 
-    private static final Path[] n = {
+    private static final Path[] PATHS = {
         Path.createHorizontalPath(5, 1, 56),
         Path.createHorizontalPath(5, 4, 5),
         Path.createVerticalPath(5, 1, 4),
@@ -96,7 +96,7 @@ public class Playfield extends BaseEntity {
 
     // エサの存在しないパス
     // 左上:(5, 1), 左下:(5, 15), 右上:(60, 1), 右下:(60, 15).
-    private static final Path[] o = {
+    private static final Path[] PATHS_HAVING_NO_DOT = {
         Path.createHorizontalPath(1, 8, 8),
         Path.createHorizontalPath(57, 8, 9),
         Path.createVerticalPath(44, 2, 10),
@@ -125,7 +125,7 @@ public class Playfield extends BaseEntity {
     }
 
     // パワーエサ
-    private static final Position[] p = {
+    private static final Position[] ENERGIZER_POSITIONS = {
         new Position(5, 15),
         new Position(5, 3),
         new Position(15, 8),
@@ -134,20 +134,13 @@ public class Playfield extends BaseEntity {
     };
 
     // ワープトンネル
-    private static final Position[] q = {
+    static final Position[] TUNNEL_POS = {
         new Position(2, 8),
         new Position(63, 8),
     };
 
-    public static Position[] getQ() {
-        return q;
-    }
-
-    private static final int[] v = { 80, 312 }; // フルーツ出現位置
-
-    public static int[] getV() {
-        return v;
-    }
+    static final int[] PEN_ENTRANCE = {32, 312}; // モンスターの巣の入り口の位置
+    static final int[] FRUIT_POSITION = { 80, 312 }; // フルーツ出現位置
 
     public static class PathElement {
         public static enum Dot {
@@ -249,7 +242,7 @@ public class Playfield extends BaseEntity {
     }
 
     public void reset() {
-        clearDrawQueue();
+        clearChildren();
         dotsRemaining = 0;
         dotsEaten = 0;
         getPresentation().prepareBkPos(256, 0);
@@ -263,7 +256,7 @@ public class Playfield extends BaseEntity {
     private void determinePlayfieldDimensions() {
         playfieldWidth = 0;
         playfieldHeight = 0;
-        for (Path c : n) {
+        for (Path c : PATHS) {
             if (c.w > 0) {
                 int x = c.x + c.w - 1;
                 if (x > playfieldWidth)
@@ -292,7 +285,7 @@ public class Playfield extends BaseEntity {
     }
 
     private void preparePaths() {
-        for (Path c : n) {
+        for (Path c : PATHS) {
             boolean d = c.tunnel;
             if (c.w > 0) {
                 int f = c.y * 8;
@@ -329,7 +322,7 @@ public class Playfield extends BaseEntity {
                         .get(Integer.valueOf(h)).setIntersection(true);
             }
         }
-        for (Path p : o)
+        for (Path p : PATHS_HAVING_NO_DOT)
             if (p.w != 0)
                 for (int h = p.x * 8; h <= (p.x + p.w - 1) * 8; h += 8) {
                     playfield.get(Integer.valueOf(p.y * 8))
@@ -390,7 +383,7 @@ public class Playfield extends BaseEntity {
     // パワーエサを作成
     private void createEnergizerElements() {
         List<Energizer> es = new ArrayList<Energizer>();
-        for (Position c : p) {
+        for (Position c : ENERGIZER_POSITIONS) {
             int x = c.x * 8;
             int y = c.y * 8;
             DotElement removed = removeDotElement(x, y);
@@ -398,7 +391,7 @@ public class Playfield extends BaseEntity {
                 continue;
             }
             
-            removeFromDrawQueue(removed);
+            removeChild(removed);
 
             Energizer e = new Energizer(getPresentation().getSourceImage());
             e.init(x, y);
@@ -456,7 +449,7 @@ public class Playfield extends BaseEntity {
     private void createFruitElement() {
         fruit = new Fruit(getPresentation().getSourceImage(),
                             game.getLevels().getFruit());
-        fruit.initOnPlayfield(v);
+        fruit.initOnPlayfield(FRUIT_POSITION[1], FRUIT_POSITION[0]);
         fruit.setParent(this);
     }
     
@@ -468,10 +461,8 @@ public class Playfield extends BaseEntity {
     }
 
     private void createActorElements() {
-        int cnt = 0;
         pacman = new Pacman(
                         getPresentation().getSourceImage(),
-                        cnt++,
                         game);
         pacman.init();
         pacman.setParent(this);
@@ -481,22 +472,18 @@ public class Playfield extends BaseEntity {
             gs.add(
                 new Blinky(
                         getPresentation().getSourceImage(),
-                        cnt++,
                         game));
             gs.add(
                 new Pinky(
                         getPresentation().getSourceImage(),
-                        cnt++,
                         game));
             gs.add(
                 new Inky(
                         getPresentation().getSourceImage(),
-                        cnt++,
                         game));
             gs.add(
                 new Clyde(
                         getPresentation().getSourceImage(),
-                        cnt++,
                         game));
 
             ghosts = gs.toArray(new Ghost[0]);
@@ -605,24 +592,8 @@ public class Playfield extends BaseEntity {
             getPresentation().changeBkPos(322, 138, false);
     }
 
-    public static float getPlayfieldX(float b) {
-        return b + -32;
-    }
-
-    public static float getPlayfieldY(float b) {
-        return b + 0;
-    }
-
-    public static float getDistance(int[] b, int[] c) {
-        return FloatMath.sqrt((c[1] - b[1]) * (c[1] - b[1]) + (c[0] - b[0]) * (c[0] - b[0]));
-    }
-
-    public static float getDistance(float[] b, float[] c) {
-        return FloatMath.sqrt((c[1] - b[1]) * (c[1] - b[1]) + (c[0] - b[0]) * (c[0] - b[0]));
-    }
-
-    void doDraw(Canvas c) {
-        getPresentation().drawBitmap(c);
+    void doDraw(Canvas canvas) {
+        getPresentation().drawBitmap(canvas);
     }
 
     public Pacman getPacman() {
@@ -631,6 +602,14 @@ public class Playfield extends BaseEntity {
     
     public Ghost[] getGhosts() {
         return ghosts;
+    }
+    
+    public Ghost getBlinky() {
+        return ghosts[0];
+    }
+
+    public Ghost getClyde() {
+        return ghosts[3];
     }
     
     public Door getDoor() {
@@ -658,7 +637,7 @@ public class Playfield extends BaseEntity {
     }
     
     public void removeReady() {
-        removeFromDrawQueue(ready);
+        removeChild(ready);
         ready = null;
     }
 
@@ -671,7 +650,7 @@ public class Playfield extends BaseEntity {
     }
 
     public void removeGameover() {
-        removeFromDrawQueue(gameover);
+        removeChild(gameover);
         gameover = null;
     }
 
@@ -690,14 +669,14 @@ public class Playfield extends BaseEntity {
         }
         
         @Override
-        public void doDraw(Canvas c) {
+        public void doDraw(Canvas canvas) {
             if (eaten || !isVisible())
                 return;
 
-            drawDot(c);
+            drawDot(canvas);
         }
         
-        abstract void drawDot(Canvas c);
+        abstract void drawDot(Canvas canvas);
 
         public boolean isEaten() {
             return eaten;
@@ -727,8 +706,8 @@ public class Playfield extends BaseEntity {
         }
 
         @Override
-        void drawDot(Canvas c) {
-            getPresentation().drawRectShape(c);
+        void drawDot(Canvas canvas) {
+            getPresentation().drawRectShape(canvas);
         }
     }
     
@@ -778,8 +757,8 @@ public class Playfield extends BaseEntity {
         }
 
         @Override
-        void drawDot(Canvas c) {
-            getPresentation().drawBitmap(c);
+        void drawDot(Canvas canvas) {
+            getPresentation().drawBitmap(canvas);
         }
     }
 
@@ -799,8 +778,8 @@ public class Playfield extends BaseEntity {
         }
         
         @Override
-        void doDraw(Canvas c) {
-            getPresentation().drawRectShape(c);
+        void doDraw(Canvas canvas) {
+            getPresentation().drawRectShape(canvas);
         }
     }
     
@@ -821,8 +800,8 @@ public class Playfield extends BaseEntity {
         }
 
         @Override
-        void doDraw(Canvas c) {
-            getPresentation().drawBitmap(c);
+        void doDraw(Canvas canvas) {
+            getPresentation().drawBitmap(canvas);
         }
     }
 
@@ -843,8 +822,8 @@ public class Playfield extends BaseEntity {
         }
 
         @Override
-        void doDraw(Canvas c) {
-            getPresentation().drawBitmap(c);
+        void doDraw(Canvas canvas) {
+            getPresentation().drawBitmap(canvas);
         }
     }
 
@@ -878,12 +857,12 @@ public class Playfield extends BaseEntity {
         }
 
         @Override
-        void doDraw(Canvas c) {
+        void doDraw(Canvas canvas) {
             Presentation p = getPresentation();
             if (bgImage) {
-                p.drawBitmap(c);
+                p.drawBitmap(canvas);
             } else {
-                p.drawRectShape(c);
+                p.drawRectShape(canvas);
             }
         }
     }

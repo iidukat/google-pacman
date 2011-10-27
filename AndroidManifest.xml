@@ -14,6 +14,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
     </application>
+    <supports-screens android:smallScreens="false"
+                      android:normalScreens="true"
+                      android:largeScreens="false"
+                      android:xlargeScreens="false"
+                      android:anyDensity="false" />
+    <uses-configuration android:reqTouchScreen="finger" />
+    <uses-sdk android:minSdkVersion="8" android:targetSdkVersion="9"/>
 </manifest>

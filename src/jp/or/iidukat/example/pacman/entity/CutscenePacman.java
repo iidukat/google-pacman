@@ -83,13 +83,13 @@ public class CutscenePacman extends CutsceneActor {
 
     @Override
     Cutscene getCutscene() {
-        return CUTSCENES.get(Integer.valueOf(g.getCutsceneId()));
+        return CUTSCENES.get(Integer.valueOf(game.getCutsceneId()));
     }
 
     @Override
     void setMode(Cutscene cutscene) {
         Sequence s =
-            (CutscenePacman.Sequence) cutscene.sequences[g.getCutsceneSequenceId()]; 
+            (CutscenePacman.Sequence) cutscene.sequences[game.getCutsceneSequenceId()]; 
         mode = s.mode;
     }
     
@@ -102,7 +102,7 @@ public class CutscenePacman extends CutsceneActor {
         if (Mode.BIG == mode) {
             b = 14;
             c = 0;
-            int t = (int) (Math.floor(g.getGlobalTime() * 0.2) % 4);
+            int t = (int) (Math.floor(game.getGlobalTime() * 0.2) % 4);
             if (t == 3) t = 1;
             c += 2 * t;
             // BigPacMan
@@ -127,7 +127,7 @@ public class CutscenePacman extends CutsceneActor {
                 c = 3;
                 break;
             }
-            b = (int) (Math.floor(g.getGlobalTime() * 0.3) % 4);
+            b = (int) (Math.floor(game.getGlobalTime() * 0.3) % 4);
             if (b == 3 && getDir() == Direction.NONE) b = 0;
             if (b == 2) b = 0;
             if (b == 3) {

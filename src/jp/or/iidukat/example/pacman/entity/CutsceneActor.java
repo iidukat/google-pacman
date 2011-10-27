@@ -11,7 +11,7 @@ public abstract class CutsceneActor extends BaseEntity {
 
     static final int DEFAULT_DISPLAY_ORDER = 110;
     
-    final PacmanGame g;
+    final PacmanGame game;
     private float[] pos;
     private float[] posDelta;
     private float[] elPos;
@@ -19,9 +19,9 @@ public abstract class CutsceneActor extends BaseEntity {
     private Direction dir = Direction.NONE;
     private float speed;
 
-    CutsceneActor(Bitmap sourceImage, PacmanGame g) {
+    CutsceneActor(Bitmap sourceImage, PacmanGame game) {
         super(sourceImage);
-        this.g = g;
+        this.game = game;
     }
 
     public void init() {
@@ -46,19 +46,19 @@ public abstract class CutsceneActor extends BaseEntity {
     }
 
     @Override
-    void doDraw(Canvas c) {
-        getPresentation().drawBitmap(c);
+    void doDraw(Canvas canvas) {
+        getPresentation().drawBitmap(canvas);
     }
 
     public void move() {
         Move d = dir.getMove();
         pos[d.getAxis()] += d.getIncrement() * speed;
-        b();
+        updatePresentation();
     }
 
     // Actor表示画像切り替え(アニメーション対応)&位置移動
-    public void b() {
-        this.k(); // 位置移動
+    public void updatePresentation() {
+        this.updateElPos(); // 位置移動
         int[] b = { 0, 0 };
         b = getImagePos();
         if (this.elBackgroundPos[0] != b[0] || this.elBackgroundPos[1] != b[1]) {
@@ -71,9 +71,9 @@ public abstract class CutsceneActor extends BaseEntity {
     }
 
     // 位置移動
-    public void k() {
-        float b = CutsceneField.getFieldX(this.pos[1] + this.posDelta[1]);
-        float c = CutsceneField.getFieldY(this.pos[0] + this.posDelta[0]);
+    public void updateElPos() {
+        float b = PacmanGame.getFieldX(this.pos[1] + this.posDelta[1]);
+        float c = PacmanGame.getFieldY(this.pos[0] + this.posDelta[0]);
         if (this.elPos[0] != c || this.elPos[1] != b) {
             this.elPos[0] = c;
             this.elPos[1] = b;
@@ -144,8 +144,8 @@ public abstract class CutsceneActor extends BaseEntity {
     }
 
     private void setMove(Cutscene cutscene) {
-        dir = cutscene.sequences[g.getCutsceneSequenceId()].move.dir;
-        speed = cutscene.sequences[g.getCutsceneSequenceId()].move.speed;
+        dir = cutscene.sequences[game.getCutsceneSequenceId()].move.dir;
+        speed = cutscene.sequences[game.getCutsceneSequenceId()].move.speed;
     }
 
     abstract void setMode(Cutscene cutscene);

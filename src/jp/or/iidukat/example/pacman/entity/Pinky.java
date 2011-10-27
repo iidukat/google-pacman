@@ -39,8 +39,8 @@ public class Pinky extends Ghost {
         MOVES_IN_PEN = Collections.unmodifiableMap(m);
     }
     
-    public Pinky(Bitmap sourceImage, int b, PacmanGame g) {
-        super(sourceImage, b, g);
+    public Pinky(Bitmap sourceImage, PacmanGame game) {
+        super(sourceImage, game);
     }
 
     @Override
@@ -50,13 +50,13 @@ public class Pinky extends Ghost {
 
     // ターゲットポジションを決定
     @Override
-    public void B() {
+    public void updateTargetPos() {
         if (this.mode != GhostMode.CHASE) {
             return;
             
         }
         // Playerを先回りする
-        Actor b = g.getPacman();
+        Actor b = game.getPacman();
         Move c = b.dir.getMove();
         this.targetPos = new float[] { b.tilePos[0], b.tilePos[1] };
         this.targetPos[c.getAxis()] += 32 * c.getIncrement();

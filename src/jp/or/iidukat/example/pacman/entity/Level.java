@@ -8,6 +8,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 
 public class Level extends BaseEntity {
+    private static final int MAX_COUNT_OF_FRUITS = 4;
     private List<Fruit> fruits = new ArrayList<Fruit>();
     
     public Level(Bitmap sourceImage) {
@@ -23,24 +24,33 @@ public class Level extends BaseEntity {
     }
     
     @Override
-    void doDraw(Canvas c) {
+    void doDraw(Canvas canvas) {
     }
 
-    public void update(int level, LevelConfig[] z) {
+    public void update(int level, LevelConfig[] levelConfigs) {
         clearFruits();
-        int top = (4 - Math.min(level, 4)) * 16 - 16;
-        for (int b = level; b >= Math.max(level - 4 + 1, 1); b--) {
-            int c = b >= z.length ? z[z.length - 1].getFruit() : z[b].getFruit();
-            Fruit d = new Fruit(getPresentation().getSourceImage(), c);
-            top += 16;
-            d.initOnLevel(top);
-            d.setParent(this);
-            fruits.add(d);
+        int top =
+            (MAX_COUNT_OF_FRUITS - Math.min(level, MAX_COUNT_OF_FRUITS)) * Fruit.HEIGHT
+                - Fruit.HEIGHT;
+        for (int i = level, bottom = Math.max(level - MAX_COUNT_OF_FRUITS + 1, 1);
+                i >= bottom; i--) {
+            int fruitLevel =
+                (i >= levelConfigs.length)
+                    ? levelConfigs[levelConfigs.length - 1].getFruit()
+                    : levelConfigs[i].getFruit();
+            Fruit fruit =
+                new Fruit(
+                        getPresentation().getSourceImage(),
+                        fruitLevel);
+            top += Fruit.HEIGHT;
+            fruit.initOnLevel(top);
+            fruit.setParent(this);
+            fruits.add(fruit);
         }
     }
     
     private void clearFruits() {
         fruits.clear();
-        clearDrawQueue();
+        clearChildren();
     }
 }

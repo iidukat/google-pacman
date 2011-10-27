@@ -25,38 +25,41 @@ public class Score extends BaseEntity {
     }
 
     private void initScoreNumbers() {
-        for (int b = 0; b < DIGITS; b++) {
-            Score.Number c =
+        for (int i = 0; i < DIGITS; i++) {
+            Score.Number n =
                 new Score.Number(getPresentation().getSourceImage());
-            c.init(b * 8);
-            c.setParent(this);
-            numbers.add(c);
+            n.init(i * 8);
+            n.setParent(this);
+            numbers.add(n);
         }
     }
 
     public void update(long score) {
-        String c = String.valueOf(score);
-        if (c.length() > DIGITS)
-            c = c.substring(c.length() - DIGITS);
-        for (int d = 0; d < DIGITS; d++) {
-            Score.Number f = getNumber(d);
-            String h = null;
-            if (d < c.length())
-                h = c.substring(d, d + 1);
-            if (h != null)
-                f.update(Integer.parseInt(h, 10));
-            else
-                f.updateToBlank();
+        String s = String.valueOf(score);
+        if (s.length() > DIGITS) {
+            s = s.substring(s.length() - DIGITS);
+        }
+        for (int i = 0; i < DIGITS; i++) {
+            Score.Number n = getNumber(i);
+            String c = null;
+            if (i < s.length()) {
+                c = s.substring(i, i + 1);
+            }
+            if (c != null) {
+                n.update(Integer.parseInt(c, 10));
+            } else {
+                n.updateToBlank();
+            }
         }
     }
 
-    @Override
-    void doDraw(Canvas c) {
-        getPresentation().drawRectShape(c);
+    private Number getNumber(int index) {
+        return numbers.get(index);
     }
 
-    public Number getNumber(int index) {
-        return numbers.get(index);
+    @Override
+    void doDraw(Canvas canvas) {
+        getPresentation().drawRectShape(canvas);
     }
 
     public static class Number extends BaseEntity {
@@ -83,8 +86,8 @@ public class Score extends BaseEntity {
         }
 
         @Override
-        void doDraw(Canvas c) {
-            getPresentation().drawBitmap(c);
+        void doDraw(Canvas canvas) {
+            getPresentation().drawBitmap(canvas);
         }
     }
 }

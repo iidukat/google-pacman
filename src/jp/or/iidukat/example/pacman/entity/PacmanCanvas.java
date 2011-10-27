@@ -66,17 +66,18 @@ public class PacmanCanvas extends BaseEntity {
     }
     
     public void showChrome(boolean b) {
-        if (scoreLabel != null)
-            scoreLabel.setVisibility(b); // showElementById("pcm-sc-1-l", b);
-
-        if (score != null)
-            score.setVisibility(b); // showElementById("pcm-sc-1", b);
-
-        if (lives != null)
-            lives.setVisibility(b);// showElementById("pcm-li", b);
-
-        if (sound != null)
-            sound.setVisibility(b);// showElementById("pcm-so", b);
+        if (scoreLabel != null) {
+            scoreLabel.setVisibility(b);
+        }
+        if (score != null) {
+            score.setVisibility(b);
+        }
+        if (lives != null) {
+            lives.setVisibility(b);
+        }
+        if (sound != null) {
+            sound.setVisibility(b);
+        }
     }
     
     public void createCutsceneField() {
@@ -87,7 +88,7 @@ public class PacmanCanvas extends BaseEntity {
     }
     
     @Override
-    void doDraw(Canvas c) {
+    void doDraw(Canvas canvas) {
     }
 
     public Playfield getPlayfield() {
@@ -147,7 +148,7 @@ public class PacmanCanvas extends BaseEntity {
     }
     
     public void removeCutsceneField() {
-        removeFromDrawQueue(cutsceneField);
+        removeChild(cutsceneField);
         cutsceneField = null;
     }
 

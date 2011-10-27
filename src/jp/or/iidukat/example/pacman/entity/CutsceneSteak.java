@@ -46,7 +46,7 @@ public class CutsceneSteak extends CutsceneActor {
 
     @Override
     Cutscene getCutscene() {
-        return CUTSCENES.get(Integer.valueOf(g.getCutsceneId()));
+        return CUTSCENES.get(Integer.valueOf(game.getCutsceneId()));
     }
 
     @Override
@@ -55,15 +55,15 @@ public class CutsceneSteak extends CutsceneActor {
 
     @Override
     public int[] getImagePos() {
-        int b = g.getCutsceneSequenceId() == 1
-                    ? g.getCutsceneTime() > 60
+        int b = game.getCutsceneSequenceId() == 1
+                    ? game.getCutsceneTime() > 60
                         ? 1
-                        : g.getCutsceneTime() > 45
+                        : game.getCutsceneTime() > 45
                             ? 2
                             : 3
-                    : g.getCutsceneSequenceId() == 2
+                    : game.getCutsceneSequenceId() == 2
                         ? 3
-                        : g.getCutsceneSequenceId() == 3 || g.getCutsceneSequenceId() == 4
+                        : game.getCutsceneSequenceId() == 3 || game.getCutsceneSequenceId() == 4
                             ? 4
                             : 0;
         int c = 13;

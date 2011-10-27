@@ -47,8 +47,8 @@ public class Inky extends Ghost {
         MOVES_IN_PEN = Collections.unmodifiableMap(m);
     }
 
-    public Inky(Bitmap sourceImage, int b, PacmanGame g) {
-        super(sourceImage, b, g);
+    public Inky(Bitmap sourceImage, PacmanGame game) {
+        super(sourceImage, game);
     }
     
     @Override
@@ -58,15 +58,15 @@ public class Inky extends Ghost {
     
     // ターゲットポジションを決定
     @Override
-    public void B() {
+    public void updateTargetPos() {
         if (this.mode != GhostMode.CHASE) {
             return;
         }
         
         // PlayerをBLINKYと挟み撃ちにする
-        Actor b = g.getPacman();
+        Actor b = game.getPacman();
         Move c = b.dir.getMove();
-        Actor d = g.getBlinky();
+        Actor d = game.getBlinky();
         float[] f = new float[] { b.tilePos[0], b.tilePos[1] };
         f[c.getAxis()] += 16 * c.getIncrement();
         if (b.dir == Direction.UP) f[1] -= 16;

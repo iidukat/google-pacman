@@ -59,16 +59,13 @@ public abstract class Actor extends BaseEntity {
         }
     }
 
-    static final int[] s = {32, 312}; // モンスターの巣の入り口の位置
-    
-    final int id;
-    final PacmanGame g;
+    final PacmanGame game;
     float[] pos;
     float[] posDelta;
     int[] tilePos;
     int[] lastGoodTilePos;
     private float[] elPos;
-    int[] elBackgroundPos;
+    private int[] elBackgroundPos;
     Direction dir = Direction.NONE;
     Direction lastActiveDir = Direction.NONE;
     float speed;
@@ -79,14 +76,13 @@ public abstract class Actor extends BaseEntity {
     float tunnelSpeed;
     Boolean[] speedIntervals;
 
-    public Actor(Bitmap sourceImage, int b, PacmanGame g) {
+    public Actor(Bitmap sourceImage, PacmanGame game) {
         super(sourceImage);
-        this.id = b;
-        this.g = g;
+        this.game = game;
     }
     
     // Actorを再配置
-    public abstract void A();
+    public abstract void arrange();
     
     abstract InitPosition getInitPosition();
     
@@ -103,59 +99,42 @@ public abstract class Actor extends BaseEntity {
         this.elBackgroundPos = new int[] {0, 0};
     }
     
+    abstract void updateTilePos();
     // tilePosとposの差分が有意になったとき呼び出される
-    abstract void p(int[] b);
-
-    abstract void n();
-
+    abstract void enteringNewTile(int[] b);
     // posの値がtilePosと一致(pos が8の倍数)したときに呼び出される
-    abstract void u();
+    abstract void enteredNewTile();
 
-    abstract void o();
-
-    // Actorの速度設定(currentSpeedプロパティを利用)
-    public abstract void d();
+    abstract void lookForSomething();
     
     // Actorの速度設定変更
-    public void c(CurrentSpeed b) {
+    public void updateSpeed(CurrentSpeed b) {
         this.currentSpeed = b;
-        this.d();
+        this.updateSpeed();
     }
+    
+    // Actorの速度設定(currentSpeedプロパティを利用)
+    public abstract void updateSpeed();
+    
     // Actorの移動(ルーチン以外)
-    void e() {
+    void step() {
         if (this.dir != Direction.NONE)
-            if (this.speedIntervals[g.getIntervalTime()]) { // この判定で速度を表現
-                Move b = this.dir.getMove();
-                this.pos[b.getAxis()] += b.getIncrement();
-                this.o();
-                this.b();
+            if (this.speedIntervals[game.getIntervalTime()]) { // この判定で速度を表現
+                Move mv = this.dir.getMove();
+                this.pos[mv.getAxis()] += mv.getIncrement();
+                this.updateTilePos();
+                this.updatePresentation();
             }
     }
 
     public abstract void move();
     
-    // 位置移動
-    public void k() {
-        float b = Playfield.getPlayfieldX(this.pos[1] + this.posDelta[1]);
-        float c = Playfield.getPlayfieldY(this.pos[0] + this.posDelta[0]);
-        if (this.elPos[0] != c || this.elPos[1] != b) {
-            this.elPos[0] = c;
-            this.elPos[1] = b;
-            Presentation el = getPresentation();
-            el.setLeft(b);
-            el.setTop(c);
-        }
-    }
-    
-    abstract int[] getImagePos();
-    
-
-    // Actor表示画像切り替え(アニメーション対応)&位置移動
-    public void b() {
-        this.k(); //位置移動 
+    // Actor表示画像切り替え(アニメーション対応)&表示位置更新
+    public void updatePresentation() {
+        this.updateElPos(); //位置移動 
         int[] b = { 0, 0 };
-        b = g.getGameplayMode() == GameplayMode.GAMEOVER
-            || g.getGameplayMode() == GameplayMode.KILL_SCREEN
+        b = game.getGameplayMode() == GameplayMode.GAMEOVER
+            || game.getGameplayMode() == GameplayMode.KILL_SCREEN
                 ? new int[] { 0, 3 }
                 : getImagePos();
         if (this.elBackgroundPos[0] != b[0] || this.elBackgroundPos[1] != b[1]) {
@@ -167,9 +146,24 @@ public abstract class Actor extends BaseEntity {
         }
     }
     
+    // 表示位置更新
+    public void updateElPos() {
+        float b = PacmanGame.getFieldX(this.pos[1] + this.posDelta[1]);
+        float c = PacmanGame.getFieldY(this.pos[0] + this.posDelta[0]);
+        if (this.elPos[0] != c || this.elPos[1] != b) {
+            this.elPos[0] = c;
+            this.elPos[1] = b;
+            Presentation el = getPresentation();
+            el.setLeft(b);
+            el.setTop(c);
+        }
+    }
+    
+    abstract int[] getImagePos();
+    
     @Override
-    void doDraw(Canvas c) {
-        getPresentation().drawBitmap(c);
+    void doDraw(Canvas canvas) {
+        getPresentation().drawBitmap(canvas);
     }
 
     public int[] getTilePos() {

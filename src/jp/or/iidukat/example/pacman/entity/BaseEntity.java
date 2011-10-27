@@ -13,21 +13,16 @@ import android.graphics.RectF;
 abstract class BaseEntity implements Entity {
     
     private final Presentation presentation;
-    private final List<Entity> drawQueue;
+    private final List<Entity> children;
     private Entity parent;
 
-    public BaseEntity(Bitmap sourceImage) {
+    BaseEntity(Bitmap sourceImage) {
         this(sourceImage, false);
     }
 
-    public BaseEntity(Bitmap sourceImage, boolean parent) {
+    BaseEntity(Bitmap sourceImage, boolean parent) {
         presentation = new PresentationImpl(sourceImage);
-        drawQueue = parent ? new ArrayList<Entity>() : null;
-    }
-    
-    @Override
-    public float[] getAbsolutePos() {
-        return presentation.getAbsolutePos();
+        children = parent ? new ArrayList<Entity>() : null;
     }
     
     @Override
@@ -41,6 +36,11 @@ abstract class BaseEntity implements Entity {
     }
     
     @Override
+    public float[] getAbsolutePos() {
+        return presentation.getAbsolutePos();
+    }
+    
+    @Override
     public Entity getParent() {
         return parent;
     }
@@ -48,7 +48,7 @@ abstract class BaseEntity implements Entity {
     @Override
     public void setParent(Entity parent) {
         this.parent = parent;
-        parent.addToDrawQueue(this);
+        this.parent.addChild(this);
     }
     
     @Override
@@ -60,7 +60,12 @@ abstract class BaseEntity implements Entity {
     public void setVisibility(boolean visibility) {
         presentation.setVisibility(visibility);
     }
-
+    
+    @Override
+    public Presentation getPresentation() {
+        return presentation;
+    }
+    
     @Override
     public void draw(Canvas canvas) {
         if (!isVisible()) {
@@ -69,9 +74,9 @@ abstract class BaseEntity implements Entity {
         
         doDraw(canvas);
         
-        if (drawQueue != null) {
-            for (Entity entity : drawQueue) {
-                entity.draw(canvas);
+        if (children != null) {
+            for (Entity child : children) {
+                child.draw(canvas);
             }
         }
     }
@@ -79,22 +84,22 @@ abstract class BaseEntity implements Entity {
     abstract void doDraw(Canvas canvas);
     
     @Override
-    public boolean addToDrawQueue(Entity entity) {
-        boolean added = drawQueue.add(entity);
+    public boolean addChild(Entity child) {
+        boolean added = children.add(child);
         if (added) {
-            Collections.sort(drawQueue);
+            Collections.sort(children);
         }
         return added;
     }
     
     @Override
-    public boolean removeFromDrawQueue(Entity entity) {
-        return drawQueue.remove(entity);
+    public boolean removeChild(Entity child) {
+        return children.remove(child);
     }
     
     @Override
-    public void clearDrawQueue() {
-        drawQueue.clear();
+    public void clearChildren() {
+        children.clear();
     }
     
     @Override
@@ -110,25 +115,20 @@ abstract class BaseEntity implements Entity {
         }
     }
     
-    @Override
-    public Presentation getPresentation() {
-        return presentation;
-    }
-
-    public class PresentationImpl implements Presentation {
-        private int width;
+    private class PresentationImpl implements Presentation {
         private int height;
-        private float left;
+        private int width;
         private float top;
-        private float leftOffset;
         private float topOffset;
+        private float left;
+        private float leftOffset;
         private float bgPosX;
         private float bgPosY;
         private int bgColor;
-        private boolean visibility = true;
+        private Paint paint = new Paint();
         private Rect src = new Rect();
         private RectF dest = new RectF();
-        private Paint paint = new Paint();
+        private boolean visibility = true;
         private int order;
         private final Bitmap sourceImage;
         
@@ -142,7 +142,201 @@ abstract class BaseEntity implements Entity {
         }
 
         @Override
-        public void drawBitmap(Canvas c) {
+        public int getHeight() {
+            return height;
+        }
+
+        @Override
+        public void setHeight(int height) {
+            this.height = height;
+        }
+
+        @Override
+        public int getWidth() {
+            return width;
+        }
+
+        @Override
+        public void setWidth(int width) {
+            this.width = width;
+        }
+
+        @Override
+        public float[] getAbsolutePos() {
+            Presentation p = this;
+            float[] pos = { 0, 0 };
+            do {
+                pos[0] += p.getTop();
+                pos[1] += p.getLeft();
+            } while (p != p.getParent()
+                        && (p = p.getParent()) != null);
+            return pos;
+        }
+
+        @Override
+        public float getTop() {
+            return top + topOffset;
+        }
+
+        @Override
+        public void setTop(float top) {
+            this.top = top;
+        }
+        
+        @Override
+        public float getTopOffset() {
+            return topOffset;
+        }
+        
+        @Override
+        public void setTopOffset(float topOffset) {
+            this.topOffset = topOffset;
+        }
+
+        @Override
+        public float getLeft() {
+            return left + leftOffset;
+        }
+
+        @Override
+        public void setLeft(float left) {
+            this.left = left;
+        }
+        
+        @Override
+        public float getLeftOffset() {
+            return leftOffset;
+        }
+        
+        @Override
+        public void setLeftOffset(float leftOffset) {
+            this.leftOffset = leftOffset;
+        }
+
+        @Override
+        public float getBgPosX() {
+            return bgPosX;
+        }
+
+        @Override
+        public void setBgPosX(float bgPosX) {
+            this.bgPosX = bgPosX;
+        }
+
+        @Override
+        public float getBgPosY() {
+            return bgPosY;
+        }
+
+        @Override
+        public void setBgPosY(float bgPosY) {
+            this.bgPosY = bgPosY;
+        }
+
+        @Override
+        public void prepareBkPos(int x, int y) {
+            bgPosX = getCorrectedSpritePos(x);
+            bgPosY = getCorrectedSpritePos(y);
+        }
+
+        @Override
+        public void changeBkPos(int x, int y, boolean correction) {
+            if (correction) {
+                bgPosX = getCorrectedSpritePos(x);
+                bgPosY = getCorrectedSpritePos(y);
+            } else {
+                bgPosX = x;
+                bgPosY = y;
+            }
+        }
+
+        private int getCorrectedSpritePos(int p) {
+            return p / 8 * 10 + 2;
+        }
+
+        @Override
+        public int getBgColor() {
+            return bgColor;
+        }
+
+        @Override
+        public void setBgColor(int bgColor) {
+            this.bgColor = bgColor;
+        }
+
+        @Override
+        public Paint getPaint() {
+            return paint;
+        }
+
+        @Override
+        public void setPaint(Paint paint) {
+            this.paint = paint;
+        }
+
+        @Override
+        public Rect getSrc() {
+            return src;
+        }
+
+        @Override
+        public void setSrc(Rect src) {
+            this.src = src;
+        }
+
+        @Override
+        public RectF getDest() {
+            return dest;
+        }
+
+        @Override
+        public void setDest(RectF dest) {
+            this.dest = dest;
+        }
+
+        @Override
+        public Presentation getParent() {
+            Entity parent = BaseEntity.this.parent;
+            if (parent == null) {
+            	return null;
+            } else {
+            	return parent.getPresentation();
+            }
+        }
+
+        @Override
+        public boolean isVisible() {
+            return visibility;
+        }
+
+        @Override
+        public void setVisibility(boolean visibility) {
+            this.visibility = visibility;
+        }
+
+        @Override
+        public int getOrder() {
+            return order;
+        }
+        
+        @Override
+        public void setOrder(int order) {
+            if (this.order != order) {
+                this.order = order;
+                BaseEntity parent = (BaseEntity) BaseEntity.this.parent;
+                if (parent != null && parent.children.contains(BaseEntity.this)) {
+                    Collections.sort(parent.children);
+                }
+            }
+        }
+        
+        @Override
+        public Bitmap getSourceImage() {
+            return sourceImage;
+        }
+
+        @Override
+        public void drawBitmap(Canvas canvas) {
 
             if (!adjust()) {
                 return;
@@ -158,11 +352,11 @@ abstract class BaseEntity implements Entity {
                     adjustedPos[0],
                     adjustedPos[1] + adjustedSize[1],
                     adjustedPos[0] + adjustedSize[0]);
-            c.drawBitmap(sourceImage, src, dest, null);
+            canvas.drawBitmap(sourceImage, src, dest, null);
         }
         
         @Override
-        public void drawRectShape(Canvas c) {
+        public void drawRectShape(Canvas canvas) {
             if (!adjust()) {
                 return;
             }
@@ -176,7 +370,7 @@ abstract class BaseEntity implements Entity {
             paint.setColor(bgColor);
             paint.setAlpha(0xff);
             
-            c.drawRect(dest, paint);
+            canvas.drawRect(dest, paint);
         }
         
         private boolean adjust() {
@@ -224,201 +418,7 @@ abstract class BaseEntity implements Entity {
             }
             return true;
         }
-
-        @Override
-        public int getWidth() {
-            return width;
-        }
-
-        @Override
-        public void setWidth(int width) {
-            this.width = width;
-        }
-
-        @Override
-        public int getHeight() {
-            return height;
-        }
-
-        @Override
-        public void setHeight(int height) {
-            this.height = height;
-        }
-
-        @Override
-        public float getLeft() {
-            return left + leftOffset;
-        }
-
-        @Override
-        public void setLeft(float left) {
-            this.left = left;
-        }
         
-        @Override
-        public float getLeftOffset() {
-            return leftOffset;
-        }
-        
-        @Override
-        public void setLeftOffset(float leftOffset) {
-            this.leftOffset = leftOffset;
-        }
-
-        @Override
-        public float getTop() {
-            return top + topOffset;
-        }
-
-        @Override
-        public void setTop(float top) {
-            this.top = top;
-        }
-        
-        @Override
-        public float getTopOffset() {
-            return topOffset;
-        }
-        
-        @Override
-        public void setTopOffset(float topOffset) {
-            this.topOffset = topOffset;
-        }
-
-        @Override
-        public float getBgPosX() {
-            return bgPosX;
-        }
-
-        @Override
-        public void setBgPosX(float bgPosX) {
-            this.bgPosX = bgPosX;
-        }
-
-        @Override
-        public float getBgPosY() {
-            return bgPosY;
-        }
-
-        @Override
-        public void setBgPosY(float bgPosY) {
-            this.bgPosY = bgPosY;
-        }
-
-        @Override
-        public int getBgColor() {
-            return bgColor;
-        }
-
-        @Override
-        public void setBgColor(int bgColor) {
-            this.bgColor = bgColor;
-        }
-
-        @Override
-        public boolean isVisible() {
-            return visibility;
-        }
-
-        @Override
-        public void setVisibility(boolean visibility) {
-            this.visibility = visibility;
-        }
-
-        @Override
-        public Rect getSrc() {
-            return src;
-        }
-
-        @Override
-        public void setSrc(Rect src) {
-            this.src = src;
-        }
-
-        @Override
-        public RectF getDest() {
-            return dest;
-        }
-
-        @Override
-        public void setDest(RectF dest) {
-            this.dest = dest;
-        }
-
-        @Override
-        public Paint getPaint() {
-            return paint;
-        }
-
-        @Override
-        public void setPaint(Paint paint) {
-            this.paint = paint;
-            
-        }
-
-        @Override
-        public int getOrder() {
-            return order;
-        }
-        
-        @Override
-        public void setOrder(int order) {
-            if (this.order != order) {
-                this.order = order;
-                BaseEntity parent = (BaseEntity) BaseEntity.this.getParent();
-                if (parent != null && parent.drawQueue.contains(BaseEntity.this)) {
-                    Collections.sort(parent.drawQueue);
-                }
-            }
-        }
-        
-        @Override
-        public Presentation getParent() {
-            Entity parent = BaseEntity.this.getParent();
-            if (parent == null) {
-            	return null;
-            } else {
-            	return parent.getPresentation();
-            }
-        }
-
-        @Override
-        public float[] getAbsolutePos() {
-            Presentation b = this;
-            float[] c = { 0, 0 };
-            do {
-                c[0] += b.getTop();
-                c[1] += b.getLeft();
-            } while (b != b.getParent()
-                        && (b = b.getParent()) != null);
-            return c;
-        }
-        
-        @Override
-        public void prepareBkPos(int x, int y) {
-            bgPosX = getCorrectedSpritePos(x);
-            bgPosY = getCorrectedSpritePos(y);
-        }
-
-        @Override
-        public void changeBkPos(int x, int y, boolean f) {
-            if (f) {
-                bgPosX = getCorrectedSpritePos(x);
-                bgPosY = getCorrectedSpritePos(y);
-            } else {
-                bgPosX = x;
-                bgPosY = y;
-            }
-        }
-
-        private int getCorrectedSpritePos(int p) {
-            return p / 8 * 10 + 2;
-        }
-
-        @Override
-        public Bitmap getSourceImage() {
-            return sourceImage;
-        }
     }
     
 }

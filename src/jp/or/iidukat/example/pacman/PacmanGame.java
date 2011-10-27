@@ -806,7 +806,7 @@ public class PacmanGame {
 
     private int modeScoreMultiplier;
     private boolean fruitShown;
-    private int ghostBeingEatenId;
+    private Ghost ghostBeingEaten;
 
     private boolean pacManSound = true;
 
@@ -841,10 +841,10 @@ public class PacmanGame {
     }
 
     private void restartActors() {
-        getPacman().A();
+        getPacman().arrange();
 
         for (Actor ghost : getGhosts())
-            ghost.A();
+            ghost.arrange();
     }
 
     private void createPlayfield() {
@@ -877,8 +877,8 @@ public class PacmanGame {
         float cy = y - offset[0];
         
         Pacman pacman = getPacman();
-        float px = Playfield.getPlayfieldX(pacman.getPos()[1] + pacman.getPosDelta()[1]) + 48;
-        float py = Playfield.getPlayfieldY(pacman.getPos()[0] + pacman.getPosDelta()[0]) + 32;
+        float px = getFieldX(pacman.getPos()[1] + pacman.getPosDelta()[1]) + 48;
+        float py = getFieldY(pacman.getPos()[0] + pacman.getPosDelta()[0]) + 32;
         float xdiff = Math.abs(cx - px);
         float ydiff = Math.abs(cy - py);
         if (xdiff > 8 && ydiff < xdiff) {
@@ -978,7 +978,7 @@ public class PacmanGame {
         updateActorPositions();
         switchMainGhostMode(GhostMode.SCATTER, true);
         for (int c = 1; c < 4; c++)
-            getGhosts()[c].a(GhostMode.IN_PEN);
+            getGhosts()[c].updateMode(GhostMode.IN_PEN);
         dotEatingChannel = 0;
         dotEatingSoundPart = 1;
 
@@ -1080,7 +1080,7 @@ public class PacmanGame {
                             && ghost.getMode() != b) {
                         ghost.setReverseDirectionsNext(true);
                     }
-                    ghost.a(b);
+                    ghost.updateMode(b);
                 }
             }
 
@@ -1088,7 +1088,7 @@ public class PacmanGame {
             pacman.setFullSpeed(currentPlayerSpeed);
             pacman.setDotEatingSpeed(currentDotEatingSpeed);
             pacman.setTunnelSpeed(currentPlayerSpeed);
-            pacman.d();
+            pacman.updateSpeed();
         }
     }
 
@@ -1128,13 +1128,14 @@ public class PacmanGame {
     public void dotEaten(int[] c) {
         getPlayfieldEl().decrementDotsRemaining();
         getPlayfieldEl().incrementDotsEaten();
-        getPacman().c(CurrentSpeed.PACMAN_EATING_DOT);
+        getPacman().updateSpeed(CurrentSpeed.PACMAN_EATING_DOT);
         playDotEatingSound();
         if (getPathElement(c[1], c[0]).getDot() == Dot.ENERGIZER) { // パワーエサを食べたとき
             switchMainGhostMode(GhostMode.FRIGHTENED, false);
             addToScore(50);
-        } else
+        } else {
             addToScore(10); // 普通のエサ
+        }
 
         getPlayfieldEl().clearDot(c[1], c[0]);
         updateCruiseElroySpeed();
@@ -1180,7 +1181,7 @@ public class PacmanGame {
     private void updateActorTargetPositions() {
         Ghost[] ghosts = getGhosts();
         for (Ghost ghost : ghosts)
-            ghost.B();
+            ghost.updateTargetPos();
     }
 
     private void moveActors() {
@@ -1190,15 +1191,15 @@ public class PacmanGame {
             actor.move();
     }
 
-    private void ghostDies(int b) {
+    private void ghostDies(int index) {
         playSound("eating_ghost", 0);
         addToScore(200 * modeScoreMultiplier);
         modeScoreMultiplier *= 2;
-        ghostBeingEatenId = b + 1; // TODO: 食べられたゴーストの判定方法を見直す
+        ghostBeingEaten = getPlayfieldEl().getGhosts()[index];
         changeGameplayMode(GameplayMode.GHOST_DIED);
     }
 
-    private void playerDies() {
+    private void pacmanDies() {
         changeGameplayMode(GameplayMode.PLAYER_DYING);
     }
 
@@ -1206,24 +1207,24 @@ public class PacmanGame {
         tilesChanged = false;
         Pacman pacman = getPacman();
         Ghost[] ghosts = getGhosts();
-        for (int b = 0; b < 4; b++)
-            if (ghosts[b].getTilePos()[0] == pacman.getTilePos()[0]
-                    && ghosts[b].getTilePos()[1] == pacman.getTilePos()[1])
-                if (ghosts[b].getMode() == GhostMode.FRIGHTENED) {
-                    ghostDies(b);
+        for (int i = 0; i < 4; i++)
+            if (ghosts[i].getTilePos()[0] == pacman.getTilePos()[0]
+                    && ghosts[i].getTilePos()[1] == pacman.getTilePos()[1])
+                if (ghosts[i].getMode() == GhostMode.FRIGHTENED) {
+                    ghostDies(i);
                     return;
-                } else if (ghosts[b].getMode() != GhostMode.EATEN
-                        && ghosts[b].getMode() != GhostMode.IN_PEN
-                        && ghosts[b].getMode() != GhostMode.LEAVING_PEN
-                        && ghosts[b].getMode() != GhostMode.RE_LEAVING_FROM_PEN
-                        && ghosts[b].getMode() != GhostMode.ENTERING_PEN)
-                    playerDies();
+                } else if (ghosts[i].getMode() != GhostMode.EATEN
+                        && ghosts[i].getMode() != GhostMode.IN_PEN
+                        && ghosts[i].getMode() != GhostMode.LEAVING_PEN
+                        && ghosts[i].getMode() != GhostMode.RE_LEAVING_FROM_PEN
+                        && ghosts[i].getMode() != GhostMode.ENTERING_PEN) {
+                    pacmanDies();
+                }
     }
 
     public void updateCruiseElroySpeed() {
-        Ghost[] ghosts = getGhosts();
         float b = levelConfig.ghostSpeed * 0.8f;
-        if (!lostLifeOnThisLevel || ghosts[3].getMode() != GhostMode.IN_PEN) {
+        if (!lostLifeOnThisLevel || getClyde().getMode() != GhostMode.IN_PEN) {
             LevelConfig c = levelConfig;
             if (getPlayfieldEl().getDotsRemaining() < c.elroyDotsLeftPart2)
                 b = c.elroySpeedPart2 * 0.8f;
@@ -1232,7 +1233,7 @@ public class PacmanGame {
         }
         if (b != cruiseElroySpeed) {
             cruiseElroySpeed = b;
-            ghosts[0].d(); // アカベエの速度を更新
+            getBlinky().updateSpeed(); // アカベエの速度を更新
         }
     }
 
@@ -1266,11 +1267,11 @@ public class PacmanGame {
     private void changeGameplayMode(GameplayMode b) {
         gameplayMode = b;
         if (b != GameplayMode.CUTSCENE) {
-            getPacman().b();
+            getPacman().updatePresentation();
 
             Ghost[] ghosts = getGhosts();
             for (Actor actor : ghosts)
-                actor.b();
+                actor.updatePresentation();
         }
 
         switch (b) {
@@ -1400,7 +1401,7 @@ public class PacmanGame {
             for (int c = 0; c < cutsceneActors.length; c++) {
                 CutsceneActor d = cutsceneActors[c];
                 d.setupSequence();
-                d.b();
+                d.updatePresentation();
             }
         }
     }
@@ -1419,10 +1420,10 @@ public class PacmanGame {
     }
 
     private void updateActorPositions() {
-        getPacman().k();
+        getPacman().updateElPos();
         Ghost[] ghosts = getGhosts();
         for (Actor actor : ghosts)
-            actor.k();
+            actor.updateElPos();
     }
 
     private void blinkEnergizers() {
@@ -1443,10 +1444,10 @@ public class PacmanGame {
             switch (gameplayMode) {
             case PLAYER_DYING:
             case PLAYER_DIED:
-                getPacman().b();
+                getPacman().updatePresentation();
                 Ghost[] ghosts = getGhosts();
                 for (Actor actor : ghosts)
-                    actor.b();
+                    actor.updatePresentation();
                 break;
             case LEVEL_COMPLETED:
                 getPlayfieldEl().blink(gameplayModeTime, timing[11]);
@@ -1461,8 +1462,8 @@ public class PacmanGame {
                     changeGameplayMode(GameplayMode.ORDINARY_PLAYING);
                     ghostEyesCount++;
                     playAmbientSound();
-                    ghosts[ghostBeingEatenId - 1].resetDisplayOrder();
-                    ghosts[ghostBeingEatenId - 1].a(GhostMode.EATEN);
+                    ghostBeingEaten.resetDisplayOrder();
+                    ghostBeingEaten.updateMode(GhostMode.EATEN);
                     // ブルーモードのモンスターがいない場合、 ブルーモードを終了させる
                     boolean c = false;
                     for (Ghost ghost : ghosts)
@@ -1921,23 +1922,11 @@ public class PacmanGame {
     }
     
     public Ghost getBlinky() {
-        return getGhost(0);
+        return getPlayfieldEl().getBlinky();
     }
 
     public Ghost getClyde() {
-        return getGhost(3);
-    }
-    
-    private Ghost getGhost(int index) {
-        if (canvasEl == null) {
-            return null;
-        }
-        
-        Playfield playfieldEl = canvasEl.getPlayfield();
-        if (playfieldEl == null) {
-            return null;
-        }
-        return playfieldEl.getGhosts()[index];
+        return getPlayfieldEl().getClyde();
     }
     
     private Fruit getFruitEl() {
@@ -2018,8 +2007,8 @@ public class PacmanGame {
         return lastMainGhostMode;
     }
 
-    public int getGhostBeingEatenId() {
-        return ghostBeingEatenId;
+    public Ghost getGhostBeingEaten() {
+        return ghostBeingEaten;
     }
 
     public int getModeScoreMultiplier() {
@@ -2073,5 +2062,12 @@ public class PacmanGame {
     public float getCruiseElroySpeed() {
         return cruiseElroySpeed;
     }
+    
+    public static float getFieldX(float x) {
+        return x + -32;
+    }
 
+    public static float getFieldY(float y) {
+        return y + 0;
+    }
 }

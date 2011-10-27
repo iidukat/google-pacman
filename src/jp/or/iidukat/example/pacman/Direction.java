@@ -96,4 +96,5 @@ public enum Direction {
         public int getIncrement() {
             return increment;
         }
-    }}
+    }
+}

@@ -28,8 +28,8 @@ public class Blinky extends Ghost {
         MOVES_IN_PEN = Collections.unmodifiableMap(m);
     }
 
-    public Blinky(Bitmap sourceImage, int b, PacmanGame g) {
-        super(sourceImage, b, g);
+    public Blinky(Bitmap sourceImage, PacmanGame game) {
+        super(sourceImage, game);
     }
 
     @Override
@@ -39,12 +39,12 @@ public class Blinky extends Ghost {
     
     // ターゲットポジションを決定
     @Override
-    public void B() {
+    public void updateTargetPos() {
         // Playerを追尾する
-        Actor b = g.getPacman();
-        if (g.getDotsRemaining() < g.getLevels().getElroyDotsLeftPart1()
+        Actor b = game.getPacman();
+        if (game.getDotsRemaining() < game.getLevels().getElroyDotsLeftPart1()
                 && this.mode == GhostMode.SCATTER
-                && (!g.isLostLifeOnThisLevel() || g.getClyde().mode != GhostMode.IN_PEN)) {
+                && (!game.isLostLifeOnThisLevel() || game.getClyde().mode != GhostMode.IN_PEN)) {
             this.targetPos = new float[] { b.tilePos[0], b.tilePos[1] };
         } else if (this.mode == GhostMode.CHASE) {
             this.targetPos = new float[] { b.tilePos[0], b.tilePos[1] };
@@ -55,7 +55,7 @@ public class Blinky extends Ghost {
     float getNormalSpeed() {
         return (this.mode == GhostMode.SCATTER
                     || this.mode == GhostMode.CHASE)
-                    ? g.getCruiseElroySpeed()
+                    ? game.getCruiseElroySpeed()
                     : this.fullSpeed;
     }
     

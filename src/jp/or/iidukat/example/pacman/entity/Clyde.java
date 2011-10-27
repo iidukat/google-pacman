@@ -46,8 +46,8 @@ public class Clyde extends Ghost {
         MOVES_IN_PEN = Collections.unmodifiableMap(m);
     }
 
-    public Clyde(Bitmap sourceImage, int b, PacmanGame g) {
-        super(sourceImage, b, g);
+    public Clyde(Bitmap sourceImage, PacmanGame game) {
+        super(sourceImage, game);
     }
     
     @Override
@@ -57,13 +57,13 @@ public class Clyde extends Ghost {
 
     // ターゲットポジションを決定
     @Override
-    public void B() {
+    public void updateTargetPos() {
         if (this.mode != GhostMode.CHASE) {
             return;
         }
         // Playerと距離が近ければ追尾する。遠ければScatterモードでの受け持ち場所を目指す。
-        Actor b = g.getPacman();
-        float distance = Playfield.getDistance(b.tilePos, this.tilePos);
+        Actor b = game.getPacman();
+        float distance = getDistance(b.tilePos, this.tilePos);
         this.targetPos = distance > 64
             ? new float[] { b.tilePos[0], b.tilePos[1] }
             : this.scatterPos;

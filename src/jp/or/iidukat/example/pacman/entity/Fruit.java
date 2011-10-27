@@ -1,9 +1,13 @@
 package jp.or.iidukat.example.pacman.entity;
 
+import jp.or.iidukat.example.pacman.PacmanGame;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 
 public class Fruit extends BaseEntity {
+    
+    static final int WIDTH = 32;
+    static final int HEIGHT = 16;
     
     private final int level;
     
@@ -12,12 +16,12 @@ public class Fruit extends BaseEntity {
         this.level = level;
     }
     
-    void initOnPlayfield(int[] pos) {
+    void initOnPlayfield(int x, int y) {
         Presentation p = getPresentation();
-        p.setWidth(32);
-        p.setHeight(16);
-        p.setLeft(Playfield.getPlayfieldX(pos[1]));
-        p.setTop(Playfield.getPlayfieldY(pos[0]));
+        p.setWidth(WIDTH);
+        p.setHeight(HEIGHT);
+        p.setLeft(PacmanGame.getFieldX(x));
+        p.setTop(PacmanGame.getFieldY(y));
         p.setLeftOffset(-8);
         p.setTopOffset(-4);
         p.prepareBkPos(-32, -16);
@@ -25,11 +29,11 @@ public class Fruit extends BaseEntity {
     }
     
     void initOnLevel(int top) {
-        int[] fs = getSprite();
+        int[] bgPos = getSprite();
         Presentation p = getPresentation();
-        p.prepareBkPos(fs[0], fs[1]);
-        p.setWidth(32);
-        p.setHeight(16);
+        p.prepareBkPos(bgPos[0], bgPos[1]);
+        p.setWidth(WIDTH);
+        p.setHeight(HEIGHT);
         p.setTop(top);
         p.setOrder(105);
     }
@@ -39,29 +43,29 @@ public class Fruit extends BaseEntity {
     }
 
     public void show() {
-        int[] b = getSprite();
-        getPresentation().changeBkPos(b[0], b[1], true);
+        int[] bgPos = getSprite();
+        getPresentation().changeBkPos(bgPos[0], bgPos[1], true);
     }
 
     public void eaten() {
-        int[] c = getScoreSprite();
-        getPresentation().changeBkPos(c[0], c[1], true);
+        int[] bgPos = getScoreSprite();
+        getPresentation().changeBkPos(bgPos[0], bgPos[1], true);
     }
     
     private int[] getSprite() {
-        int c = level <= 4 ? 128 : 160;
-        int b = 128 + 16 * ((level - 1) % 4);
-        return new int[] { c, b };
+        int bgPosX = level <= 4 ? 128 : 160;
+        int bgPosY = 128 + 16 * ((level - 1) % 4);
+        return new int[] { bgPosX, bgPosY };
     }
 
     private int[] getScoreSprite() {
-        int c = 128;
-        int b = 16 * (level - 1);
-        return new int[] { c, b };
+        int bgPosX = 128;
+        int bgPosY = 16 * (level - 1);
+        return new int[] { bgPosX, bgPosY };
     }    
     
     @Override
-    void doDraw(Canvas c) {
-        getPresentation().drawBitmap(c);
+    void doDraw(Canvas canvas) {
+        getPresentation().drawBitmap(canvas);
     }
 }

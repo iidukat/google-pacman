@@ -42,14 +42,6 @@ public class CutsceneField extends BaseEntity {
        actors = cas.toArray(new CutsceneActor[0]);
     }
     
-    public static float getFieldX(float b) {
-        return b + -32;
-    }
-
-    public static float getFieldY(float b) {
-        return b + 0;
-    }
-    
     @Override
     void doDraw(Canvas c) {
         getPresentation().drawRectShape(c);
@@ -58,4 +50,5 @@ public class CutsceneField extends BaseEntity {
     public CutsceneActor[] getActors() {
         return actors;
     }
+    
 }

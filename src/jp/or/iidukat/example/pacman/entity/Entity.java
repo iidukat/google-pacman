@@ -8,54 +8,54 @@ import android.graphics.RectF;
 
 public interface Entity extends Comparable<Entity>{
 
-    float[] getAbsolutePos();
     int getHeight();
     int getWidth();
+    float[] getAbsolutePos();
     Entity getParent();
-    void setParent(Entity entity);
+    void setParent(Entity parent);
     boolean isVisible();
     void setVisibility(boolean visibility);
     Presentation getPresentation();
     void draw(Canvas canvas);
-    boolean addToDrawQueue(Entity entity);
-    boolean removeFromDrawQueue(Entity entity);
-    void clearDrawQueue();
+    boolean addChild(Entity child);
+    boolean removeChild(Entity child);
+    void clearChildren();
     
     public interface Presentation {
-        void drawBitmap(Canvas c);
-        void drawRectShape(Canvas c);
-        int getWidth();
-        void setWidth(int width);
         int getHeight();
         void setHeight(int height);
-        float getLeft();
-        void setLeft(float left);
-        float getLeftOffset();
-        void setLeftOffset(float leftOffset);
+        int getWidth();
+        void setWidth(int width);
+        float[] getAbsolutePos();
         float getTop();
         void setTop(float top);
         float getTopOffset();
         void setTopOffset(float topOffset);
+        float getLeft();
+        void setLeft(float left);
+        float getLeftOffset();
+        void setLeftOffset(float leftOffset);
         float getBgPosX();
         void setBgPosX(float bgPosX);
         float getBgPosY();
         void setBgPosY(float bgPosY);
+        void prepareBkPos(int x, int y);
+        void changeBkPos(int x, int y, boolean f);
         int getBgColor();
         void setBgColor(int bgColor);
-        boolean isVisible();
-        void setVisibility(boolean visibility);
+        Paint getPaint();
+        void setPaint(Paint paint);
         Rect getSrc();
         void setSrc(Rect src);
         RectF getDest();
         void setDest(RectF dest);
-        Paint getPaint();
-        void setPaint(Paint paint);
+        Presentation getParent();
+        boolean isVisible();
+        void setVisibility(boolean visibility);
         int getOrder();
         void setOrder(int order);
-        Presentation getParent();
-        float[] getAbsolutePos();
-        void prepareBkPos(int x, int y);
-        void changeBkPos(int x, int y, boolean f);
         Bitmap getSourceImage();
+        void drawBitmap(Canvas canvas);
+        void drawRectShape(Canvas canvas);
     }
 }

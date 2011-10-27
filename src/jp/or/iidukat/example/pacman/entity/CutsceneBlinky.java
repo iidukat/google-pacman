@@ -90,13 +90,13 @@ public class CutsceneBlinky extends CutsceneActor {
     
     @Override
     Cutscene getCutscene() {
-        return CUTSCENES.get(Integer.valueOf(g.getCutsceneId()));
+        return CUTSCENES.get(Integer.valueOf(game.getCutsceneId()));
     }
 
     @Override
     void setMode(Cutscene cutscene) {
         Sequence s =
-            (CutsceneBlinky.Sequence) cutscene.sequences[g.getCutsceneSequenceId()]; 
+            (CutsceneBlinky.Sequence) cutscene.sequences[game.getCutsceneSequenceId()]; 
         mode = s.mode;
         
     }
@@ -112,24 +112,24 @@ public class CutsceneBlinky extends CutsceneActor {
             b = 0;
             c = 8;
             // ブルーモード時間切れ間近の青白明滅
-            if (g.getFrightModeTime() < g.getLevels().getFrightTotalTime() - g.getLevels().getFrightTime()
-                    && FloatMath.floor(g.getFrightModeTime() / g.getTiming()[1]) % 2 == 0)
+            if (game.getFrightModeTime() < game.getLevels().getFrightTotalTime() - game.getLevels().getFrightTime()
+                    && FloatMath.floor(game.getFrightModeTime() / game.getTiming()[1]) % 2 == 0)
                 b += 2;
     
-            b += (int) (Math.floor(g.getGlobalTime() / 16) % 2); // ブルーモードの画像切り替え
+            b += (int) (Math.floor(game.getGlobalTime() / 16) % 2); // ブルーモードの画像切り替え
             break;
         case TORN_CLOTH:
             b = 6;
             c = 8;
-            b += (int) (Math.floor(g.getGlobalTime() / 16) % 2);
+            b += (int) (Math.floor(game.getGlobalTime() / 16) % 2);
             break;
         case BUG:
             b = 6;
             c = 9;
-            c += (int) (Math.floor(g.getGlobalTime() / 16) % 2);
+            c += (int) (Math.floor(game.getGlobalTime() / 16) % 2);
             break;
         case STUCK:
-            b = g.getCutsceneSequenceId() == 3 ? 6 : 7;
+            b = game.getCutsceneSequenceId() == 3 ? 6 : 7;
             c = 11;
             break;
         default: // 通常時の画像表示
@@ -148,8 +148,8 @@ public class CutsceneBlinky extends CutsceneActor {
                 break;
             }
             c = 4;
-            if (getSpeed() > 0 || g.getGameplayMode() != GameplayMode.CUTSCENE)
-                b += (int) (Math.floor(g.getGlobalTime() / 16) % 2);
+            if (getSpeed() > 0 || game.getGameplayMode() != GameplayMode.CUTSCENE)
+                b += (int) (Math.floor(game.getGlobalTime() / 16) % 2);
         }
         return new int[] { c, b };
     }
