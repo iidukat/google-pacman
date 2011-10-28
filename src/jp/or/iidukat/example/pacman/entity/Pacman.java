@@ -9,7 +9,7 @@ import jp.or.iidukat.example.pacman.entity.Playfield.PathElement;
 import android.graphics.Bitmap;
 import android.util.FloatMath;
 
-public class Pacman extends Actor {
+public class Pacman extends PlayfieldActor {
 
     private static final InitPosition INIT_POS =
         InitPosition.createPlayerInitPosition(39.5f, 15, Direction.LEFT);

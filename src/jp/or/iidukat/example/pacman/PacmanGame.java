@@ -7,8 +7,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import jp.or.iidukat.example.pacman.entity.Actor;
-import jp.or.iidukat.example.pacman.entity.Actor.CurrentSpeed;
+import jp.or.iidukat.example.pacman.entity.PlayfieldActor;
+import jp.or.iidukat.example.pacman.entity.PlayfieldActor.CurrentSpeed;
 import jp.or.iidukat.example.pacman.entity.CutsceneActor;
 import jp.or.iidukat.example.pacman.entity.CutsceneBlinky;
 import jp.or.iidukat.example.pacman.entity.CutsceneField;
@@ -843,7 +843,7 @@ public class PacmanGame {
     private void restartActors() {
         getPacman().arrange();
 
-        for (Actor ghost : getGhosts())
+        for (PlayfieldActor ghost : getGhosts())
             ghost.arrange();
     }
 
@@ -1189,7 +1189,7 @@ public class PacmanGame {
     private void moveActors() {
         getPacman().move();
         Ghost[] ghosts = getGhosts();
-        for (Actor actor : ghosts)
+        for (PlayfieldActor actor : ghosts)
             actor.move();
     }
 
@@ -1272,7 +1272,7 @@ public class PacmanGame {
             getPacman().updatePresentation();
 
             Ghost[] ghosts = getGhosts();
-            for (Actor actor : ghosts)
+            for (PlayfieldActor actor : ghosts)
                 actor.updatePresentation();
         }
 
@@ -1424,7 +1424,7 @@ public class PacmanGame {
     private void updateActorPositions() {
         getPacman().updateElPos();
         Ghost[] ghosts = getGhosts();
-        for (Actor actor : ghosts)
+        for (PlayfieldActor actor : ghosts)
             actor.updateElPos();
     }
 
@@ -1448,7 +1448,7 @@ public class PacmanGame {
             case PLAYER_DIED:
                 getPacman().updatePresentation();
                 Ghost[] ghosts = getGhosts();
-                for (Actor actor : ghosts)
+                for (PlayfieldActor actor : ghosts)
                     actor.updatePresentation();
                 break;
             case LEVEL_COMPLETED:

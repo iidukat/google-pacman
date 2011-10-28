@@ -56,7 +56,7 @@ public class Pinky extends Ghost {
             
         }
         // Playerを先回りする
-        Actor b = game.getPacman();
+        PlayfieldActor b = game.getPacman();
         Move c = b.dir.getMove();
         this.targetPos = new float[] { b.tilePos[0], b.tilePos[1] };
         this.targetPos[c.getAxis()] += 32 * c.getIncrement();

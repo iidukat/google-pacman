@@ -10,7 +10,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.util.FloatMath;
 
-public abstract class Actor extends BaseEntity {
+public abstract class PlayfieldActor extends BaseEntity {
 
     static final int DEFAULT_DISPLAY_ORDER = 110;
     
@@ -78,7 +78,7 @@ public abstract class Actor extends BaseEntity {
     float tunnelSpeed;
     Boolean[] speedIntervals;
 
-    public Actor(Bitmap sourceImage, PacmanGame game) {
+    public PlayfieldActor(Bitmap sourceImage, PacmanGame game) {
         super(sourceImage);
         this.game = game;
     }

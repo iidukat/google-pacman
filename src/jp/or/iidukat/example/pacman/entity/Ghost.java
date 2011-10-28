@@ -8,7 +8,7 @@ import jp.or.iidukat.example.pacman.entity.Playfield.PathElement;
 import android.graphics.Bitmap;
 import android.util.FloatMath;
 
-public abstract class Ghost extends Actor {
+public abstract class Ghost extends PlayfieldActor {
 
     public static enum GhostMode {
         NONE(0), CHASE(1), SCATTER(2), FRIGHTENED(4), 

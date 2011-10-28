@@ -64,9 +64,9 @@ public class Inky extends Ghost {
         }
         
         // PlayerをBLINKYと挟み撃ちにする
-        Actor b = game.getPacman();
+        PlayfieldActor b = game.getPacman();
         Move c = b.dir.getMove();
-        Actor d = game.getBlinky();
+        PlayfieldActor d = game.getBlinky();
         float[] f = new float[] { b.tilePos[0], b.tilePos[1] };
         f[c.getAxis()] += 16 * c.getIncrement();
         if (b.dir == Direction.UP) f[1] -= 16;
