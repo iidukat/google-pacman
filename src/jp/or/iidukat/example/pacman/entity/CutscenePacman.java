@@ -98,7 +98,7 @@ public class CutscenePacman extends CutsceneActor {
     int[] getImagePos() {
         int b = 0;
         int c = 0;
-        Direction d = this.getDir();
+        Direction d = this.dir;
         if (Mode.BIG == mode) {
             b = 14;
             c = 0;
@@ -128,7 +128,7 @@ public class CutscenePacman extends CutsceneActor {
                 break;
             }
             b = (int) (Math.floor(game.getGlobalTime() * 0.3) % 4);
-            if (b == 3 && getDir() == Direction.NONE) b = 0;
+            if (b == 3 && dir == Direction.NONE) b = 0;
             if (b == 2) b = 0;
             if (b == 3) {
                 b = 2;

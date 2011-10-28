@@ -7,13 +7,10 @@ import jp.or.iidukat.example.pacman.PacmanGame.GameplayMode;
 import jp.or.iidukat.example.pacman.entity.Playfield.PathElement;
 import jp.or.iidukat.example.pacman.entity.Playfield.PathElement.Dot;
 import android.graphics.Bitmap;
-import android.graphics.Canvas;
 import android.util.FloatMath;
 
-public abstract class PlayfieldActor extends BaseEntity {
+public abstract class PlayfieldActor extends Actor {
 
-    static final int DEFAULT_DISPLAY_ORDER = 110;
-    
     public static enum CurrentSpeed {
         NONE(-1), NORMAL(0), PACMAN_EATING_DOT(1), PASSING_TUNNEL(2);
         
@@ -26,7 +23,6 @@ public abstract class PlayfieldActor extends BaseEntity {
         public int getMode() {
             return mode;
         }
-
     }
     
     static class InitPosition {
@@ -62,15 +58,9 @@ public abstract class PlayfieldActor extends BaseEntity {
         }
     }
 
-    final PacmanGame game;
-    float[] pos;
     int[] tilePos;
     int[] lastGoodTilePos;
-    private float[] elPos;
-    private int[] elBackgroundPos;
-    Direction dir = Direction.NONE;
     Direction lastActiveDir = Direction.NONE;
-    float speed;
     float physicalSpeed;
     Direction nextDir = Direction.NONE;
     CurrentSpeed currentSpeed = CurrentSpeed.NONE;
@@ -79,27 +69,13 @@ public abstract class PlayfieldActor extends BaseEntity {
     Boolean[] speedIntervals;
 
     public PlayfieldActor(Bitmap sourceImage, PacmanGame game) {
-        super(sourceImage);
-        this.game = game;
+        super(sourceImage, game);
     }
     
     // Actorを再配置
     public abstract void arrange();
     
     abstract InitPosition getInitPosition();
-    
-    public final void init() {
-        Appearance a = getAppearance();
-        a.setWidth(16);
-        a.setHeight(16);
-        a.setTopOffset(-4);
-        a.setLeftOffset(-4);
-        a.prepareBkPos(0, 0);
-        a.setOrder(DEFAULT_DISPLAY_ORDER);
-        
-        this.elPos = new float[] {0, 0};
-        this.elBackgroundPos = new int[] {0, 0};
-    }
     
     // tilePosとposの差分が有意になったとき呼び出される
     final void enteringTile(int[] tilePos) {
@@ -224,109 +200,26 @@ public abstract class PlayfieldActor extends BaseEntity {
     abstract boolean supportShortcut();
     abstract void prepareShortcut();
 
-    public abstract void move();
-    
-    // Actor表示画像切り替え(アニメーション対応)&表示位置更新
-    public final void updateAppearance() {
-        this.updateElPos(); //位置移動 
-        int[] b = { 0, 0 };
-        b = game.getGameplayMode() == GameplayMode.GAMEOVER
-            || game.getGameplayMode() == GameplayMode.KILL_SCREEN
-                ? new int[] { 0, 3 }
-                : getImagePos();
-        if (this.elBackgroundPos[0] != b[0] || this.elBackgroundPos[1] != b[1]) {
-            this.elBackgroundPos[0] = b[0];
-            this.elBackgroundPos[1] = b[1];
-            b[0] *= 16;
-            b[1] *= 16;
-            getAppearance().changeBkPos(b[1], b[0], true);
-        }
-    }
-    
-    // 表示位置更新
-    public final void updateElPos() {
-        float b = getFieldX();
-        float c = getFieldY();
-        if (this.elPos[0] != c || this.elPos[1] != b) {
-            this.elPos[0] = c;
-            this.elPos[1] = b;
-            Appearance el = getAppearance();
-            el.setLeft(b);
-            el.setTop(c);
-        }
-    }
-    
-    abstract int[] getImagePos();
-    
     @Override
-    final void doDraw(Canvas canvas) {
-        getAppearance().drawBitmap(canvas);
+    final boolean canAppear() {
+        return game.getGameplayMode() != GameplayMode.GAMEOVER
+                && game.getGameplayMode() != GameplayMode.KILL_SCREEN;
     }
-
+    
     public final int[] getTilePos() {
         return tilePos;
-    }
-
-    public abstract float getFieldX();
-    public abstract float getFieldY();
-    
-    public final float[] getPos() {
-        return pos;
-    }
-
-    public final void setPos(float[] pos) {
-        this.pos = pos;
-    }
-
-    public final float[] getElPos() {
-        return elPos;
-    }
-
-    public final void setElPos(float[] elPos) {
-        this.elPos = elPos;
-    }
-
-    public final int[] getElBackgroundPos() {
-        return elBackgroundPos;
-    }
-
-    public final void setElBackgroundPos(int[] elBackgroundPos) {
-        this.elBackgroundPos = elBackgroundPos;
-    }
-
-    public final float getSpeed() {
-        return speed;
-    }
-
-    public final void setSpeed(float speed) {
-        this.speed = speed;
-    }
-    
-    public final float getFullSpeed() {
-        return fullSpeed;
     }
 
     public final void setFullSpeed(float fullSpeed) {
         this.fullSpeed = fullSpeed;
     }
 
-    public final float getTunnelSpeed() {
-        return tunnelSpeed;
-    }
-
     public final void setTunnelSpeed(float tunnelSpeed) {
         this.tunnelSpeed = tunnelSpeed;
     }
 
-    public final Direction getDir() {
-        return dir;
-    }
-
-    public final void setDir(Direction dir) {
-        this.dir = dir;
-    }
-    
     public final void resetDisplayOrder() {
         getAppearance().setOrder(DEFAULT_DISPLAY_ORDER);
     }
+    
 }

@@ -3,141 +3,55 @@ package jp.or.iidukat.example.pacman.entity;
 import jp.or.iidukat.example.pacman.Direction;
 import jp.or.iidukat.example.pacman.Direction.Move;
 import jp.or.iidukat.example.pacman.PacmanGame;
+import jp.or.iidukat.example.pacman.PacmanGame.GameplayMode;
 import jp.or.iidukat.example.pacman.entity.CutsceneActor.Cutscene.StartPoint;
 import android.graphics.Bitmap;
-import android.graphics.Canvas;
 
-public abstract class CutsceneActor extends BaseEntity {
+public abstract class CutsceneActor extends Actor {
 
-    static final int DEFAULT_DISPLAY_ORDER = 110;
-    
-    final PacmanGame game;
-    private float[] pos;
-    private float[] posDelta;
-    private float[] elPos;
-    private int[] elBackgroundPos;
-    private Direction dir = Direction.NONE;
-    private float speed;
+    float speed;
 
     CutsceneActor(Bitmap sourceImage, PacmanGame game) {
-        super(sourceImage);
-        this.game = game;
+        super(sourceImage, game);
     }
 
+    @Override
     public void init() {
-        Appearance a = getAppearance();
-        a.setWidth(16);
-        a.setHeight(16);
-        a.setLeftOffset(-4);
-        a.setTopOffset(-4);
-        a.prepareBkPos(0, 0);
-        a.setOrder(DEFAULT_DISPLAY_ORDER);
-        
-        elBackgroundPos = new int[] { 0, 0 };
-        elPos = new float[] { 0, 0 };
+        super.init();
         float[] start = getStartPoint(getCutscene());
         pos = new float[] { start[0] * 8, start[1] * 8 };
-        posDelta = new float[] { 0, 0 };
     }
 
-    float[] getStartPoint(Cutscene cutscene) {
+    final float[] getStartPoint(Cutscene cutscene) {
         StartPoint p = cutscene.startPoint;
         return new float[] { p.y, p.x };
     }
 
     @Override
-    void doDraw(Canvas canvas) {
-        getAppearance().drawBitmap(canvas);
-    }
-
-    public void move() {
+    public final void move() {
         Move d = dir.getMove();
         pos[d.getAxis()] += d.getIncrement() * speed;
         updateAppearance();
     }
 
-    // Actor表示画像切り替え(アニメーション対応)&位置移動
-    public void updateAppearance() {
-        this.updateElPos(); // 位置移動
-        int[] b = { 0, 0 };
-        b = getImagePos();
-        if (this.elBackgroundPos[0] != b[0] || this.elBackgroundPos[1] != b[1]) {
-            this.elBackgroundPos[0] = b[0];
-            this.elBackgroundPos[1] = b[1];
-            b[0] *= 16;
-            b[1] *= 16;
-            getAppearance().changeBkPos(b[1], b[0], true);
-        }
+    @Override
+    final boolean canAppear() {
+        return true;
     }
-
-    // 位置移動
-    public void updateElPos() {
-        float b = PacmanGame.getFieldX(this.pos[1] + this.posDelta[1]);
-        float c = PacmanGame.getFieldY(this.pos[0] + this.posDelta[0]);
-        if (this.elPos[0] != c || this.elPos[1] != b) {
-            this.elPos[0] = c;
-            this.elPos[1] = b;
-            Appearance el = getAppearance();
-            el.setLeft(b);
-            el.setTop(c);
-        }
+    
+    @Override
+    public final float getFieldX() {
+        return PacmanGame.getFieldX(pos[1]);
     }
-
-    int[] getImagePos() {
-        return new int[] { 0, 3 };
+    
+    @Override
+    public final float getFieldY() {
+        return PacmanGame.getFieldY(pos[0]);
     }
-
-    public float[] getPos() {
-        return pos;
-    }
-
-    public void setPos(float[] pos) {
-        this.pos = pos;
-    }
-
-    public float[] getPosDelta() {
-        return posDelta;
-    }
-
-    public void setPosDelta(float[] posDelta) {
-        this.posDelta = posDelta;
-    }
-
-    public float[] getElPos() {
-        return elPos;
-    }
-
-    public void setElPos(float[] elPos) {
-        this.elPos = elPos;
-    }
-
-    public int[] getElBackgroundPos() {
-        return elBackgroundPos;
-    }
-
-    public void setElBackgroundPos(int[] elBackgroundPos) {
-        this.elBackgroundPos = elBackgroundPos;
-    }
-
-    public float getSpeed() {
-        return speed;
-    }
-
-    public void setSpeed(float speed) {
-        this.speed = speed;
-    }
-
-    public Direction getDir() {
-        return dir;
-    }
-
-    public void setDir(Direction dir) {
-        this.dir = dir;
-    }
-
+    
     abstract Cutscene getCutscene();
 
-    public void setupSequence() {
+    public final void setupSequence() {
         Cutscene c = getCutscene();
         setMove(c);
         setMode(c);

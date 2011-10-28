@@ -300,16 +300,8 @@ public class Pacman extends PlayfieldActor {
         return PacmanGame.getFieldY(pos[0] + posDelta[0]);
     }
     
-    public Direction getRequestedDir() {
-        return requestedDir;
-    }
-
     public void setRequestedDir(Direction requestedDir) {
         this.requestedDir = requestedDir;
-    }
-
-    public float getDotEatingSpeed() {
-        return dotEatingSpeed;
     }
 
     public void setDotEatingSpeed(float dotEatingSpeed) {

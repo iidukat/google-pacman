@@ -133,7 +133,7 @@ public class CutsceneBlinky extends CutsceneActor {
             c = 11;
             break;
         default: // 通常時の画像表示
-            switch (getDir()) {
+            switch (dir) {
             case LEFT:
                 b = 4;
                 break;
@@ -148,7 +148,7 @@ public class CutsceneBlinky extends CutsceneActor {
                 break;
             }
             c = 4;
-            if (getSpeed() > 0 || game.getGameplayMode() != GameplayMode.CUTSCENE)
+            if (speed > 0 || game.getGameplayMode() != GameplayMode.CUTSCENE)
                 b += (int) (Math.floor(game.getGlobalTime() / 16) % 2);
         }
         return new int[] { c, b };

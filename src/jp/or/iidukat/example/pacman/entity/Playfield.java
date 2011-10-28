@@ -598,6 +598,7 @@ public class Playfield extends BaseEntity {
             getAppearance().changeBkPos(322, 138, false);
     }
 
+    @Override
     void doDraw(Canvas canvas) {
         getAppearance().drawBitmap(canvas);
     }
@@ -683,7 +684,7 @@ public class Playfield extends BaseEntity {
         }
         
         @Override
-        public void doDraw(Canvas canvas) {
+        public final void doDraw(Canvas canvas) {
             if (eaten || !isVisible())
                 return;
 
@@ -692,11 +693,7 @@ public class Playfield extends BaseEntity {
         
         abstract void drawDot(Canvas canvas);
 
-        public boolean isEaten() {
-            return eaten;
-        }
-
-        public void setEaten(boolean eaten) {
+        public final void setEaten(boolean eaten) {
             this.eaten = eaten;
         }
     }

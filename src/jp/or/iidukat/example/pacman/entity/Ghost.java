@@ -457,14 +457,6 @@ public abstract class Ghost extends PlayfieldActor {
         return mode;
     }
 
-    public final void setMode(GhostMode mode) {
-        this.mode = mode;
-    }
-
-    public final boolean isReverseDirectionsNext() {
-        return reverseDirectionsNext;
-    }
-
     public final void setReverseDirectionsNext(boolean reverseDirectionsNext) {
         this.reverseDirectionsNext = reverseDirectionsNext;
     }
@@ -477,16 +469,8 @@ public abstract class Ghost extends PlayfieldActor {
         this.eatenInThisFrightMode = eatenInThisFrightMode;
     }
 
-    public final boolean isFreeToLeavePen() {
-        return freeToLeavePen;
-    }
-
     public final void setFreeToLeavePen(boolean freeToLeavePen) {
         this.freeToLeavePen = freeToLeavePen;
-    }
-
-    public final boolean isModeChangedWhileInPen() {
-        return modeChangedWhileInPen;
     }
 
     public final void setModeChangedWhileInPen(boolean modeChangedWhileInPen) {
@@ -497,10 +481,6 @@ public abstract class Ghost extends PlayfieldActor {
         return dotCount;
     }
 
-    public final void setDotCount(int dotCount) {
-        this.dotCount = dotCount;
-    }
-    
     public final void incrementDotCount() {
         this.dotCount++;
     }
