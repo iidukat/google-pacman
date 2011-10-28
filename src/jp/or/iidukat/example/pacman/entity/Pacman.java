@@ -74,7 +74,7 @@ public class Pacman extends Actor {
     }
     
     @Override
-    void shortcutCorner() {
+    void prepareShortcut() {
         handlePrecedeInput();
     }
     
@@ -116,7 +116,7 @@ public class Pacman extends Actor {
     
 
     @Override
-    void adjustPosInfoOnEnteringTile(int[] tilePos) {
+    void decideNextDirIfNecessary(int[] tilePos) {
         if (!game.getPathElement(tilePos[1], tilePos[0]).isPath()) { // プレイヤーがパスでないところへ移動しようとする
             // 最後に正常に移動成功した位置に補正
             this.pos[0] = this.lastGoodTilePos[0];
@@ -142,7 +142,7 @@ public class Pacman extends Actor {
     }
     
     @Override
-    void adjustPosInfoOnEnteredTile() {
+    void shortcutCorner() {
         // 先行入力された移動方向分を更新(メソッドhandlePrecedeInputを参照)
         this.pos[0] += this.posDelta[0];
         this.pos[1] += this.posDelta[1];
@@ -150,7 +150,7 @@ public class Pacman extends Actor {
     }
     
     @Override
-    void lookForSomethingSpecial() {
+    void handleAnObjectWhenEncountering() {
         // フルーツを食べる
         if (this.pos[0] == Playfield.FRUIT_POSITION[0]
                 && (this.pos[1] == Playfield.FRUIT_POSITION[1]

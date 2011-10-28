@@ -104,7 +104,7 @@ public abstract class Actor extends BaseEntity {
     // tilePosとposの差分が有意になったとき呼び出される
     final void enteringTile(int[] tilePos) {
         game.setTilesChanged(true);
-        adjustPosInfoOnEnteringTile(tilePos);
+        decideNextDirIfNecessary(tilePos);
         // モンスター or プレイヤーがパスであるところへ移動
         this.lastGoodTilePos = new int[] { tilePos[0], tilePos[1] };
 
@@ -126,13 +126,14 @@ public abstract class Actor extends BaseEntity {
         this.tilePos[1] = tilePos[1];
     }
 
-    abstract void adjustPosInfoOnEnteringTile(int[] tilePos);
+    abstract void decideNextDirIfNecessary(int[] tilePos);
     abstract boolean canChangeSpeedInTunnel();
     abstract void encounterDot(int[] tilePos);
     
     // posの値がtilePosと一致(pos が8の倍数)したときに呼び出される
     final void enteredTile() {
-        lookForSomething();
+        warpIfPossible();
+        handleAnObjectWhenEncountering();
         decideNextDirOnEnteredTile(); 
         PathElement b =
             game.getPathElement((int) this.pos[1], (int) this.pos[0]);
@@ -144,7 +145,9 @@ public abstract class Actor extends BaseEntity {
                 }
                 this.dir = this.nextDir;
                 this.nextDir = Direction.NONE;
-                adjustPosInfoOnEnteredTile();
+                if (supportShortcut()) {
+                    shortcutCorner();
+                }
             } else if (!b.allow(this.dir)) { // nextDirもdirも移動不可だったら、停止
                 if (this.dir != Direction.NONE) {
                     this.lastActiveDir = this.dir;
@@ -155,9 +158,9 @@ public abstract class Actor extends BaseEntity {
     }
     
     abstract void decideNextDirOnEnteredTile(); 
-    abstract void adjustPosInfoOnEnteredTile();
-    
-    final void lookForSomething() {
+    abstract void shortcutCorner();
+
+    final void warpIfPossible() {
         if (this.pos[0] == Playfield.TUNNEL_POS[0].getY() * 8
                 && this.pos[1] == Playfield.TUNNEL_POS[0].getX() * 8) { // 画面左から右へワープ
             this.pos[0] = Playfield.TUNNEL_POS[1].getY() * 8;
@@ -167,11 +170,9 @@ public abstract class Actor extends BaseEntity {
             this.pos[0] = Playfield.TUNNEL_POS[0].getY() * 8;
             this.pos[1] = (Playfield.TUNNEL_POS[0].getX() + 1) * 8;
         }
-
-        lookForSomethingSpecial();
     }
     
-    abstract void lookForSomethingSpecial();
+    abstract void handleAnObjectWhenEncountering();
     
     // Actorの速度設定変更
     public final void changeSpeed(CurrentSpeed b) {
@@ -213,7 +214,7 @@ public abstract class Actor extends BaseEntity {
             if (this.nextDir != Direction.NONE
                     && path.isIntersection()
                     && path.allow(this.nextDir)) {
-                shortcutCorner();
+                prepareShortcut();
             }
         }
         
@@ -221,7 +222,7 @@ public abstract class Actor extends BaseEntity {
     }
     
     abstract boolean supportShortcut();
-    abstract void shortcutCorner();
+    abstract void prepareShortcut();
 
     public abstract void move();
     

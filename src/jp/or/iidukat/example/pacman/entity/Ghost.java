@@ -292,7 +292,7 @@ public abstract class Ghost extends Actor {
     }
 
     @Override
-    final void lookForSomethingSpecial() {
+    final void handleAnObjectWhenEncountering() {
         // 巣に入る
         if (this.mode == GhostMode.EATEN
                 && this.pos[0] == Playfield.PEN_ENTRANCE[0]
@@ -306,11 +306,11 @@ public abstract class Ghost extends Actor {
     }
     
     @Override
-    final void shortcutCorner() {
+    final void prepareShortcut() {
     }
     
     @Override
-    final void adjustPosInfoOnEnteringTile(int[] tilePos) {
+    final void decideNextDirIfNecessary(int[] tilePos) {
         if (this.reverseDirectionsNext) { // 方向を反転する
             this.dir = this.dir.getOpposite();
             this.nextDir = Direction.NONE;
@@ -334,7 +334,7 @@ public abstract class Ghost extends Actor {
     }
     
     @Override
-    final void adjustPosInfoOnEnteredTile() {
+    final void shortcutCorner() {
     }
     
     // モンスターの表示画像決定
