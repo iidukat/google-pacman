@@ -64,21 +64,20 @@ public abstract class Ghost extends Actor {
     public void arrange() {
         InitPosition b = getInitPosition();
         this.pos = new float[] {b.y * 8, b.x * 8};
-        this.posDelta = new float[] {0, 0};
         this.tilePos = new int[] {(int) b.y * 8, (int) b.x * 8};
         this.targetPos = new float[] {b.scatterY * 8, b.scatterX * 8};
         this.scatterPos = new float[] {b.scatterY * 8, b.scatterX * 8};
         this.lastActiveDir = this.dir = b.dir;
         this.physicalSpeed = 0;
         this.nextDir = Direction.NONE;
-        this.updateSpeed(CurrentSpeed.NORMAL);
+        this.changeSpeed(CurrentSpeed.NORMAL);
         this.reverseDirectionsNext = this.freeToLeavePen = this.modeChangedWhileInPen = this.eatenInThisFrightMode = false;
     }
 
     public abstract void updateTargetPos();
 
     // モンスターのモード設定
-    public void updateMode(GhostMode mode) {
+    public void switchGhostMode(GhostMode mode) {
         GhostMode c = this.mode;
         this.mode = mode;
         if (this == game.getClyde()
@@ -131,12 +130,12 @@ public abstract class Ghost extends Actor {
             this.routineMoveId = -1;
             break;
         }
-        this.updateSpeed();
+        this.changeSpeed();
     }
-
-    // Actorの速度設定(currentSpeedプロパティを利用)
+    
+    // Actorの速度設定(currentSpeedフィールドを利用)
     @Override
-    public void updateSpeed() {
+    public void changeSpeed() {
         float b = 0;
         switch (this.currentSpeed) {
         case NORMAL:
@@ -153,71 +152,66 @@ public abstract class Ghost extends Actor {
     }
     
     float getNormalSpeed() {
-        return this.fullSpeed;
-    }
+        return fullSpeed;
+    }    
 
     // モンスターが交差点/行き止まり にたどり着いたときの動作. nextDirの決定
     //     b: 反転済みフラグ
-    void decideNextDir(boolean b) {
-        int[] c = this.tilePos;
-        Move d = this.dir.getMove();
-        int[] f = new int[] {c[0], c[1]};
-        f[d.getAxis()] += d.getIncrement() * 8; // 進行方向へ1マス先取り
-        PathElement h = game.getPathElement(f[1], f[0]);
-        if (b && !h.isIntersection())
-            h = game.getPathElement(c[1], c[0]); // 交差点/行き止まり でなければ現在位置に戻る(反転済みの場合)
+    private void decideNextDir(boolean reversed) {
+        int[] currentTilePos = tilePos;
+        Move currentMove = dir.getMove();
+        int[] newTilePos = new int[] {currentTilePos[0], currentTilePos[1]};
+        newTilePos[currentMove.getAxis()] += currentMove.getIncrement() * 8; // 進行方向へ1マス先取り
+        PathElement destination = game.getPathElement(newTilePos[1], newTilePos[0]);
+        if (reversed && !destination.isIntersection())
+            destination = game.getPathElement(currentTilePos[1], currentTilePos[0]); // 交差点/行き止まり でなければ現在位置に戻る(反転済みの場合)
         
-        if (h.isIntersection())
-            switch (this.mode) {
+        if (destination.isIntersection())
+            switch (mode) {
             case SCATTER: // Scatter
             case CHASE: // 追跡
             case EATEN: // プレイヤーに食べられる
-                if (!h.getAllowedDir().contains(this.dir)
-                        && h.getAllowedDir().contains(this.dir.getOpposite())
-                        && h.getAllowedDir().size() == 1)// 反対向きしか通れないなら反対向きを選ぶ
-                    this.nextDir = this.dir.getOpposite();
+                if (destination.allowOnlyOpposite(dir))// 反対向きしか通れないなら反対向きを選ぶ
+                    nextDir = dir.getOpposite();
                 else { // 反対向き以外を選択可能なら、目的地に最も近い方向を選択する
                     float max = 99999999999f;
                     float distance = 0;
-                    Direction nDir = Direction.NONE;
-                    for (Direction k : Direction.getAllMoves()) {
-                        if (h.getAllowedDir().contains(k) && this.dir != k.getOpposite()) {
-                            d = k.getMove();
-                            float[] x = new float[] {(float) f[0], (float) f[1]};
-                            x[d.getAxis()] += d.getIncrement();
-                            distance = getDistance(x, new float[] {this.targetPos[0], this.targetPos[1]});
+                    Direction dirCandidate = Direction.NONE;
+                    for (Direction d : Direction.getAllMoves()) {
+                        if (destination.allow(d) && dir != d.getOpposite()) {
+                            float[] tilePosCandidate = new float[] {(float) newTilePos[0], (float) newTilePos[1]};
+                            tilePosCandidate[d.getMove().getAxis()] += d.getMove().getIncrement();
+                            distance = getDistance(tilePosCandidate, new float[] {targetPos[0], targetPos[1]});
                             if (distance < max) {
                                 max = distance;
-                                nDir = k;
+                                dirCandidate = d;
                             }
                         }
                     }
-                    if (nDir != Direction.NONE) this.nextDir = nDir;
+                    if (dirCandidate != Direction.NONE) nextDir = dirCandidate;
                 }
                 break;
             case FRIGHTENED: // ブルーモード
-                if (!h.getAllowedDir().contains(this.dir)
-                        && h.getAllowedDir().contains(this.dir.getOpposite())
-                        && h.getAllowedDir().size() == 1) // 反対向きしか通れないなら反対向きを選ぶ
-                    this.nextDir = this.dir.getOpposite();
+                if (destination.allowOnlyOpposite(dir)) // 反対向きしか通れないなら反対向きを選ぶ
+                    this.nextDir = dir.getOpposite();
                 else { // 移動可能な方向のうち反対向き以外を選択
                     Direction nDir = Direction.NONE;
                     do nDir = Direction.getAllMoves().get((int) FloatMath.floor(game.rand() * Direction.getAllMoves().size()));
-                    while (!h.getAllowedDir().contains(nDir)
-                                || nDir == this.dir.getOpposite());
-                    this.nextDir = nDir;
+                    while (!destination.allow(nDir)
+                                || nDir == dir.getOpposite());
+                    nextDir = nDir;
                 }
                 break;
           }
     }
 
     // モンスターの巣の中/巣から出る挙動を管理(モンスター個別のモード管理)
-    void switchFollowingRoutine() {
+    private void switchFollowingRoutine() {
         this.routineMoveId++;
         if (this.routineMoveId == getMovesInPen().length) // ルーチンの最後に到達
             if (this.mode == GhostMode.IN_PEN && this.freeToLeavePen && !game.isGhostExitingPenNow()) { // 外に出る条件が満たされた
-                if (this.eatenInThisFrightMode) this.updateMode(GhostMode.RE_LEAVING_FROM_PEN);
-                else this.updateMode(GhostMode.LEAVING_PEN);
+                if (this.eatenInThisFrightMode) this.switchGhostMode(GhostMode.RE_LEAVING_FROM_PEN);
+                else this.switchGhostMode(GhostMode.LEAVING_PEN);
                 return;
             } else if (this.mode == GhostMode.LEAVING_PEN
                         || this.mode == GhostMode.RE_LEAVING_FROM_PEN) { // 将に外に出むとす
@@ -231,14 +225,14 @@ public abstract class Ghost extends Actor {
                 if (this.mode == GhostMode.RE_LEAVING_FROM_PEN
                         && b == GhostMode.FRIGHTENED)
                     b = game.getLastMainGhostMode();
-                this.updateMode(b);
+                this.switchGhostMode(b);
                 return;
             } else if (this.mode == GhostMode.ENTERING_PEN) { // 食べられて巣に入る
                 if (this instanceof Blinky || this.freeToLeavePen)
-                    this.updateMode(GhostMode.RE_LEAVING_FROM_PEN); // アカベエはすぐに巣から出てくる
+                    this.switchGhostMode(GhostMode.RE_LEAVING_FROM_PEN); // アカベエはすぐに巣から出てくる
                 else {
                     this.eatenInThisFrightMode = true;
-                    this.updateMode(GhostMode.IN_PEN);
+                    this.switchGhostMode(GhostMode.IN_PEN);
                 }
                 return;
             } else // 外にでる条件が満たされなければ、ルーチンを繰り返す
@@ -255,7 +249,7 @@ public abstract class Ghost extends Actor {
     }
     
     // モンスターの巣の中/巣から出る挙動を管理(表示画像決定&位置移動)
-    void continueFollowingRoutine() {
+    private void continueFollowingRoutine() {
         
         MoveInPen b = null;
         MoveInPen[] mvs = getMovesInPen();
@@ -287,12 +281,10 @@ public abstract class Ghost extends Actor {
             }
     }
     
-    MoveInPen[] getMovesInPen() {
-        return new MoveInPen[0];
-    }
+    abstract MoveInPen[] getMovesInPen();
     
     // モンスターの巣の中/巣から出る挙動を管理
-    void followRoutine() {
+    private void followRoutine() {
         if (this.routineMoveId == -1 || this.proceedToNextRoutineMove)
             this.switchFollowingRoutine();
         
@@ -314,29 +306,21 @@ public abstract class Ghost extends Actor {
         if (this.mode == GhostMode.EATEN
                 && this.pos[0] == Playfield.PEN_ENTRANCE[0]
                 && this.pos[1] == Playfield.PEN_ENTRANCE[1])
-            this.updateMode(GhostMode.ENTERING_PEN);
+            this.switchGhostMode(GhostMode.ENTERING_PEN);
     }
 
-    void updateTilePos() {
-        float b = this.pos[0] / 8;
-        float c = this.pos[1] / 8;
-        int[] d = { Math.round(b) * 8, Math.round(c) * 8};
-        if (d[0] != this.tilePos[0] || d[1] != this.tilePos[1]) // tileが切り替わる
-            this.enteringNewTile(d); // tilePosの更新
-        else {
-            float[] tPoses =
-                new float[] {
-                        FloatMath.floor(b) * 8,
-                        FloatMath.floor(c) * 8
-                };
-            if (this.pos[1] == tPoses[1] && this.pos[0] == tPoses[0])
-                this.enteredNewTile(); // posの値がtilePosと一致(pos が8の倍数)
-        }
+    @Override
+    boolean supportShortcut() {
+        return false;
+    }
+    
+    @Override
+    void shortcutCorner() {
     }
     
     // tilePosとposの差分が有意になったとき呼び出される
     @Override
-    void enteringNewTile(int[] b) {
+    void enteringTile(int[] b) {
         game.setTilesChanged(true);
         if (this.reverseDirectionsNext) { // 方向を反転する(この判定がtrueになるのはモンスターのみ)
             this.dir = this.dir.getOpposite();
@@ -351,9 +335,9 @@ public abstract class Ghost extends Actor {
         // トンネル通過[モンスターが食べられた時以外](currentSpeed:2) or それ以外(currentSpeed:0)
         if (game.getPathElement(b[1], b[0]).isTunnel()
                 && this.mode != GhostMode.EATEN)
-            this.updateSpeed(CurrentSpeed.PASSING_TUNNEL);
+            this.changeSpeed(CurrentSpeed.PASSING_TUNNEL);
         else
-            this.updateSpeed(CurrentSpeed.NORMAL);
+            this.changeSpeed(CurrentSpeed.NORMAL);
         
         this.tilePos[0] = b[0];
         this.tilePos[1] = b[1];
@@ -361,20 +345,25 @@ public abstract class Ghost extends Actor {
     
     // posの値がtilePosと一致(pos が8の倍数)したときに呼び出される
     @Override
-    void enteredNewTile() {
+    void enteredTile() {
         this.lookForSomething();
         this.decideNextDir(false); // モンスターの交差点/行き止まりでの進行方向決定
         PathElement b =
             game.getPathElement((int) this.pos[1], (int) this.pos[0]);
         if (b.isIntersection()) // 行き止まり/交差点にて
-            if (this.nextDir != Direction.NONE && b.getAllowedDir().contains(this.nextDir)) { // nextDirで指定された方向へ移動可能
-                if (this.dir != Direction.NONE) this.lastActiveDir = this.dir;
+            if (this.nextDir != Direction.NONE
+                    && b.allow(this.nextDir)) { // nextDirで指定された方向へ移動可能
+                if (this.dir != Direction.NONE) {
+                    this.lastActiveDir = this.dir;
+                }
                 this.dir = this.nextDir;
                 this.nextDir = Direction.NONE;
-            } else if (!b.getAllowedDir().contains(this.dir)) { // nextDirもdirも移動不可だったら、停止
-                if (this.dir != Direction.NONE) this.lastActiveDir = this.dir;
+            } else if (!b.allow(this.dir)) { // nextDirもdirも移動不可だったら、停止
+                if (this.dir != Direction.NONE) {
+                    this.lastActiveDir = this.dir;
+                }
                 this.nextDir = this.dir = Direction.NONE;
-                this.updateSpeed(CurrentSpeed.NORMAL);
+                this.changeSpeed(CurrentSpeed.NORMAL);
             }
     }
     
@@ -484,6 +473,16 @@ public abstract class Ghost extends Actor {
         }
     }
 
+    @Override
+    public float getFieldX() {
+        return PacmanGame.getFieldX(pos[1]);
+    }
+    
+    @Override
+    public float getFieldY() {
+        return PacmanGame.getFieldY(pos[0]);
+    }
+    
     public GhostMode getMode() {
         return mode;
     }

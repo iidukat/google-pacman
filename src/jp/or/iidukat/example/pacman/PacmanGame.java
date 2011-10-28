@@ -41,7 +41,7 @@ public class PacmanGame {
     
     // レベル再開後、一定数のエサが食べられるとモンスターが巣から出てくる
     // そのしきい値をモンスター毎に設定
-    private static final int[] FOOD_LIMITS_PEN_LEAVING = { 0, 7, 17, 32 };
+    private static final int[] PEN_LEAVING_FOOD_LIMITS = { 0, 7, 17, 32 };
 
     // イベント時間管理テーブル. index 7, 8しか使わない
     private static final float[] w = {
@@ -877,8 +877,8 @@ public class PacmanGame {
         float cy = y - offset[0];
         
         Pacman pacman = getPacman();
-        float px = getFieldX(pacman.getPos()[1] + pacman.getPosDelta()[1]) + 48;
-        float py = getFieldY(pacman.getPos()[0] + pacman.getPosDelta()[0]) + 32;
+        float px = pacman.getFieldX() + 48;
+        float py = pacman.getFieldY() + 32;
         float xdiff = Math.abs(cx - px);
         float ydiff = Math.abs(cy - py);
         if (xdiff > 8 && ydiff < xdiff) {
@@ -978,7 +978,7 @@ public class PacmanGame {
         updateActorPositions();
         switchMainGhostMode(GhostMode.SCATTER, true);
         for (int c = 1; c < 4; c++)
-            getGhosts()[c].updateMode(GhostMode.IN_PEN);
+            getGhosts()[c].switchGhostMode(GhostMode.IN_PEN);
         dotEatingChannel = 0;
         dotEatingSoundPart = 1;
 
@@ -1080,7 +1080,7 @@ public class PacmanGame {
                             && ghost.getMode() != b) {
                         ghost.setReverseDirectionsNext(true);
                     }
-                    ghost.updateMode(b);
+                    ghost.switchGhostMode(b);
                 }
             }
 
@@ -1088,36 +1088,38 @@ public class PacmanGame {
             pacman.setFullSpeed(currentPlayerSpeed);
             pacman.setDotEatingSpeed(currentDotEatingSpeed);
             pacman.setTunnelSpeed(currentPlayerSpeed);
-            pacman.updateSpeed();
+            pacman.changeSpeed();
         }
     }
 
     private void figureOutPenLeaving() {
-        Ghost[] ghosts = getGhosts();
+        Ghost pinky = getPinky();
+        Ghost inky = getInky();
+        Ghost clyde = getClyde();
         if (alternatePenLeavingScheme) { // レベル再開後のみ食べられたエサの数によりモンスターが出撃するタイミングを管理
             alternateDotCount++;
-            if (alternateDotCount == FOOD_LIMITS_PEN_LEAVING[1])
-                ghosts[1].setFreeToLeavePen(true);
-            else if (alternateDotCount == FOOD_LIMITS_PEN_LEAVING[2])
-                ghosts[2].setFreeToLeavePen(true);
-            else if (alternateDotCount == FOOD_LIMITS_PEN_LEAVING[3])
-                if (ghosts[3].getMode() == GhostMode.IN_PEN)
+            if (alternateDotCount == PEN_LEAVING_FOOD_LIMITS[1])
+                pinky.setFreeToLeavePen(true);
+            else if (alternateDotCount == PEN_LEAVING_FOOD_LIMITS[2])
+                inky.setFreeToLeavePen(true);
+            else if (alternateDotCount == PEN_LEAVING_FOOD_LIMITS[3])
+                if (clyde.getMode() == GhostMode.IN_PEN)
                     alternatePenLeavingScheme = false;
-        } else if (ghosts[1].getMode() == GhostMode.IN_PEN
-                || ghosts[1].getMode() == GhostMode.EATEN) {
-            ghosts[1].incrementDotCount();
-            if (ghosts[1].getDotCount() >= levelConfig.penLeavingLimits[1])
-                ghosts[1].setFreeToLeavePen(true);
-        } else if (ghosts[2].getMode() == GhostMode.IN_PEN
-                || ghosts[2].getMode() == GhostMode.EATEN) {
-            ghosts[2].incrementDotCount();
-            if (ghosts[2].getDotCount() >= levelConfig.penLeavingLimits[2])
-                ghosts[2].setFreeToLeavePen(true);
-        } else if (ghosts[3].getMode() == GhostMode.IN_PEN
-                || ghosts[3].getMode() == GhostMode.EATEN) {
-            ghosts[3].incrementDotCount();
-            if (ghosts[3].getDotCount() >= levelConfig.penLeavingLimits[3])
-                ghosts[3].setFreeToLeavePen(true);
+        } else if (pinky.getMode() == GhostMode.IN_PEN
+                || pinky.getMode() == GhostMode.EATEN) {
+            pinky.incrementDotCount();
+            if (pinky.getDotCount() >= levelConfig.penLeavingLimits[1])
+                pinky.setFreeToLeavePen(true);
+        } else if (inky.getMode() == GhostMode.IN_PEN
+                || inky.getMode() == GhostMode.EATEN) {
+            inky.incrementDotCount();
+            if (inky.getDotCount() >= levelConfig.penLeavingLimits[2])
+                inky.setFreeToLeavePen(true);
+        } else if (clyde.getMode() == GhostMode.IN_PEN
+                || clyde.getMode() == GhostMode.EATEN) {
+            clyde.incrementDotCount();
+            if (clyde.getDotCount() >= levelConfig.penLeavingLimits[3])
+                clyde.setFreeToLeavePen(true);
         }
     }
 
@@ -1128,7 +1130,7 @@ public class PacmanGame {
     public void dotEaten(int[] c) {
         getPlayfieldEl().decrementDotsRemaining();
         getPlayfieldEl().incrementDotsEaten();
-        getPacman().updateSpeed(CurrentSpeed.PACMAN_EATING_DOT);
+        getPacman().changeSpeed(CurrentSpeed.PACMAN_EATING_DOT);
         playDotEatingSound();
         if (getPathElement(c[1], c[0]).getDot() == Dot.ENERGIZER) { // パワーエサを食べたとき
             switchMainGhostMode(GhostMode.FRIGHTENED, false);
@@ -1233,7 +1235,7 @@ public class PacmanGame {
         }
         if (b != cruiseElroySpeed) {
             cruiseElroySpeed = b;
-            getBlinky().updateSpeed(); // アカベエの速度を更新
+            getBlinky().changeSpeed(); // アカベエの速度を更新
         }
     }
 
@@ -1463,7 +1465,7 @@ public class PacmanGame {
                     ghostEyesCount++;
                     playAmbientSound();
                     ghostBeingEaten.resetDisplayOrder();
-                    ghostBeingEaten.updateMode(GhostMode.EATEN);
+                    ghostBeingEaten.switchGhostMode(GhostMode.EATEN);
                     // ブルーモードのモンスターがいない場合、 ブルーモードを終了させる
                     boolean c = false;
                     for (Ghost ghost : ghosts)
@@ -1923,6 +1925,14 @@ public class PacmanGame {
     
     public Ghost getBlinky() {
         return getPlayfieldEl().getBlinky();
+    }
+    
+    public Ghost getPinky() {
+        return getPlayfieldEl().getPinky();
+    }
+    
+    public Ghost getInky() {
+        return getPlayfieldEl().getInky();
     }
 
     public Ghost getClyde() {

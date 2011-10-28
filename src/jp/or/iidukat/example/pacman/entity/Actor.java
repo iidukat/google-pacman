@@ -4,8 +4,10 @@ import jp.or.iidukat.example.pacman.Direction;
 import jp.or.iidukat.example.pacman.Direction.Move;
 import jp.or.iidukat.example.pacman.PacmanGame;
 import jp.or.iidukat.example.pacman.PacmanGame.GameplayMode;
+import jp.or.iidukat.example.pacman.entity.Playfield.PathElement;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.util.FloatMath;
 
 public abstract class Actor extends BaseEntity {
 
@@ -61,7 +63,6 @@ public abstract class Actor extends BaseEntity {
 
     final PacmanGame game;
     float[] pos;
-    float[] posDelta;
     int[] tilePos;
     int[] lastGoodTilePos;
     private float[] elPos;
@@ -99,33 +100,62 @@ public abstract class Actor extends BaseEntity {
         this.elBackgroundPos = new int[] {0, 0};
     }
     
-    abstract void updateTilePos();
     // tilePosとposの差分が有意になったとき呼び出される
-    abstract void enteringNewTile(int[] b);
+    abstract void enteringTile(int[] b);
     // posの値がtilePosと一致(pos が8の倍数)したときに呼び出される
-    abstract void enteredNewTile();
-
+    abstract void enteredTile();
+    
     abstract void lookForSomething();
     
     // Actorの速度設定変更
-    public void updateSpeed(CurrentSpeed b) {
+    public void changeSpeed(CurrentSpeed b) {
         this.currentSpeed = b;
-        this.updateSpeed();
+        this.changeSpeed();
     }
     
     // Actorの速度設定(currentSpeedプロパティを利用)
-    public abstract void updateSpeed();
+    public abstract void changeSpeed();
     
     // Actorの移動(ルーチン以外)
     void step() {
-        if (this.dir != Direction.NONE)
-            if (this.speedIntervals[game.getIntervalTime()]) { // この判定で速度を表現
-                Move mv = this.dir.getMove();
-                this.pos[mv.getAxis()] += mv.getIncrement();
-                this.updateTilePos();
-                this.updatePresentation();
+        if (this.dir == Direction.NONE
+            || !this.speedIntervals[game.getIntervalTime()]) {
+            return;
+        }
+
+        Move mv = this.dir.getMove();
+        this.pos[mv.getAxis()] += mv.getIncrement();
+        
+        float imaginaryTileY = this.pos[0] / 8;
+        float imaginaryTileX = this.pos[1] / 8;
+        int[] nextTile = { Math.round(imaginaryTileY) * 8,
+                            Math.round(imaginaryTileX) * 8 };
+        if (nextTile[0] != this.tilePos[0]
+                || nextTile[1] != this.tilePos[1]) { // tileが切り替わる
+            enteringTile(nextTile);
+        } else {
+            float[] tile = { FloatMath.floor(imaginaryTileY) * 8,
+                                FloatMath.floor(imaginaryTileX) * 8 };
+            if (this.pos[1] == tile[1]
+                    && this.pos[0] == tile[0]) { // tileが切り替わった直後
+                enteredTile(); 
             }
+        }
+        
+        if (supportShortcut()) {
+            PathElement path = game.getPathElement(nextTile[1], nextTile[0]);
+            if (this.nextDir != Direction.NONE
+                    && path.isIntersection()
+                    && path.allow(this.nextDir)) {
+                shortcutCorner();
+            }
+        }
+        
+        this.updatePresentation();
     }
+    
+    abstract boolean supportShortcut();
+    abstract void shortcutCorner();
 
     public abstract void move();
     
@@ -148,8 +178,8 @@ public abstract class Actor extends BaseEntity {
     
     // 表示位置更新
     public void updateElPos() {
-        float b = PacmanGame.getFieldX(this.pos[1] + this.posDelta[1]);
-        float c = PacmanGame.getFieldY(this.pos[0] + this.posDelta[0]);
+        float b = getFieldX();
+        float c = getFieldY();
         if (this.elPos[0] != c || this.elPos[1] != b) {
             this.elPos[0] = c;
             this.elPos[1] = b;
@@ -170,21 +200,15 @@ public abstract class Actor extends BaseEntity {
         return tilePos;
     }
 
-
+    public abstract float getFieldX();
+    public abstract float getFieldY();
+    
     public float[] getPos() {
         return pos;
     }
 
     public void setPos(float[] pos) {
         this.pos = pos;
-    }
-
-    public float[] getPosDelta() {
-        return posDelta;
-    }
-
-    public void setPosDelta(float[] posDelta) {
-        this.posDelta = posDelta;
     }
 
     public float[] getElPos() {

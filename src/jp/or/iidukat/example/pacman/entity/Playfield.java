@@ -161,46 +161,52 @@ public class Playfield extends BaseEntity {
         private Dot dot;
         private boolean intersection;
         private boolean tunnel;
-        private EnumSet<Direction> allowedDir;
+        private EnumSet<Direction> allowedDirs;
         
-        public EnumSet<Direction> getAllowedDir() {
-            return allowedDir;
-        }
-        
-        public void setAllowedDir(EnumSet<Direction> allowedDir) {
-            this.allowedDir = allowedDir;
+        void setAllowedDir(EnumSet<Direction> allowedDir) {
+            this.allowedDirs = allowedDir;
         }
         
         public Dot getDot() {
             return dot;
         }
         
-        public void setDot(Dot dot) {
+        void setDot(Dot dot) {
             this.dot = dot;
         }
 
-        public boolean isIntersection() {
+        boolean isIntersection() {
             return intersection;
         }
         
-        public void setIntersection(boolean intersection) {
+        void setIntersection(boolean intersection) {
             this.intersection = intersection;
         }
 
-        public boolean isPath() {
+        boolean isPath() {
             return path;
         }
         
-        public void setPath(boolean path) {
+        void setPath(boolean path) {
             this.path = path;
         }
 
-        public boolean isTunnel() {
+        boolean isTunnel() {
             return tunnel;
         }
         
-        public void setTunnel(boolean tunnel) {
+        void setTunnel(boolean tunnel) {
             this.tunnel = tunnel;
+        }
+        
+        boolean allow(Direction dir) {
+            return allowedDirs.contains(dir);
+        }
+        
+        boolean allowOnlyOpposite(Direction dir) {
+            return !allowedDirs.contains(dir)
+                    && allowedDirs.contains(dir.getOpposite())
+                    && allowedDirs.size() == 1;
         }
     }
     
@@ -342,8 +348,8 @@ public class Playfield extends BaseEntity {
     private void prepareAllowedDirections() {
         for (int b = 8; b <= playfieldHeight * 8; b += 8)
             for (int c = 8; c <= playfieldWidth * 8; c += 8) {
-                PathElement pe = playfield.get(Integer.valueOf(b)).get(
-                        Integer.valueOf(c));
+                PathElement pe = playfield.get(Integer.valueOf(b))
+                                        .get(Integer.valueOf(c));
                 EnumSet<Direction> allowedDir = EnumSet.noneOf(Direction.class);
                 if (playfield.get(Integer.valueOf(b - 8))
                         .get(Integer.valueOf(c)).isPath())
@@ -471,20 +477,20 @@ public class Playfield extends BaseEntity {
             List<Ghost> gs = new ArrayList<Ghost>();
             gs.add(
                 new Blinky(
-                        getPresentation().getSourceImage(),
-                        game));
+                    getPresentation().getSourceImage(),
+                    game));
             gs.add(
                 new Pinky(
-                        getPresentation().getSourceImage(),
-                        game));
+                    getPresentation().getSourceImage(),
+                    game));
             gs.add(
                 new Inky(
-                        getPresentation().getSourceImage(),
-                        game));
+                    getPresentation().getSourceImage(),
+                    game));
             gs.add(
                 new Clyde(
-                        getPresentation().getSourceImage(),
-                        game));
+                    getPresentation().getSourceImage(),
+                    game));
 
             ghosts = gs.toArray(new Ghost[0]);
             for (Ghost ghost : ghosts) {
@@ -606,6 +612,14 @@ public class Playfield extends BaseEntity {
     
     public Ghost getBlinky() {
         return ghosts[0];
+    }
+    
+    public Ghost getPinky() {
+        return ghosts[1];
+    }
+    
+    public Ghost getInky() {
+        return ghosts[2];
     }
 
     public Ghost getClyde() {
