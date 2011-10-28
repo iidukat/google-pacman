@@ -14,18 +14,18 @@ public class Lives extends BaseEntity {
     }
 
     public void init() {
-        Presentation p = getPresentation();
-        p.setLeft(523);
-        p.setTop(0);
-        p.setHeight(80);
-        p.setWidth(16);
+        Appearance a = getAppearance();
+        a.setLeft(523);
+        a.setTop(0);
+        a.setHeight(80);
+        a.setWidth(16);
     }
 
     public void update(int liveCount) {
         clearLives();
         for (int i = 0; i < liveCount; i++) {
             Lives.Life life =
-                new Lives.Life(getPresentation().getSourceImage());
+                new Lives.Life(getAppearance().getSourceImage());
             life.init(i * 15);
             life.setParent(this);
             lives.add(life);
@@ -48,16 +48,16 @@ public class Lives extends BaseEntity {
         }
 
         void init(int top) {
-            Presentation p = getPresentation();
-            p.setWidth(16);
-            p.setHeight(12);
-            p.setTop(top); // margin-bottom: 3px
-            p.prepareBkPos(64, 129);
+            Appearance a = getAppearance();
+            a.setWidth(16);
+            a.setHeight(12);
+            a.setTop(top); // margin-bottom: 3px
+            a.prepareBkPos(64, 129);
         }
         
         @Override
         void doDraw(Canvas canvas) {
-            getPresentation().drawBitmap(canvas);
+            getAppearance().drawBitmap(canvas);
         }
     }
 }

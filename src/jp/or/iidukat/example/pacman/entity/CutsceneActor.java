@@ -25,13 +25,13 @@ public abstract class CutsceneActor extends BaseEntity {
     }
 
     public void init() {
-        Presentation p = getPresentation();
-        p.setWidth(16);
-        p.setHeight(16);
-        p.setLeftOffset(-4);
-        p.setTopOffset(-4);
-        p.prepareBkPos(0, 0);
-        p.setOrder(DEFAULT_DISPLAY_ORDER);
+        Appearance a = getAppearance();
+        a.setWidth(16);
+        a.setHeight(16);
+        a.setLeftOffset(-4);
+        a.setTopOffset(-4);
+        a.prepareBkPos(0, 0);
+        a.setOrder(DEFAULT_DISPLAY_ORDER);
         
         elBackgroundPos = new int[] { 0, 0 };
         elPos = new float[] { 0, 0 };
@@ -47,17 +47,17 @@ public abstract class CutsceneActor extends BaseEntity {
 
     @Override
     void doDraw(Canvas canvas) {
-        getPresentation().drawBitmap(canvas);
+        getAppearance().drawBitmap(canvas);
     }
 
     public void move() {
         Move d = dir.getMove();
         pos[d.getAxis()] += d.getIncrement() * speed;
-        updatePresentation();
+        updateAppearance();
     }
 
     // Actor表示画像切り替え(アニメーション対応)&位置移動
-    public void updatePresentation() {
+    public void updateAppearance() {
         this.updateElPos(); // 位置移動
         int[] b = { 0, 0 };
         b = getImagePos();
@@ -66,7 +66,7 @@ public abstract class CutsceneActor extends BaseEntity {
             this.elBackgroundPos[1] = b[1];
             b[0] *= 16;
             b[1] *= 16;
-            getPresentation().changeBkPos(b[1], b[0], true);
+            getAppearance().changeBkPos(b[1], b[0], true);
         }
     }
 
@@ -77,7 +77,7 @@ public abstract class CutsceneActor extends BaseEntity {
         if (this.elPos[0] != c || this.elPos[1] != b) {
             this.elPos[0] = c;
             this.elPos[1] = b;
-            Presentation el = getPresentation();
+            Appearance el = getAppearance();
             el.setLeft(b);
             el.setTop(c);
         }

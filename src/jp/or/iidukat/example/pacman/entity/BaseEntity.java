@@ -12,7 +12,7 @@ import android.graphics.RectF;
 
 abstract class BaseEntity implements Entity {
     
-    private final Presentation presentation;
+    private final Appearance appearance;
     private final List<Entity> children;
     private Entity parent;
 
@@ -21,23 +21,23 @@ abstract class BaseEntity implements Entity {
     }
 
     BaseEntity(Bitmap sourceImage, boolean parent) {
-        presentation = new PresentationImpl(sourceImage);
+        appearance = new AppearanceImpl(sourceImage);
         children = parent ? new ArrayList<Entity>() : null;
     }
     
     @Override
     public final int getHeight() {
-        return presentation.getHeight();
+        return appearance.getHeight();
     }
     
     @Override
     public final int getWidth() {
-        return presentation.getWidth();
+        return appearance.getWidth();
     }
     
     @Override
     public final float[] getAbsolutePos() {
-        return presentation.getAbsolutePos();
+        return appearance.getAbsolutePos();
     }
     
     @Override
@@ -53,17 +53,17 @@ abstract class BaseEntity implements Entity {
     
     @Override
     public final boolean isVisible() {
-        return presentation.isVisible();
+        return appearance.isVisible();
     }
     
     @Override
     public final void setVisibility(boolean visibility) {
-        presentation.setVisibility(visibility);
+        appearance.setVisibility(visibility);
     }
     
     @Override
-    public final Presentation getPresentation() {
-        return presentation;
+    public final Appearance getAppearance() {
+        return appearance;
     }
     
     @Override
@@ -104,8 +104,8 @@ abstract class BaseEntity implements Entity {
     
     @Override
     public final int compareTo(Entity another) {
-        int o = getPresentation().getOrder();
-        int ao = another.getPresentation().getOrder();
+        int o = getAppearance().getOrder();
+        int ao = another.getAppearance().getOrder();
         if (o < ao) {
             return -1;
         } else if (o > ao) {
@@ -115,7 +115,7 @@ abstract class BaseEntity implements Entity {
         }
     }
     
-    private class PresentationImpl implements Presentation {
+    private class AppearanceImpl implements Appearance {
         private int height;
         private int width;
         private float top;
@@ -137,7 +137,7 @@ abstract class BaseEntity implements Entity {
         private final float[] adjustedPos = new float[] { 0, 0 };
         private final float[] adjustedBgPos = new float[] { 0, 0 };
         
-        PresentationImpl(Bitmap sourceImage) {
+        AppearanceImpl(Bitmap sourceImage) {
             this.sourceImage = sourceImage;
         }
 
@@ -163,13 +163,13 @@ abstract class BaseEntity implements Entity {
 
         @Override
         public float[] getAbsolutePos() {
-            Presentation p = this;
+            Appearance a = this;
             float[] pos = { 0, 0 };
             do {
-                pos[0] += p.getTop();
-                pos[1] += p.getLeft();
-            } while (p != p.getParent()
-                        && (p = p.getParent()) != null);
+                pos[0] += a.getTop();
+                pos[1] += a.getLeft();
+            } while (a != a.getParent()
+                        && (a = a.getParent()) != null);
             return pos;
         }
 
@@ -295,12 +295,12 @@ abstract class BaseEntity implements Entity {
         }
 
         @Override
-        public Presentation getParent() {
+        public Appearance getParent() {
             Entity parent = BaseEntity.this.parent;
             if (parent == null) {
             	return null;
             } else {
-            	return parent.getPresentation();
+            	return parent.getAppearance();
             }
         }
 
@@ -381,12 +381,12 @@ abstract class BaseEntity implements Entity {
             adjustedBgPos[0] = bgPosY;
             adjustedBgPos[1] = bgPosX; 
 
-            Presentation p = getParent();
-            if (p == null) {
+            Appearance a = getParent();
+            if (a == null) {
                 return true;
             }
-            parentSize[0] = p.getHeight();
-            parentSize[1] = p.getWidth();
+            parentSize[0] = a.getHeight();
+            parentSize[1] = a.getWidth();
 
             for (int i = 0; i < 2; i++) {
                 if (!auxAdjust(i)) {
@@ -395,10 +395,10 @@ abstract class BaseEntity implements Entity {
             }
             
             do {
-                adjustedPos[0] += p.getTop();
-                adjustedPos[1] += p.getLeft();
-            } while (p != p.getParent()
-                        && (p = p.getParent()) != null);
+                adjustedPos[0] += a.getTop();
+                adjustedPos[1] += a.getLeft();
+            } while (a != a.getParent()
+                        && (a = a.getParent()) != null);
             
             return true;
         }

@@ -10,24 +10,24 @@ public class Sound extends BaseEntity {
     }
 
     public void init() {
-        Presentation p = getPresentation();
-        p.setLeft(15); // 7 + 8
-        p.setTop(124); // 116 + 8
-        p.setWidth(12);
-        p.setHeight(12);
-        p.prepareBkPos(-32, -16);
+        Appearance a = getAppearance();
+        a.setLeft(15); // 7 + 8
+        a.setTop(124); // 116 + 8
+        a.setWidth(12);
+        a.setHeight(12);
+        a.prepareBkPos(-32, -16);
     }
 
     public void turnOn() {
-        getPresentation().changeBkPos(216, 105, false);
+        getAppearance().changeBkPos(216, 105, false);
     }
 
     public void turnOff() {
-        getPresentation().changeBkPos(236, 105, false);
+        getAppearance().changeBkPos(236, 105, false);
     }
 
     @Override
     void doDraw(Canvas canvas) {
-        getPresentation().drawBitmap(canvas);
+        getAppearance().drawBitmap(canvas);
     }
 }

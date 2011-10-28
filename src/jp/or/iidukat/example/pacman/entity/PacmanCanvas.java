@@ -21,46 +21,46 @@ public class PacmanCanvas extends BaseEntity {
     }
 
     public void init() {
-        Presentation p = getPresentation();
-        p.setWidth(554);
-        p.setHeight(136);
-        p.setBgColor(0x000000);
+        Appearance a = getAppearance();
+        a.setWidth(554);
+        a.setHeight(136);
+        a.setBgColor(0x000000);
     }
 
     public void createPlayfield(PacmanGame game) {
         playfield = new Playfield(
-                                getPresentation().getSourceImage(),
+                                getAppearance().getSourceImage(),
                                 game);
         playfield.init();
         playfield.setParent(this);
     }
 
     public void createScoreLabel() {
-        scoreLabel = new ScoreLabel(getPresentation().getSourceImage());
+        scoreLabel = new ScoreLabel(getAppearance().getSourceImage());
         scoreLabel.init();
         scoreLabel.setParent(this);
     }
     
     public void createScore() {
-        score = new Score(getPresentation().getSourceImage());
+        score = new Score(getAppearance().getSourceImage());
         score.init();
         score.setParent(this);
     }
     
     public void createLevel() {
-        level = new Level(getPresentation().getSourceImage());
+        level = new Level(getAppearance().getSourceImage());
         level.init();
         level.setParent(this);
     }
 
     public void createLives() {
-        lives = new Lives(getPresentation().getSourceImage());
+        lives = new Lives(getAppearance().getSourceImage());
         lives.init();
         lives.setParent(this);
     }
     
     public void createSoundIcon() {
-        sound = new Sound(getPresentation().getSourceImage());
+        sound = new Sound(getAppearance().getSourceImage());
         sound.init();
         sound.setParent(this);
     }
@@ -82,7 +82,7 @@ public class PacmanCanvas extends BaseEntity {
     
     public void createCutsceneField() {
         cutsceneField =
-            new CutsceneField(getPresentation().getSourceImage());
+            new CutsceneField(getAppearance().getSourceImage());
         cutsceneField.init();
         cutsceneField.setParent(this);
     }
@@ -153,11 +153,11 @@ public class PacmanCanvas extends BaseEntity {
     }
 
     public void setTop(float top) {
-        getPresentation().setTop(top);
+        getAppearance().setTop(top);
     }
     
     public void setLeft(float left) {
-        getPresentation().setLeft(left);
+        getAppearance().setLeft(left);
     }
 
     public void reset() {

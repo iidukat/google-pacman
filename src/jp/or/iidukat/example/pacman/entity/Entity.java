@@ -15,13 +15,13 @@ public interface Entity extends Comparable<Entity>{
     void setParent(Entity parent);
     boolean isVisible();
     void setVisibility(boolean visibility);
-    Presentation getPresentation();
+    Appearance getAppearance();
     void draw(Canvas canvas);
     boolean addChild(Entity child);
     boolean removeChild(Entity child);
     void clearChildren();
     
-    public interface Presentation {
+    public interface Appearance {
         int getHeight();
         void setHeight(int height);
         int getWidth();
@@ -49,7 +49,7 @@ public interface Entity extends Comparable<Entity>{
         void setSrc(Rect src);
         RectF getDest();
         void setDest(RectF dest);
-        Presentation getParent();
+        Appearance getParent();
         boolean isVisible();
         void setVisibility(boolean visibility);
         int getOrder();

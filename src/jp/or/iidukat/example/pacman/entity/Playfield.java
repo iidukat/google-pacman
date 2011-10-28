@@ -240,18 +240,18 @@ public class Playfield extends BaseEntity {
     }
 
     public void init() {
-        Presentation p = getPresentation();
-        p.setLeft(45);
-        p.setWidth(464);
-        p.setHeight(136);
-        p.setOrder(99);
+        Appearance a = getAppearance();
+        a.setLeft(45);
+        a.setWidth(464);
+        a.setHeight(136);
+        a.setOrder(99);
     }
 
     public void reset() {
         clearChildren();
         dotsRemaining = 0;
         dotsEaten = 0;
-        getPresentation().prepareBkPos(256, 0);
+        getAppearance().prepareBkPos(256, 0);
         determinePlayfieldDimensions();
         preparePlayfield();
         preparePaths();
@@ -377,7 +377,7 @@ public class Playfield extends BaseEntity {
                 if (playfield.get(Integer.valueOf(b))
                             .get(Integer.valueOf(c)).getDot()
                         != PathElement.Dot.NONE) {
-                    DotElement dot = new Food(getPresentation().getSourceImage());
+                    DotElement dot = new Food(getAppearance().getSourceImage());
                     dot.init(c, b);
                     dot.setParent(this);
                     row.put(Integer.valueOf(c), dot);
@@ -399,7 +399,7 @@ public class Playfield extends BaseEntity {
             
             removeChild(removed);
 
-            Energizer e = new Energizer(getPresentation().getSourceImage());
+            Energizer e = new Energizer(getAppearance().getSourceImage());
             e.init(x, y);
             e.setParent(this);
             putDotElement(x, y, e);
@@ -453,14 +453,14 @@ public class Playfield extends BaseEntity {
     }
 
     private void createFruitElement() {
-        fruit = new Fruit(getPresentation().getSourceImage(),
+        fruit = new Fruit(getAppearance().getSourceImage(),
                             game.getLevels().getFruit());
         fruit.initOnPlayfield(FRUIT_POSITION[1], FRUIT_POSITION[0]);
         fruit.setParent(this);
     }
     
     private void createDoorElement() {
-        door = new Door(getPresentation().getSourceImage());
+        door = new Door(getAppearance().getSourceImage());
         door.init();
         door.setVisibility(false);
         door.setParent(this);
@@ -468,7 +468,7 @@ public class Playfield extends BaseEntity {
 
     private void createActorElements() {
         pacman = new Pacman(
-                        getPresentation().getSourceImage(),
+                        getAppearance().getSourceImage(),
                         game);
         pacman.init();
         pacman.setParent(this);
@@ -477,19 +477,19 @@ public class Playfield extends BaseEntity {
             List<Ghost> gs = new ArrayList<Ghost>();
             gs.add(
                 new Blinky(
-                    getPresentation().getSourceImage(),
+                    getAppearance().getSourceImage(),
                     game));
             gs.add(
                 new Pinky(
-                    getPresentation().getSourceImage(),
+                    getAppearance().getSourceImage(),
                     game));
             gs.add(
                 new Inky(
-                    getPresentation().getSourceImage(),
+                    getAppearance().getSourceImage(),
                     game));
             gs.add(
                 new Clyde(
-                    getPresentation().getSourceImage(),
+                    getAppearance().getSourceImage(),
                     game));
 
             ghosts = gs.toArray(new Ghost[0]);
@@ -509,13 +509,13 @@ public class Playfield extends BaseEntity {
     }
     
     public void createReadyElement() {
-        ready = new Ready(getPresentation().getSourceImage());
+        ready = new Ready(getAppearance().getSourceImage());
         ready.init();
         ready.setParent(this);
     }
     
     public void createGameOverElement() {
-        gameover = new GameOver(getPresentation().getSourceImage());
+        gameover = new GameOver(getAppearance().getSourceImage());
         gameover.init();
         gameover.setParent(this);
     }
@@ -579,7 +579,7 @@ public class Playfield extends BaseEntity {
     private void createKillScreenElement(
                                 int b, int c, int d, int f, boolean h) {
         KillScreenTile tile =
-                new KillScreenTile(getPresentation().getSourceImage());
+                new KillScreenTile(getAppearance().getSourceImage());
         tile.init(b, c, d, f);
         if (h) {
             // j.style.background = "url(src/pacman10-hp-sprite-2.png) -" + killScreenTileX + "px -" + killScreenTileY + "px no-repeat";
@@ -593,13 +593,13 @@ public class Playfield extends BaseEntity {
     
     public void blink(float gameplayModeTime, float interval) {
         if (FloatMath.floor(gameplayModeTime / (interval / 8)) % 2 == 0)
-            getPresentation().changeBkPos(322, 2, false);
+            getAppearance().changeBkPos(322, 2, false);
         else
-            getPresentation().changeBkPos(322, 138, false);
+            getAppearance().changeBkPos(322, 138, false);
     }
 
     void doDraw(Canvas canvas) {
-        getPresentation().drawBitmap(canvas);
+        getAppearance().drawBitmap(canvas);
     }
 
     public Pacman getPacman() {
@@ -677,9 +677,9 @@ public class Playfield extends BaseEntity {
         }
 
         void init(int x, int y) {
-            Presentation p = getPresentation();
-            p.setLeft(x + -32);
-            p.setTop(y + 0);
+            Appearance a = getAppearance();
+            a.setLeft(x + -32);
+            a.setTop(y + 0);
         }
         
         @Override
@@ -710,18 +710,18 @@ public class Playfield extends BaseEntity {
         @Override
         void init(int x, int y) {
             super.init(x, y);
-            Presentation p = getPresentation();
-            p.setLeftOffset(3);// margin-left: 3
-            p.setTopOffset(3); // margint-top: 3
-            p.setWidth(2);
-            p.setHeight(2);
-            p.setBgColor(0xf8b090);
-            p.setOrder(100);
+            Appearance a = getAppearance();
+            a.setLeftOffset(3);// margin-left: 3
+            a.setTopOffset(3); // margint-top: 3
+            a.setWidth(2);
+            a.setHeight(2);
+            a.setBgColor(0xf8b090);
+            a.setOrder(100);
         }
 
         @Override
         void drawDot(Canvas canvas) {
-            getPresentation().drawRectShape(canvas);
+            getAppearance().drawRectShape(canvas);
         }
     }
     
@@ -734,11 +734,11 @@ public class Playfield extends BaseEntity {
         @Override
         void init(int x, int y) {
             super.init(x, y);
-            Presentation p = getPresentation();
-            p.setWidth(8);
-            p.setHeight(8);
-            p.prepareBkPos(0, 144);
-            p.setOrder(101);
+            Appearance a = getAppearance();
+            a.setWidth(8);
+            a.setHeight(8);
+            a.prepareBkPos(0, 144);
+            a.setOrder(101);
         }
 
         void update(GameplayMode gameplayMode, long globalTime, float interval) {
@@ -772,7 +772,7 @@ public class Playfield extends BaseEntity {
 
         @Override
         void drawDot(Canvas canvas) {
-            getPresentation().drawBitmap(canvas);
+            getAppearance().drawBitmap(canvas);
         }
     }
 
@@ -783,17 +783,17 @@ public class Playfield extends BaseEntity {
         }
         
         void init() {
-            Presentation p = getPresentation();
-            p.setWidth(19);
-            p.setHeight(2);
-            p.setLeft(279);
-            p.setTop(46);
-            p.setBgColor(0xffaaa5);
+            Appearance a = getAppearance();
+            a.setWidth(19);
+            a.setHeight(2);
+            a.setLeft(279);
+            a.setTop(46);
+            a.setBgColor(0xffaaa5);
         }
         
         @Override
         void doDraw(Canvas canvas) {
-            getPresentation().drawRectShape(canvas);
+            getAppearance().drawRectShape(canvas);
         }
     }
     
@@ -804,18 +804,18 @@ public class Playfield extends BaseEntity {
         }
 
         public void init() {
-            Presentation p = getPresentation();
-            p.setWidth(48);
-            p.setHeight(8);
-            p.setLeft(264);
-            p.setTop(80);
-            p.prepareBkPos(160, 0);
-            p.setOrder(120);
+            Appearance a = getAppearance();
+            a.setWidth(48);
+            a.setHeight(8);
+            a.setLeft(264);
+            a.setTop(80);
+            a.prepareBkPos(160, 0);
+            a.setOrder(120);
         }
 
         @Override
         void doDraw(Canvas canvas) {
-            getPresentation().drawBitmap(canvas);
+            getAppearance().drawBitmap(canvas);
         }
     }
 
@@ -826,18 +826,18 @@ public class Playfield extends BaseEntity {
         }
 
         public void init() {
-            Presentation p = getPresentation();
-            p.setWidth(80);
-            p.setHeight(8);
-            p.setLeft(248);
-            p.setTop(80);
-            p.prepareBkPos(8, 152);
-            p.setOrder(120);
+            Appearance a = getAppearance();
+            a.setWidth(80);
+            a.setHeight(8);
+            a.setLeft(248);
+            a.setTop(80);
+            a.prepareBkPos(8, 152);
+            a.setOrder(120);
         }
 
         @Override
         void doDraw(Canvas canvas) {
-            getPresentation().drawBitmap(canvas);
+            getAppearance().drawBitmap(canvas);
         }
     }
 
@@ -850,33 +850,33 @@ public class Playfield extends BaseEntity {
         }
 
         void init(int left, int top, int width, int height) {
-            Presentation p = getPresentation();
-            p.setLeft(left);
-            p.setTop(top);
-            p.setWidth(width);
-            p.setHeight(height);
-            p.setOrder(119);
+            Appearance a = getAppearance();
+            a.setLeft(left);
+            a.setTop(top);
+            a.setWidth(width);
+            a.setHeight(height);
+            a.setOrder(119);
         }
 
         void setBgPos(int x, int y) {
             bgImage = true;
-            Presentation p = getPresentation();
-            p.setBgPosX(x);
-            p.setBgPosY(y);
+            Appearance a = getAppearance();
+            a.setBgPosX(x);
+            a.setBgPosY(y);
 
         }
 
         void setBgColor(int color) {
-            getPresentation().setBgColor(color);
+            getAppearance().setBgColor(color);
         }
 
         @Override
         void doDraw(Canvas canvas) {
-            Presentation p = getPresentation();
+            Appearance a = getAppearance();
             if (bgImage) {
-                p.drawBitmap(canvas);
+                a.drawBitmap(canvas);
             } else {
-                p.drawRectShape(canvas);
+                a.drawRectShape(canvas);
             }
         }
     }

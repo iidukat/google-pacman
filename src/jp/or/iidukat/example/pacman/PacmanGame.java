@@ -1269,11 +1269,11 @@ public class PacmanGame {
     private void changeGameplayMode(GameplayMode b) {
         gameplayMode = b;
         if (b != GameplayMode.CUTSCENE) {
-            getPacman().updatePresentation();
+            getPacman().updateAppearance();
 
             Ghost[] ghosts = getGhosts();
             for (PlayfieldActor actor : ghosts)
-                actor.updatePresentation();
+                actor.updateAppearance();
         }
 
         switch (b) {
@@ -1403,7 +1403,7 @@ public class PacmanGame {
             for (int c = 0; c < cutsceneActors.length; c++) {
                 CutsceneActor d = cutsceneActors[c];
                 d.setupSequence();
-                d.updatePresentation();
+                d.updateAppearance();
             }
         }
     }
@@ -1446,10 +1446,10 @@ public class PacmanGame {
             switch (gameplayMode) {
             case PLAYER_DYING:
             case PLAYER_DIED:
-                getPacman().updatePresentation();
+                getPacman().updateAppearance();
                 Ghost[] ghosts = getGhosts();
                 for (PlayfieldActor actor : ghosts)
-                    actor.updatePresentation();
+                    actor.updateAppearance();
                 break;
             case LEVEL_COMPLETED:
                 getPlayfieldEl().blink(gameplayModeTime, timing[11]);

@@ -106,12 +106,12 @@ public class CutscenePacman extends CutsceneActor {
             if (t == 3) t = 1;
             c += 2 * t;
             // BigPacMan
-            Presentation p = getPresentation();
-            p.setWidth(32);
-            p.setHeight(32);
-            p.setTopOffset(-20);
-            p.setLeftOffset(-20);
-            p.setOrder(111);
+            Appearance a = getAppearance();
+            a.setWidth(32);
+            a.setHeight(32);
+            a.setTopOffset(-20);
+            a.setLeftOffset(-20);
+            a.setOrder(111);
         } else {
             switch (d) {
             case LEFT:

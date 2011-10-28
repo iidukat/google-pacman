@@ -16,18 +16,18 @@ public class Score extends BaseEntity {
     }
 
     public void init() {
-        Presentation p = getPresentation();
-        p.setLeft(18);
-        p.setTop(16);
-        p.setWidth(8);
-        p.setHeight(56);
+        Appearance a = getAppearance();
+        a.setLeft(18);
+        a.setTop(16);
+        a.setWidth(8);
+        a.setHeight(56);
         initScoreNumbers();
     }
 
     private void initScoreNumbers() {
         for (int i = 0; i < DIGITS; i++) {
             Score.Number n =
-                new Score.Number(getPresentation().getSourceImage());
+                new Score.Number(getAppearance().getSourceImage());
             n.init(i * 8);
             n.setParent(this);
             numbers.add(n);
@@ -59,7 +59,7 @@ public class Score extends BaseEntity {
 
     @Override
     void doDraw(Canvas canvas) {
-        getPresentation().drawRectShape(canvas);
+        getAppearance().drawRectShape(canvas);
     }
 
     public static class Number extends BaseEntity {
@@ -69,25 +69,25 @@ public class Score extends BaseEntity {
         }
 
         void init(int top) {
-            Presentation p = getPresentation();
-            p.setTop(top);
-            p.setLeft(0);
-            p.setWidth(8);
-            p.setHeight(8);
-            p.prepareBkPos(48, 0);
+            Appearance a = getAppearance();
+            a.setTop(top);
+            a.setLeft(0);
+            a.setWidth(8);
+            a.setHeight(8);
+            a.prepareBkPos(48, 0);
         }
 
         void update(int n) {
-            getPresentation().changeBkPos(8 + 8 * n, 144, true);
+            getAppearance().changeBkPos(8 + 8 * n, 144, true);
         }
         
         void updateToBlank() {
-            getPresentation().changeBkPos(48, 0, true);
+            getAppearance().changeBkPos(48, 0, true);
         }
 
         @Override
         void doDraw(Canvas canvas) {
-            getPresentation().drawBitmap(canvas);
+            getAppearance().drawBitmap(canvas);
         }
     }
 }

@@ -41,7 +41,7 @@ public class CutsceneSteak extends CutsceneActor {
     @Override
     public void init() {
         super.init();
-        getPresentation().setOrder(109);
+        getAppearance().setOrder(109);
     }
 
     @Override

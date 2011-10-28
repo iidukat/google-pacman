@@ -11,12 +11,12 @@ public class ScoreLabel extends BaseEntity {
     }
 
     public void init() {
-        Presentation p = getPresentation();
-        p.setLeft(-2);
-        p.setTop(0);
-        p.setWidth(48);
-        p.setHeight(8);
-        p.prepareBkPos(160, 56);
+        Appearance a = getAppearance();
+        a.setLeft(-2);
+        a.setTop(0);
+        a.setWidth(48);
+        a.setHeight(8);
+        a.prepareBkPos(160, 56);
     }
 
     public void update(
@@ -34,6 +34,6 @@ public class ScoreLabel extends BaseEntity {
     
     @Override
     void doDraw(Canvas canvas) {
-        getPresentation().drawBitmap(canvas);
+        getAppearance().drawBitmap(canvas);
     }
 }

@@ -16,11 +16,11 @@ public class Level extends BaseEntity {
     }
     
     public void init() {
-        Presentation p = getPresentation();
-        p.setLeft(515);
-        p.setTop(74);
-        p.setHeight(64);
-        p.setWidth(32);
+        Appearance a = getAppearance();
+        a.setLeft(515);
+        a.setTop(74);
+        a.setHeight(64);
+        a.setWidth(32);
     }
     
     @Override
@@ -40,7 +40,7 @@ public class Level extends BaseEntity {
                     : levelConfigs[i].getFruit();
             Fruit fruit =
                 new Fruit(
-                        getPresentation().getSourceImage(),
+                        getAppearance().getSourceImage(),
                         fruitLevel);
             top += Fruit.HEIGHT;
             fruit.initOnLevel(top);

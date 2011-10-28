@@ -245,7 +245,7 @@ public abstract class Ghost extends PlayfieldActor {
         this.physicalSpeed = 0;
         this.speedIntervals = game.getSpeedIntervals(mv.speed);
         this.proceedToNextRoutineMove = false;
-        this.updatePresentation();
+        this.updateAppearance();
     }
     
     // モンスターの巣の中/巣から出る挙動を管理(表示画像決定&位置移動)
@@ -277,7 +277,7 @@ public abstract class Ghost extends PlayfieldActor {
                     }
                     break;
                 }
-                this.updatePresentation();
+                this.updateAppearance();
             }
     }
     
@@ -365,7 +365,7 @@ public abstract class Ghost extends PlayfieldActor {
                 break;
             }
             c = 11;
-            getPresentation().setOrder(111);
+            getAppearance().setOrder(111);
         } else if (this.mode == GhostMode.FRIGHTENED
                       || (this.mode == GhostMode.IN_PEN || this.mode == GhostMode.LEAVING_PEN)
                           && game.getMainGhostMode() == GhostMode.FRIGHTENED

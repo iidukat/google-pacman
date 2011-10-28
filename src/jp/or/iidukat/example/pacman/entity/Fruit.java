@@ -17,39 +17,39 @@ public class Fruit extends BaseEntity {
     }
     
     void initOnPlayfield(int x, int y) {
-        Presentation p = getPresentation();
-        p.setWidth(WIDTH);
-        p.setHeight(HEIGHT);
-        p.setLeft(PacmanGame.getFieldX(x));
-        p.setTop(PacmanGame.getFieldY(y));
-        p.setLeftOffset(-8);
-        p.setTopOffset(-4);
-        p.prepareBkPos(-32, -16);
-        p.setOrder(105);
+        Appearance a = getAppearance();
+        a.setWidth(WIDTH);
+        a.setHeight(HEIGHT);
+        a.setLeft(PacmanGame.getFieldX(x));
+        a.setTop(PacmanGame.getFieldY(y));
+        a.setLeftOffset(-8);
+        a.setTopOffset(-4);
+        a.prepareBkPos(-32, -16);
+        a.setOrder(105);
     }
     
     void initOnLevel(int top) {
         int[] bgPos = getSprite();
-        Presentation p = getPresentation();
-        p.prepareBkPos(bgPos[0], bgPos[1]);
-        p.setWidth(WIDTH);
-        p.setHeight(HEIGHT);
-        p.setTop(top);
-        p.setOrder(105);
+        Appearance a = getAppearance();
+        a.prepareBkPos(bgPos[0], bgPos[1]);
+        a.setWidth(WIDTH);
+        a.setHeight(HEIGHT);
+        a.setTop(top);
+        a.setOrder(105);
     }
     
     public void hide() {
-        getPresentation().changeBkPos(32, 16, true);
+        getAppearance().changeBkPos(32, 16, true);
     }
 
     public void show() {
         int[] bgPos = getSprite();
-        getPresentation().changeBkPos(bgPos[0], bgPos[1], true);
+        getAppearance().changeBkPos(bgPos[0], bgPos[1], true);
     }
 
     public void eaten() {
         int[] bgPos = getScoreSprite();
-        getPresentation().changeBkPos(bgPos[0], bgPos[1], true);
+        getAppearance().changeBkPos(bgPos[0], bgPos[1], true);
     }
     
     private int[] getSprite() {
@@ -66,6 +66,6 @@ public class Fruit extends BaseEntity {
     
     @Override
     void doDraw(Canvas canvas) {
-        getPresentation().drawBitmap(canvas);
+        getAppearance().drawBitmap(canvas);
     }
 }

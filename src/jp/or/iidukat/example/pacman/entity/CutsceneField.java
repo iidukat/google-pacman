@@ -16,10 +16,10 @@ public class CutsceneField extends BaseEntity {
     }
     
     public void init() {
-        Presentation p = getPresentation();
-        p.setLeft(45);
-        p.setWidth(464);
-        p.setHeight(136);
+        Appearance a = getAppearance();
+        a.setLeft(45);
+        a.setWidth(464);
+        a.setHeight(136);
     }
 
     public void createActors(
@@ -32,7 +32,7 @@ public class CutsceneField extends BaseEntity {
                 CutsceneActorFactory.getInstance()
                                     .create(
                                         actorType,
-                                        getPresentation().getSourceImage(),
+                                        getAppearance().getSourceImage(),
                                         game,
                                         cutsceneId);
             actor.init();
@@ -44,7 +44,7 @@ public class CutsceneField extends BaseEntity {
     
     @Override
     void doDraw(Canvas c) {
-        getPresentation().drawRectShape(c);
+        getAppearance().drawRectShape(c);
     }
     
     public CutsceneActor[] getActors() {

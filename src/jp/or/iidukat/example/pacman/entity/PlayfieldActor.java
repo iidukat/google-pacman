@@ -89,13 +89,13 @@ public abstract class PlayfieldActor extends BaseEntity {
     abstract InitPosition getInitPosition();
     
     public final void init() {
-        Presentation p = getPresentation();
-        p.setWidth(16);
-        p.setHeight(16);
-        p.setTopOffset(-4);
-        p.setLeftOffset(-4);
-        p.prepareBkPos(0, 0);
-        p.setOrder(DEFAULT_DISPLAY_ORDER);
+        Appearance a = getAppearance();
+        a.setWidth(16);
+        a.setHeight(16);
+        a.setTopOffset(-4);
+        a.setLeftOffset(-4);
+        a.prepareBkPos(0, 0);
+        a.setOrder(DEFAULT_DISPLAY_ORDER);
         
         this.elPos = new float[] {0, 0};
         this.elBackgroundPos = new int[] {0, 0};
@@ -218,7 +218,7 @@ public abstract class PlayfieldActor extends BaseEntity {
             }
         }
         
-        this.updatePresentation();
+        this.updateAppearance();
     }
     
     abstract boolean supportShortcut();
@@ -227,7 +227,7 @@ public abstract class PlayfieldActor extends BaseEntity {
     public abstract void move();
     
     // Actor表示画像切り替え(アニメーション対応)&表示位置更新
-    public final void updatePresentation() {
+    public final void updateAppearance() {
         this.updateElPos(); //位置移動 
         int[] b = { 0, 0 };
         b = game.getGameplayMode() == GameplayMode.GAMEOVER
@@ -239,7 +239,7 @@ public abstract class PlayfieldActor extends BaseEntity {
             this.elBackgroundPos[1] = b[1];
             b[0] *= 16;
             b[1] *= 16;
-            getPresentation().changeBkPos(b[1], b[0], true);
+            getAppearance().changeBkPos(b[1], b[0], true);
         }
     }
     
@@ -250,7 +250,7 @@ public abstract class PlayfieldActor extends BaseEntity {
         if (this.elPos[0] != c || this.elPos[1] != b) {
             this.elPos[0] = c;
             this.elPos[1] = b;
-            Presentation el = getPresentation();
+            Appearance el = getAppearance();
             el.setLeft(b);
             el.setTop(c);
         }
@@ -260,7 +260,7 @@ public abstract class PlayfieldActor extends BaseEntity {
     
     @Override
     final void doDraw(Canvas canvas) {
-        getPresentation().drawBitmap(canvas);
+        getAppearance().drawBitmap(canvas);
     }
 
     public final int[] getTilePos() {
@@ -327,6 +327,6 @@ public abstract class PlayfieldActor extends BaseEntity {
     }
     
     public final void resetDisplayOrder() {
-        getPresentation().setOrder(DEFAULT_DISPLAY_ORDER);
+        getAppearance().setOrder(DEFAULT_DISPLAY_ORDER);
     }
 }
