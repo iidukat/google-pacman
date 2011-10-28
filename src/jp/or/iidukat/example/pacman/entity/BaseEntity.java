@@ -26,48 +26,48 @@ abstract class BaseEntity implements Entity {
     }
     
     @Override
-    public int getHeight() {
+    public final int getHeight() {
         return presentation.getHeight();
     }
     
     @Override
-    public int getWidth() {
+    public final int getWidth() {
         return presentation.getWidth();
     }
     
     @Override
-    public float[] getAbsolutePos() {
+    public final float[] getAbsolutePos() {
         return presentation.getAbsolutePos();
     }
     
     @Override
-    public Entity getParent() {
+    public final Entity getParent() {
         return parent;
     }
     
     @Override
-    public void setParent(Entity parent) {
+    public final void setParent(Entity parent) {
         this.parent = parent;
         this.parent.addChild(this);
     }
     
     @Override
-    public boolean isVisible() {
+    public final boolean isVisible() {
         return presentation.isVisible();
     }
     
     @Override
-    public void setVisibility(boolean visibility) {
+    public final void setVisibility(boolean visibility) {
         presentation.setVisibility(visibility);
     }
     
     @Override
-    public Presentation getPresentation() {
+    public final Presentation getPresentation() {
         return presentation;
     }
     
     @Override
-    public void draw(Canvas canvas) {
+    public final void draw(Canvas canvas) {
         if (!isVisible()) {
             return;
         }
@@ -84,7 +84,7 @@ abstract class BaseEntity implements Entity {
     abstract void doDraw(Canvas canvas);
     
     @Override
-    public boolean addChild(Entity child) {
+    public final boolean addChild(Entity child) {
         boolean added = children.add(child);
         if (added) {
             Collections.sort(children);
@@ -93,17 +93,17 @@ abstract class BaseEntity implements Entity {
     }
     
     @Override
-    public boolean removeChild(Entity child) {
+    public final boolean removeChild(Entity child) {
         return children.remove(child);
     }
     
     @Override
-    public void clearChildren() {
+    public final void clearChildren() {
         children.clear();
     }
     
     @Override
-    public int compareTo(Entity another) {
+    public final int compareTo(Entity another) {
         int o = getPresentation().getOrder();
         int ao = another.getPresentation().getOrder();
         if (o < ao) {

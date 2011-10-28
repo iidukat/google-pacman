@@ -5,7 +5,7 @@ import jp.or.iidukat.example.pacman.Direction.Move;
 import jp.or.iidukat.example.pacman.PacmanGame;
 import jp.or.iidukat.example.pacman.PacmanGame.GameplayMode;
 import jp.or.iidukat.example.pacman.entity.Playfield.PathElement;
-import jp.or.iidukat.example.pacman.entity.Playfield.PathElement.Dot;
+
 import android.graphics.Bitmap;
 import android.util.FloatMath;
 
@@ -75,6 +75,10 @@ public class Pacman extends Actor {
     
     @Override
     void shortcutCorner() {
+        handlePrecedeInput();
+    }
+    
+    private void handlePrecedeInput() {
         int[] b = this.tilePos;
         float[] c;
         float[] d;
@@ -111,78 +115,43 @@ public class Pacman extends Actor {
     }
     
 
-    // tilePosとposの差分が有意になったとき呼び出される
     @Override
-    void enteringTile(int[] b) {
-        game.setTilesChanged(true);
-        if (!game.getPathElement(b[1], b[0]).isPath()) { // プレイヤーがパスでないところへ移動しようとする
+    void adjustPosInfoOnEnteringTile(int[] tilePos) {
+        if (!game.getPathElement(tilePos[1], tilePos[0]).isPath()) { // プレイヤーがパスでないところへ移動しようとする
             // 最後に正常に移動成功した位置に補正
             this.pos[0] = this.lastGoodTilePos[0];
             this.pos[1] = this.lastGoodTilePos[1];
-            b[0] = this.lastGoodTilePos[0];
-            b[1] = this.lastGoodTilePos[1];
+            tilePos[0] = this.lastGoodTilePos[0];
+            tilePos[1] = this.lastGoodTilePos[1];
             this.dir = Direction.NONE;
-        } else {
-            // モンスターの移動 or プレイヤーがパスであるところへ移動
-            this.lastGoodTilePos = new int[] { b[0], b[1] };
-        }
-
-        // トンネル通過[モンスターが食べられた時以外](currentSpeed:2) or それ以外(currentSpeed:0)
-        if (game.getPathElement(b[1], b[0]).isTunnel()) {
-            this.changeSpeed(CurrentSpeed.PASSING_TUNNEL);
-        } else {
-            this.changeSpeed(CurrentSpeed.NORMAL);
-        }
-
-        // プレイヤーがエサを食べる
-        if (game.getPathElement(b[1], b[0]).getDot() != Dot.NONE) {
-            game.dotEaten(b);
-        }
-
-        this.tilePos[0] = b[0];
-        this.tilePos[1] = b[1];
+        } 
     }
-
-    // posの値がtilePosと一致(pos が8の倍数)したときに呼び出される
+    
     @Override
-    void enteredTile() {
-        this.lookForSomething();
-        PathElement b =
-            game.getPathElement((int) this.pos[1], (int) this.pos[0]);
-        if (b.isIntersection()) // 行き止まり/交差点にて
-            if (this.nextDir != Direction.NONE
-                    && b.allow(this.nextDir)) { // nextDirで指定された方向へ移動可能
-                if (this.dir != Direction.NONE) {
-                    this.lastActiveDir = this.dir;
-                }
-                this.dir = this.nextDir;
-                this.nextDir = Direction.NONE;
-                // 先行入力された移動方向分を更新(メソッドhandlePrecedeInputを参照)
-                this.pos[0] += this.posDelta[0];
-                this.pos[1] += this.posDelta[1];
-                this.posDelta = new float[] { 0, 0 };
-            } else if (!b.allow(this.dir)) { // nextDirもdirも移動不可だったら、停止
-                if (this.dir != Direction.NONE) {
-                    this.lastActiveDir = this.dir;
-                }
-                this.nextDir = this.dir = Direction.NONE;
-                this.changeSpeed(CurrentSpeed.NORMAL);
-            }
+    boolean canChangeSpeedInTunnel() {
+        return true;
     }
-
+    
     @Override
-    void lookForSomething() {
-        if (this.pos[0] == Playfield.TUNNEL_POS[0].getY() * 8
-                && this.pos[1] == Playfield.TUNNEL_POS[0].getX() * 8) { // 画面左から右へワープ
-            this.pos[0] = Playfield.TUNNEL_POS[1].getY() * 8;
-            this.pos[1] = (Playfield.TUNNEL_POS[1].getX() - 1) * 8;
-        } else if (this.pos[0] == Playfield.TUNNEL_POS[1].getY() * 8
-                    && this.pos[1] == Playfield.TUNNEL_POS[1].getX() * 8) { // 画面右から左へワープ
-            this.pos[0] = Playfield.TUNNEL_POS[0].getY() * 8;
-            this.pos[1] = (Playfield.TUNNEL_POS[0].getX() + 1) * 8;
-        }
-
-        // プレイヤーがフルーツを食べる
+    void encounterDot(int[] tilePos) {
+        game.dotEaten(tilePos);
+    }
+    
+    @Override
+    void decideNextDirOnEnteredTile() {
+    }
+    
+    @Override
+    void adjustPosInfoOnEnteredTile() {
+        // 先行入力された移動方向分を更新(メソッドhandlePrecedeInputを参照)
+        this.pos[0] += this.posDelta[0];
+        this.pos[1] += this.posDelta[1];
+        this.posDelta = new float[] { 0, 0 };
+    }
+    
+    @Override
+    void lookForSomethingSpecial() {
+        // フルーツを食べる
         if (this.pos[0] == Playfield.FRUIT_POSITION[0]
                 && (this.pos[1] == Playfield.FRUIT_POSITION[1]
                     || this.pos[1] == Playfield.FRUIT_POSITION[1] + 8)) {

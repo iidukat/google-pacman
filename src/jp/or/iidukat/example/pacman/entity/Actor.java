@@ -5,6 +5,7 @@ import jp.or.iidukat.example.pacman.Direction.Move;
 import jp.or.iidukat.example.pacman.PacmanGame;
 import jp.or.iidukat.example.pacman.PacmanGame.GameplayMode;
 import jp.or.iidukat.example.pacman.entity.Playfield.PathElement;
+import jp.or.iidukat.example.pacman.entity.Playfield.PathElement.Dot;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.util.FloatMath;
@@ -87,7 +88,7 @@ public abstract class Actor extends BaseEntity {
     
     abstract InitPosition getInitPosition();
     
-    public void init() {
+    public final void init() {
         Presentation p = getPresentation();
         p.setWidth(16);
         p.setHeight(16);
@@ -101,14 +102,79 @@ public abstract class Actor extends BaseEntity {
     }
     
     // tilePosとposの差分が有意になったとき呼び出される
-    abstract void enteringTile(int[] b);
-    // posの値がtilePosと一致(pos が8の倍数)したときに呼び出される
-    abstract void enteredTile();
+    final void enteringTile(int[] tilePos) {
+        game.setTilesChanged(true);
+        adjustPosInfoOnEnteringTile(tilePos);
+        // モンスター or プレイヤーがパスであるところへ移動
+        this.lastGoodTilePos = new int[] { tilePos[0], tilePos[1] };
+
+        // トンネル通過(currentSpeed:2) or それ以外(currentSpeed:0)
+        if (game.getPathElement(tilePos[1], tilePos[0]).isTunnel()) {
+            if (canChangeSpeedInTunnel()) {
+                this.changeSpeed(CurrentSpeed.PASSING_TUNNEL);
+            }
+        } else {
+            this.changeSpeed(CurrentSpeed.NORMAL);
+        }
+
+        // エサとエンカウント
+        if (game.getPathElement(tilePos[1], tilePos[0]).getDot() != Dot.NONE) {
+            encounterDot(tilePos);
+        }
+
+        this.tilePos[0] = tilePos[0];
+        this.tilePos[1] = tilePos[1];
+    }
+
+    abstract void adjustPosInfoOnEnteringTile(int[] tilePos);
+    abstract boolean canChangeSpeedInTunnel();
+    abstract void encounterDot(int[] tilePos);
     
-    abstract void lookForSomething();
+    // posの値がtilePosと一致(pos が8の倍数)したときに呼び出される
+    final void enteredTile() {
+        lookForSomething();
+        decideNextDirOnEnteredTile(); 
+        PathElement b =
+            game.getPathElement((int) this.pos[1], (int) this.pos[0]);
+        if (b.isIntersection()) // 行き止まり/交差点にて
+            if (this.nextDir != Direction.NONE
+                    && b.allow(this.nextDir)) { // nextDirで指定された方向へ移動可能
+                if (this.dir != Direction.NONE) {
+                    this.lastActiveDir = this.dir;
+                }
+                this.dir = this.nextDir;
+                this.nextDir = Direction.NONE;
+                adjustPosInfoOnEnteredTile();
+            } else if (!b.allow(this.dir)) { // nextDirもdirも移動不可だったら、停止
+                if (this.dir != Direction.NONE) {
+                    this.lastActiveDir = this.dir;
+                }
+                this.nextDir = this.dir = Direction.NONE;
+                changeSpeed(CurrentSpeed.NORMAL);
+            }
+    }
+    
+    abstract void decideNextDirOnEnteredTile(); 
+    abstract void adjustPosInfoOnEnteredTile();
+    
+    final void lookForSomething() {
+        if (this.pos[0] == Playfield.TUNNEL_POS[0].getY() * 8
+                && this.pos[1] == Playfield.TUNNEL_POS[0].getX() * 8) { // 画面左から右へワープ
+            this.pos[0] = Playfield.TUNNEL_POS[1].getY() * 8;
+            this.pos[1] = (Playfield.TUNNEL_POS[1].getX() - 1) * 8;
+        } else if (this.pos[0] == Playfield.TUNNEL_POS[1].getY() * 8
+                    && this.pos[1] == Playfield.TUNNEL_POS[1].getX() * 8) { // 画面右から左へワープ
+            this.pos[0] = Playfield.TUNNEL_POS[0].getY() * 8;
+            this.pos[1] = (Playfield.TUNNEL_POS[0].getX() + 1) * 8;
+        }
+
+        lookForSomethingSpecial();
+    }
+    
+    abstract void lookForSomethingSpecial();
     
     // Actorの速度設定変更
-    public void changeSpeed(CurrentSpeed b) {
+    public final void changeSpeed(CurrentSpeed b) {
         this.currentSpeed = b;
         this.changeSpeed();
     }
@@ -117,7 +183,7 @@ public abstract class Actor extends BaseEntity {
     public abstract void changeSpeed();
     
     // Actorの移動(ルーチン以外)
-    void step() {
+    final void step() {
         if (this.dir == Direction.NONE
             || !this.speedIntervals[game.getIntervalTime()]) {
             return;
@@ -160,7 +226,7 @@ public abstract class Actor extends BaseEntity {
     public abstract void move();
     
     // Actor表示画像切り替え(アニメーション対応)&表示位置更新
-    public void updatePresentation() {
+    public final void updatePresentation() {
         this.updateElPos(); //位置移動 
         int[] b = { 0, 0 };
         b = game.getGameplayMode() == GameplayMode.GAMEOVER
@@ -177,7 +243,7 @@ public abstract class Actor extends BaseEntity {
     }
     
     // 表示位置更新
-    public void updateElPos() {
+    public final void updateElPos() {
         float b = getFieldX();
         float c = getFieldY();
         if (this.elPos[0] != c || this.elPos[1] != b) {
@@ -192,74 +258,74 @@ public abstract class Actor extends BaseEntity {
     abstract int[] getImagePos();
     
     @Override
-    void doDraw(Canvas canvas) {
+    final void doDraw(Canvas canvas) {
         getPresentation().drawBitmap(canvas);
     }
 
-    public int[] getTilePos() {
+    public final int[] getTilePos() {
         return tilePos;
     }
 
     public abstract float getFieldX();
     public abstract float getFieldY();
     
-    public float[] getPos() {
+    public final float[] getPos() {
         return pos;
     }
 
-    public void setPos(float[] pos) {
+    public final void setPos(float[] pos) {
         this.pos = pos;
     }
 
-    public float[] getElPos() {
+    public final float[] getElPos() {
         return elPos;
     }
 
-    public void setElPos(float[] elPos) {
+    public final void setElPos(float[] elPos) {
         this.elPos = elPos;
     }
 
-    public int[] getElBackgroundPos() {
+    public final int[] getElBackgroundPos() {
         return elBackgroundPos;
     }
 
-    public void setElBackgroundPos(int[] elBackgroundPos) {
+    public final void setElBackgroundPos(int[] elBackgroundPos) {
         this.elBackgroundPos = elBackgroundPos;
     }
 
-    public float getSpeed() {
+    public final float getSpeed() {
         return speed;
     }
 
-    public void setSpeed(float speed) {
+    public final void setSpeed(float speed) {
         this.speed = speed;
     }
     
-    public float getFullSpeed() {
+    public final float getFullSpeed() {
         return fullSpeed;
     }
 
-    public void setFullSpeed(float fullSpeed) {
+    public final void setFullSpeed(float fullSpeed) {
         this.fullSpeed = fullSpeed;
     }
 
-    public float getTunnelSpeed() {
+    public final float getTunnelSpeed() {
         return tunnelSpeed;
     }
 
-    public void setTunnelSpeed(float tunnelSpeed) {
+    public final void setTunnelSpeed(float tunnelSpeed) {
         this.tunnelSpeed = tunnelSpeed;
     }
 
-    public Direction getDir() {
+    public final Direction getDir() {
         return dir;
     }
 
-    public void setDir(Direction dir) {
+    public final void setDir(Direction dir) {
         this.dir = dir;
     }
     
-    public void resetDisplayOrder() {
+    public final void resetDisplayOrder() {
         getPresentation().setOrder(DEFAULT_DISPLAY_ORDER);
     }
 }
