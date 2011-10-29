@@ -47,7 +47,7 @@ public class Inky extends Ghost {
         MOVES_IN_PEN = Collections.unmodifiableMap(m);
     }
 
-    public Inky(Bitmap sourceImage, PacmanGame game) {
+    Inky(Bitmap sourceImage, PacmanGame game) {
         super(sourceImage, game);
     }
     

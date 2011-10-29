@@ -55,7 +55,7 @@ public abstract class Ghost extends PlayfieldActor {
     private boolean reverseDirectionsNext;
     private int dotCount;
 
-    public Ghost(Bitmap sourceImage, PacmanGame game) {
+    Ghost(Bitmap sourceImage, PacmanGame game) {
         super(sourceImage, game);
     }
 
@@ -310,7 +310,11 @@ public abstract class Ghost extends PlayfieldActor {
     }
     
     @Override
-    final void decideNextDirIfNecessary(int[] tilePos) {
+    final void adjustPosOnEnteringTile(int[] tilePos) {
+    }
+    
+    @Override
+    final void reverseOnEnteringTile() {
         if (this.reverseDirectionsNext) { // 方向を反転する
             this.dir = this.dir.getOpposite();
             this.nextDir = Direction.NONE;
@@ -329,7 +333,7 @@ public abstract class Ghost extends PlayfieldActor {
     }
     
     @Override
-    final void decideNextDirOnEnteredTile() {
+    final void reverseOnEnteredTile() {
         decideNextDir(false); // モンスターの交差点/行き止まりでの進行方向決定
     }
     

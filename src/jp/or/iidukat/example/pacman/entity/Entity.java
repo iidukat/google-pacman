@@ -6,7 +6,7 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
 
-public interface Entity extends Comparable<Entity>{
+public interface Entity extends Comparable<Entity> {
 
     int getHeight();
     int getWidth();

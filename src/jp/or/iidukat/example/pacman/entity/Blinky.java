@@ -28,7 +28,7 @@ public class Blinky extends Ghost {
         MOVES_IN_PEN = Collections.unmodifiableMap(m);
     }
 
-    public Blinky(Bitmap sourceImage, PacmanGame game) {
+    Blinky(Bitmap sourceImage, PacmanGame game) {
         super(sourceImage, game);
     }
 

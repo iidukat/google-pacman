@@ -18,7 +18,7 @@ public class Pacman extends PlayfieldActor {
     Direction requestedDir = Direction.NONE;
     private float dotEatingSpeed;
     
-    public Pacman(Bitmap sourceImage, PacmanGame game) {
+    Pacman(Bitmap sourceImage, PacmanGame game) {
         super(sourceImage, game);
     }
 
@@ -116,7 +116,7 @@ public class Pacman extends PlayfieldActor {
     
 
     @Override
-    void decideNextDirIfNecessary(int[] tilePos) {
+    void adjustPosOnEnteringTile(int[] tilePos) {
         if (!game.getPathElement(tilePos[1], tilePos[0]).isPath()) { // プレイヤーがパスでないところへ移動しようとする
             // 最後に正常に移動成功した位置に補正
             this.pos[0] = this.lastGoodTilePos[0];
@@ -125,6 +125,10 @@ public class Pacman extends PlayfieldActor {
             tilePos[1] = this.lastGoodTilePos[1];
             this.dir = Direction.NONE;
         } 
+    }
+    
+    @Override
+    void reverseOnEnteringTile() {
     }
     
     @Override
@@ -138,7 +142,7 @@ public class Pacman extends PlayfieldActor {
     }
     
     @Override
-    void decideNextDirOnEnteredTile() {
+    void reverseOnEnteredTile() {
     }
     
     @Override

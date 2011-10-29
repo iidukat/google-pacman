@@ -39,7 +39,7 @@ public class Pinky extends Ghost {
         MOVES_IN_PEN = Collections.unmodifiableMap(m);
     }
     
-    public Pinky(Bitmap sourceImage, PacmanGame game) {
+    Pinky(Bitmap sourceImage, PacmanGame game) {
         super(sourceImage, game);
     }
 

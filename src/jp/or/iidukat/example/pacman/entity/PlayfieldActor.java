@@ -68,7 +68,7 @@ public abstract class PlayfieldActor extends Actor {
     float tunnelSpeed;
     Boolean[] speedIntervals;
 
-    public PlayfieldActor(Bitmap sourceImage, PacmanGame game) {
+    PlayfieldActor(Bitmap sourceImage, PacmanGame game) {
         super(sourceImage, game);
     }
     
@@ -80,7 +80,8 @@ public abstract class PlayfieldActor extends Actor {
     // tilePosとposの差分が有意になったとき呼び出される
     final void enteringTile(int[] tilePos) {
         game.setTilesChanged(true);
-        decideNextDirIfNecessary(tilePos);
+        adjustPosOnEnteringTile(tilePos);
+        reverseOnEnteringTile();
         // モンスター or プレイヤーがパスであるところへ移動
         this.lastGoodTilePos = new int[] { tilePos[0], tilePos[1] };
 
@@ -102,7 +103,8 @@ public abstract class PlayfieldActor extends Actor {
         this.tilePos[1] = tilePos[1];
     }
 
-    abstract void decideNextDirIfNecessary(int[] tilePos);
+    abstract void adjustPosOnEnteringTile(int[] tilePos);
+    abstract void reverseOnEnteringTile();
     abstract boolean canChangeSpeedInTunnel();
     abstract void encounterDot(int[] tilePos);
     
@@ -110,7 +112,7 @@ public abstract class PlayfieldActor extends Actor {
     final void enteredTile() {
         warpIfPossible();
         handleAnObjectWhenEncountering();
-        decideNextDirOnEnteredTile(); 
+        reverseOnEnteredTile(); 
         PathElement b =
             game.getPathElement((int) this.pos[1], (int) this.pos[0]);
         if (b.isIntersection()) // 行き止まり/交差点にて
@@ -133,7 +135,7 @@ public abstract class PlayfieldActor extends Actor {
             }
     }
     
-    abstract void decideNextDirOnEnteredTile(); 
+    abstract void reverseOnEnteredTile(); 
     abstract void shortcutCorner();
 
     final void warpIfPossible() {
