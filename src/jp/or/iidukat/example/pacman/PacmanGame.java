@@ -1283,8 +1283,9 @@ public class PacmanGame {
                 if (pos > lastPos) {
                     movabilityTimeTable.add(true);
                     lastPos = pos;
-                } else
+                } else {
                     movabilityTimeTable.add(false);
+                }
             }
             speedIntervals.put(key, movabilityTimeTable.toArray(new Boolean[0]));
         }
