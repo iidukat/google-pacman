@@ -29,8 +29,8 @@ public class Inky extends Ghost {
         m.put(
             GhostMode.LEAVING_PEN,
             new MoveInPen[] {
-                new MoveInPen(37.6f, 7, Direction.RIGHT, 39.5f, EXIT_PEN_SPEED),
-                new MoveInPen(39.5f, 7, Direction.UP, 4, EXIT_PEN_SPEED),
+                new MoveInPen(37.6f, 7, Direction.RIGHT, 39.5f, LEAVING_PEN_SPEED),
+                new MoveInPen(39.5f, 7, Direction.UP, 4, LEAVING_PEN_SPEED),
             });            
         m.put(
             GhostMode.ENTERING_PEN,
@@ -41,8 +41,8 @@ public class Inky extends Ghost {
         m.put(
             GhostMode.RE_LEAVING_FROM_PEN,
             new MoveInPen[] {
-                new MoveInPen(37.6f, 7, Direction.RIGHT, 39.5f, EXIT_PEN_SPEED),
-                new MoveInPen(39.5f, 7, Direction.UP, 4, EXIT_PEN_SPEED),
+                new MoveInPen(37.6f, 7, Direction.RIGHT, 39.5f, LEAVING_PEN_SPEED),
+                new MoveInPen(39.5f, 7, Direction.UP, 4, LEAVING_PEN_SPEED),
             });            
         MOVES_IN_PEN = Collections.unmodifiableMap(m);
     }
@@ -64,14 +64,16 @@ public class Inky extends Ghost {
         }
         
         // PlayerをBLINKYと挟み撃ちにする
-        PlayfieldActor b = game.getPacman();
-        Move c = b.dir.getMove();
-        PlayfieldActor d = game.getBlinky();
-        float[] f = new float[] { b.tilePos[0], b.tilePos[1] };
-        f[c.getAxis()] += 16 * c.getIncrement();
-        if (b.dir == Direction.UP) f[1] -= 16;
-        this.targetPos[0] = f[0] * 2 - d.tilePos[0];
-        this.targetPos[1] = f[1] * 2 - d.tilePos[1];
+        PlayfieldActor pacman = game.getPacman();
+        Move pacmanMove = pacman.dir.getMove();
+        PlayfieldActor blinky = game.getBlinky();
+        float[] pacmanDest = new float[] { pacman.tilePos[0], pacman.tilePos[1] };
+        pacmanDest[pacmanMove.getAxis()] += 16 * pacmanMove.getIncrement();
+        if (pacman.dir == Direction.UP) {
+            pacmanDest[1] -= 16;
+        }
+        this.targetPos[0] = pacmanDest[0] * 2 - blinky.tilePos[0];
+        this.targetPos[1] = pacmanDest[1] * 2 - blinky.tilePos[1];
     }
     
     @Override

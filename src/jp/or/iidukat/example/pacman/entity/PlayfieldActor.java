@@ -113,11 +113,11 @@ public abstract class PlayfieldActor extends Actor {
         warpIfPossible();
         handleAnObjectWhenEncountering();
         reverseOnEnteredTile(); 
-        PathElement b =
+        PathElement p =
             game.getPathElement((int) this.pos[1], (int) this.pos[0]);
-        if (b.isIntersection()) // 行き止まり/交差点にて
+        if (p.isIntersection()) // 行き止まり/交差点にて
             if (this.nextDir != Direction.NONE
-                    && b.allow(this.nextDir)) { // nextDirで指定された方向へ移動可能
+                    && p.allow(this.nextDir)) { // nextDirで指定された方向へ移動可能
                 if (this.dir != Direction.NONE) {
                     this.lastActiveDir = this.dir;
                 }
@@ -126,7 +126,7 @@ public abstract class PlayfieldActor extends Actor {
                 if (supportShortcut()) {
                     shortcutCorner();
                 }
-            } else if (!b.allow(this.dir)) { // nextDirもdirも移動不可だったら、停止
+            } else if (!p.allow(this.dir)) { // nextDirもdirも移動不可だったら、停止
                 if (this.dir != Direction.NONE) {
                     this.lastActiveDir = this.dir;
                 }
@@ -153,8 +153,8 @@ public abstract class PlayfieldActor extends Actor {
     abstract void handleAnObjectWhenEncountering();
     
     // Actorの速度設定変更
-    public final void changeSpeed(CurrentSpeed b) {
-        this.currentSpeed = b;
+    public final void changeSpeed(CurrentSpeed speed) {
+        this.currentSpeed = speed;
         this.changeSpeed();
     }
     

@@ -28,13 +28,13 @@ public class Pinky extends Ghost {
             });
         m.put(
             GhostMode.LEAVING_PEN,
-            new MoveInPen[] { new MoveInPen(39.5f, 7, Direction.UP, 4, EXIT_PEN_SPEED) });
+            new MoveInPen[] { new MoveInPen(39.5f, 7, Direction.UP, 4, LEAVING_PEN_SPEED) });
         m.put(
             GhostMode.ENTERING_PEN,
             new MoveInPen[] { new MoveInPen(39.5f, 4, Direction.DOWN, 7, 1.6f) });
         m.put(
             GhostMode.RE_LEAVING_FROM_PEN,
-            new MoveInPen[] { new MoveInPen(39.5f, 7, Direction.UP, 4, EXIT_PEN_SPEED) });
+            new MoveInPen[] { new MoveInPen(39.5f, 7, Direction.UP, 4, LEAVING_PEN_SPEED) });
 
         MOVES_IN_PEN = Collections.unmodifiableMap(m);
     }
@@ -56,11 +56,13 @@ public class Pinky extends Ghost {
             
         }
         // Playerを先回りする
-        PlayfieldActor b = game.getPacman();
-        Move c = b.dir.getMove();
-        this.targetPos = new float[] { b.tilePos[0], b.tilePos[1] };
-        this.targetPos[c.getAxis()] += 32 * c.getIncrement();
-        if (b.dir == Direction.UP) this.targetPos[1] -= 32;
+        PlayfieldActor pacman = game.getPacman();
+        Move mv = pacman.dir.getMove();
+        this.targetPos = new float[] { pacman.tilePos[0], pacman.tilePos[1] };
+        this.targetPos[mv.getAxis()] += 32 * mv.getIncrement();
+        if (pacman.dir == Direction.UP) {
+            this.targetPos[1] -= 32;
+        }
     }
     
     @Override

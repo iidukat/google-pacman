@@ -232,14 +232,13 @@ class SoundPlayer {
             }
 
             channels[channel] =
-                Integer.valueOf(
                     soundPool.play(
                                 id.intValue(),
                                 1,
                                 1,
                                 0,
                                 (repeat ? -1 : 0),
-                                1));
+                                1);
         }
 
         void stopChannel(int channel) {

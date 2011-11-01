@@ -40,7 +40,7 @@ public interface Entity extends Comparable<Entity> {
         float getBgPosY();
         void setBgPosY(float bgPosY);
         void prepareBkPos(int x, int y);
-        void changeBkPos(int x, int y, boolean f);
+        void changeBkPos(int x, int y, boolean correction);
         int getBgColor();
         void setBgColor(int bgColor);
         Paint getPaint();

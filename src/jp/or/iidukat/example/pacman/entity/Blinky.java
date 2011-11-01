@@ -23,7 +23,7 @@ public class Blinky extends Ghost {
             new MoveInPen[] { new MoveInPen(39.5f, 4, Direction.DOWN, 7, 1.6f) });
         m.put(
             GhostMode.RE_LEAVING_FROM_PEN,
-            new MoveInPen[] { new MoveInPen(39.5f, 7, Direction.UP, 4, EXIT_PEN_SPEED) });
+            new MoveInPen[] { new MoveInPen(39.5f, 7, Direction.UP, 4, LEAVING_PEN_SPEED) });
 
         MOVES_IN_PEN = Collections.unmodifiableMap(m);
     }
@@ -41,13 +41,13 @@ public class Blinky extends Ghost {
     @Override
     public void updateTargetPos() {
         // Playerを追尾する
-        PlayfieldActor b = game.getPacman();
+        PlayfieldActor pacman = game.getPacman();
         if (game.getDotsRemaining() < game.getLevels().getElroyDotsLeftPart1()
                 && this.mode == GhostMode.SCATTER
                 && (!game.isLostLifeOnThisLevel() || game.getClyde().mode != GhostMode.IN_PEN)) {
-            this.targetPos = new float[] { b.tilePos[0], b.tilePos[1] };
+            this.targetPos = new float[] { pacman.tilePos[0], pacman.tilePos[1] };
         } else if (this.mode == GhostMode.CHASE) {
-            this.targetPos = new float[] { b.tilePos[0], b.tilePos[1] };
+            this.targetPos = new float[] { pacman.tilePos[0], pacman.tilePos[1] };
         }
     }
     

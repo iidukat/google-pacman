@@ -38,20 +38,20 @@ public class Pacman extends PlayfieldActor {
     // Actorの速度設定(currentSpeedフィールドを利用)
     @Override
     public void changeSpeed() {
-        float b = 0;
+        float s = 0;
         switch (this.currentSpeed) {
         case NORMAL:
-            b = this.fullSpeed;
+            s = this.fullSpeed;
             break;
         case PACMAN_EATING_DOT:
-            b = this.dotEatingSpeed;
+            s = this.dotEatingSpeed;
             break;
         case PASSING_TUNNEL:
-            b = this.tunnelSpeed;
+            s = this.tunnelSpeed;
             break;
         }
-        if (this.physicalSpeed != b) {
-            this.physicalSpeed = b;
+        if (this.physicalSpeed != s) {
+            this.physicalSpeed = s;
             this.speedIntervals = game.getSpeedIntervals(this.physicalSpeed);
         }
     }
@@ -79,36 +79,35 @@ public class Pacman extends PlayfieldActor {
     }
     
     private void handlePrecedeInput() {
-        int[] b = this.tilePos;
-        float[] c;
-        float[] d;
+        float[] a;
+        float[] b;
         switch (this.dir) {
         case UP:
-            c = new float[] { b[0], b[1] };
-            d = new float[] { b[0] + 3.6f, b[1] };
+            a = new float[] { this.tilePos[0], this.tilePos[1] };
+            b = new float[] { this.tilePos[0] + 3.6f, this.tilePos[1] };
             break;
         case DOWN:
-            c = new float[] { b[0] - 4, b[1] };
-            d = new float[] { b[0], b[1] };
+            a = new float[] { this.tilePos[0] - 4, this.tilePos[1] };
+            b = new float[] { this.tilePos[0], this.tilePos[1] };
             break;
         case LEFT:
-            c = new float[] { b[0], b[1] };
-            d = new float[] { b[0], b[1] + 3.6f };
+            a = new float[] { this.tilePos[0], this.tilePos[1] };
+            b = new float[] { this.tilePos[0], this.tilePos[1] + 3.6f };
             break;
         case RIGHT:
-            c = new float[] { b[0], b[1] - 4 };
-            d = new float[] { b[0], b[1] };
+            a = new float[] { this.tilePos[0], this.tilePos[1] - 4 };
+            b = new float[] { this.tilePos[0], this.tilePos[1] };
             break;
         default:
             // posDeltaの更新が行われないようにダミーの値をセット
-            c = new float[] { this.pos[0] + 1, this.pos[1] + 1 };
-            d = new float[] { this.pos[0] - 1, this.pos[1] - 1 };
+            a = new float[] { 1, 1 };
+            b = new float[] { -1, -1 };
             break;
         }
-        if (this.pos[0] >= c[0]
-            && this.pos[0] <= d[0]
-            && this.pos[1] >= c[1]
-            && this.pos[1] <= d[1]) {
+        if (this.pos[0] >= a[0]
+            && this.pos[0] <= b[0]
+            && this.pos[1] >= a[1]
+            && this.pos[1] <= b[1]) {
             Move mv = this.nextDir.getMove();
             this.posDelta[mv.getAxis()] += mv.getIncrement();
         }
@@ -166,33 +165,33 @@ public class Pacman extends PlayfieldActor {
     // Pacman, Ms.Pacman表示画像決定(アニメーション対応)
     @Override
     int[] getImagePos() {
-        int b = 0;
-        int c = 0;
+        int x = 0;
+        int y = 0;
         Direction d = this.dir;
         if (d == Direction.NONE) {
             d = this.lastActiveDir;
         }
         if (game.getGameplayMode() == GameplayMode.GHOST_DIED) { // モンスターを食べたとき。画像なし
-            b = 3;
-            c = 0;
+            x = 3;
+            y = 0;
         } else if (game.getGameplayMode() == GameplayMode.LEVEL_BEING_COMPLETED
                     || game.getGameplayMode() == GameplayMode.LEVEL_COMPLETED) { // レベルクリア。Pacmanは丸まる
-            b = 2;
-            c = 0;
+            x = 2;
+            y = 0;
         } else if (game.getGameplayMode() == GameplayMode.NEWGAME_STARTING
                     || game.getGameplayMode() == GameplayMode.NEWGAME_STARTED
                     || game.getGameplayMode() == GameplayMode.GAME_RESTARTED) { // ゲーム開始直後の表示画像決定
-            b = 2;
-            c = 0;
+            x = 2;
+            y = 0;
         } else if (game.getGameplayMode() == GameplayMode.PLAYER_DIED) { // プレイヤーが死んだ時の画像決定.
             int t = 20 - (int) FloatMath.floor(game.getGameplayModeTime() / game.getTiming()[4] * 21);
-            b = t - 1;
-            switch (b) {
+            x = t - 1;
+            switch (x) {
             case -1:
-                b = 0;
+                x = 0;
                 break;
             case 11:
-                b = 10;
+                x = 10;
                 break;
             case 12:
             case 13:
@@ -203,46 +202,46 @@ public class Pacman extends PlayfieldActor {
             case 18:
             case 19:
             case 20:
-                b = 11;
+                x = 11;
                 break;
             }
-            c = 12;
+            y = 12;
         } else { // 通常時のプレイヤー画像決定
             switch (d) {
             case LEFT:
-                c = 0;
+                y = 0;
                 break;
             case RIGHT:
-                c = 1;
+                y = 1;
                 break;
             case UP:
-                c = 2;
+                y = 2;
                 break;
             case DOWN:
-                c = 3;
+                y = 3;
                 break;
             }
             if (game.getGameplayMode() != GameplayMode.PLAYER_DYING) {
-                b = (int) (Math.floor(game.getGlobalTime() * 0.3) % 4);
+                x = (int) (Math.floor(game.getGlobalTime() * 0.3) % 4);
             }
-            if (b == 3 && this.dir == Direction.NONE) {
-                b = 0;
+            if (x == 3 && this.dir == Direction.NONE) {
+                x = 0;
             }
-            if (b == 2) {
-                b = 0;
+            if (x == 2) {
+                x = 0;
             }
-            if (b == 3) {
-                b = 2;
-                c = 0;
+            if (x == 3) {
+                x = 2;
+                y = 0;
             }
         }
-        return new int[] { c, b };
+        return new int[] { y, x };
     }
 
     // 位置, 速度の決定
-    private void handleInput(Direction b) {
-        if (this.dir == b.getOpposite()) {
-            this.dir = b;
+    private void handleInput(Direction inputDir) {
+        if (this.dir == inputDir.getOpposite()) {
+            this.dir = inputDir;
             this.posDelta = new float[] { 0, 0 };
             if (this.currentSpeed != CurrentSpeed.PASSING_TUNNEL) {
                 this.changeSpeed(CurrentSpeed.NORMAL);
@@ -251,42 +250,43 @@ public class Pacman extends PlayfieldActor {
                 this.lastActiveDir = this.dir;
             }
             this.nextDir = Direction.NONE;
-        } else if (this.dir != b)
+        } else if (this.dir != inputDir) {
             if (this.dir == Direction.NONE) {
                 if (game.getPathElement((int) this.pos[1], (int) this.pos[0])
-                        .allow(b)) {
-                    this.dir = b;
+                        .allow(inputDir)) {
+                    this.dir = inputDir;
                 }
             } else {
                 PathElement p =
                     game.getPathElement(this.tilePos[1], this.tilePos[0]);
-                if (p != null && p.allow(b)) { // 移動可能な方向が入力された場合
+                if (p != null && p.allow(inputDir)) { // 移動可能な方向が入力された場合
                     // 遅延ぎみに方向入力されたかどうか判定
-                    Move c = this.dir.getMove();
-                    float[] d = new float[] { this.pos[0], this.pos[1] };
-                    d[c.getAxis()] -= c.getIncrement();
-                    int f = 0;
-                    if (d[0] == this.tilePos[0] && d[1] == this.tilePos[1]) {
-                        f = 1;
+                    Move mv = this.dir.getMove();
+                    float[] pastPos = new float[] { this.pos[0], this.pos[1] };
+                    pastPos[mv.getAxis()] -= mv.getIncrement();
+                    int stepCount = 0;
+                    if (pastPos[0] == this.tilePos[0] && pastPos[1] == this.tilePos[1]) {
+                        stepCount = 1;
                     } else {
-                        d[c.getAxis()] -= c.getIncrement();
-                        if (d[0] == this.tilePos[0] && d[1] == this.tilePos[1]) {
-                            f = 2;
+                        pastPos[mv.getAxis()] -= mv.getIncrement();
+                        if (pastPos[0] == this.tilePos[0] && pastPos[1] == this.tilePos[1]) {
+                            stepCount = 2;
                         }
                     }
-                    if (f != 0) { // 遅延ぎみに方向入力された場合、新しい移動方向に応じて位置を補正
-                        this.dir = b;
+                    if (stepCount != 0) { // 遅延ぎみに方向入力された場合、新しい移動方向に応じて位置を補正
+                        this.dir = inputDir;
                         this.pos[0] = this.tilePos[0];
                         this.pos[1] = this.tilePos[1];
-                        c = this.dir.getMove();
-                        this.pos[c.getAxis()] += c.getIncrement() * f;
+                        mv = this.dir.getMove();
+                        this.pos[mv.getAxis()] += mv.getIncrement() * stepCount;
                         return;
                     }
                 }
                 // 移動方向の先行入力対応
-                this.nextDir = b;
+                this.nextDir = inputDir;
                 this.posDelta = new float[] { 0, 0 };
             }
+        }
     }
     
     @Override

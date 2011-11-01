@@ -65,18 +65,18 @@ public class PacmanCanvas extends BaseEntity {
         sound.setParent(this);
     }
     
-    public void showChrome(boolean b) {
+    public void showChrome(boolean visible) {
         if (scoreLabel != null) {
-            scoreLabel.setVisibility(b);
+            scoreLabel.setVisibility(visible);
         }
         if (score != null) {
-            score.setVisibility(b);
+            score.setVisibility(visible);
         }
         if (lives != null) {
-            lives.setVisibility(b);
+            lives.setVisibility(visible);
         }
         if (sound != null) {
-            sound.setVisibility(b);
+            sound.setVisibility(visible);
         }
     }
     
