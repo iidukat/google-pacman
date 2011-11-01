@@ -1,5 +1,6 @@
 package jp.or.iidukat.example.pacman;
 
+import jp.or.iidukat.example.pacman.entity.PacmanCanvas;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.os.Handler;
@@ -50,9 +51,10 @@ class GameView extends View {
 
     @Override
     public void onDraw(Canvas canvas) {
-        game.getCanvasEl().setLeft((canvasWidth - CANVAS_WIDTH) / 2);
-        game.getCanvasEl().setTop((canvasHeight - CANVAS_HEIGHT) / 2);
-        game.getCanvasEl().draw(canvas);
+        PacmanCanvas canvasEl = game.getCanvasEl();
+        canvasEl.setLeft((canvasWidth - CANVAS_WIDTH) / 2);
+        canvasEl.setTop((canvasHeight - CANVAS_HEIGHT) / 2);
+        canvasEl.draw(canvas);
     }
 
     @Override

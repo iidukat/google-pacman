@@ -262,13 +262,13 @@ public class Playfield extends BaseEntity {
     private void determinePlayfieldDimensions() {
         playfieldWidth = 0;
         playfieldHeight = 0;
-        for (Path c : PATHS) {
-            if (c.w > 0) {
-                int x = c.x + c.w - 1;
+        for (Path p : PATHS) {
+            if (p.w > 0) {
+                int x = p.x + p.w - 1;
                 if (x > playfieldWidth)
                     playfieldWidth = x;
             } else {
-                int y = c.y + c.h - 1;
+                int y = p.y + p.h - 1;
                 if (y > playfieldHeight)
                     playfieldHeight = y;
             }
@@ -277,110 +277,123 @@ public class Playfield extends BaseEntity {
 
     private void preparePlayfield() {
         playfield = new HashMap<Integer, Map<Integer, PathElement>>();
-        for (int b = 0; b <= playfieldHeight + 1; b++) {
+        for (int y = 0; y <= playfieldHeight + 1; y++) {
             Map<Integer, PathElement> row = new HashMap<Integer, PathElement>();
-            for (int c = -2; c <= playfieldWidth + 1; c++) {
+            for (int x = -2; x <= playfieldWidth + 1; x++) {
                 PathElement p = new PathElement();
                 p.setPath(false);
                 p.setDot(Dot.NONE);
                 p.setIntersection(false);
-                row.put(Integer.valueOf(c * 8), p);
+                row.put(Integer.valueOf(x * 8), p);
             }
-            playfield.put(Integer.valueOf(b * 8), row);
+            playfield.put(Integer.valueOf(y * 8), row);
         }
     }
 
     private void preparePaths() {
-        for (Path c : PATHS) {
-            boolean d = c.tunnel;
-            if (c.w > 0) {
-                int f = c.y * 8;
-                for (int h = c.x * 8; h <= (c.x + c.w - 1) * 8; h += 8) {
-                    PathElement pe = playfield.get(Integer.valueOf(f)).get(Integer.valueOf(h));
+        for (Path p : PATHS) {
+            if (p.w > 0) {
+                int y = p.y * 8;
+                for (int x = p.x * 8; x <= (p.x + p.w - 1) * 8; x += 8) {
+                    PathElement pe = playfield.get(Integer.valueOf(y)).get(Integer.valueOf(x));
                     pe.setPath(true);
                     if (pe.getDot() == Dot.NONE) {
                         pe.setDot(Dot.FOOD);
                         dotsRemaining++;
                     }
-                    pe.setTunnel(!d || h != c.x * 8 && h != (c.x + c.w - 1) * 8 ? d : false);
+                    pe.setTunnel(
+                            !p.tunnel || x != p.x * 8 && x != (p.x + p.w - 1) * 8
+                                ? p.tunnel
+                                : false);
                 }
-                playfield.get(Integer.valueOf(f)).get(Integer.valueOf(c.x * 8))
+                playfield.get(Integer.valueOf(y)).get(Integer.valueOf(p.x * 8))
                         .setIntersection(true);
-                playfield.get(Integer.valueOf(f))
-                        .get(Integer.valueOf((c.x + c.w - 1) * 8))
+                playfield.get(Integer.valueOf(y))
+                        .get(Integer.valueOf((p.x + p.w - 1) * 8))
                         .setIntersection(true);
             } else {
-                int h = c.x * 8;
-                for (int f = c.y * 8; f <= (c.y + c.h - 1) * 8; f += 8) {
-                    PathElement pe = playfield.get(Integer.valueOf(f)).get(Integer.valueOf(h));
-                    if (pe.isPath())
+                int x = p.x * 8;
+                for (int y = p.y * 8; y <= (p.y + p.h - 1) * 8; y += 8) {
+                    PathElement pe = playfield.get(Integer.valueOf(y)).get(Integer.valueOf(x));
+                    if (pe.isPath()) {
                         pe.setIntersection(true);
+                    }
                     pe.setPath(true);
                     if (pe.getDot() == Dot.NONE) {
                         pe.setDot(Dot.FOOD);
                         dotsRemaining++;
                     }
-                    pe.setTunnel(!d || f != c.y * 8 && f != (c.y + c.h - 1) * 8 ? d : false);
+                    pe.setTunnel(
+                            !p.tunnel || y != p.y * 8 && y != (p.y + p.h - 1) * 8
+                                ? p.tunnel
+                                : false);
                 }
-                playfield.get(Integer.valueOf(c.y * 8)).get(Integer.valueOf(h))
+                playfield.get(Integer.valueOf(p.y * 8)).get(Integer.valueOf(x))
                         .setIntersection(true);
-                playfield.get(Integer.valueOf((c.y + c.h - 1) * 8))
-                        .get(Integer.valueOf(h)).setIntersection(true);
+                playfield.get(Integer.valueOf((p.y + p.h - 1) * 8))
+                        .get(Integer.valueOf(x)).setIntersection(true);
             }
         }
-        for (Path p : PATHS_HAVING_NO_DOT)
-            if (p.w != 0)
-                for (int h = p.x * 8; h <= (p.x + p.w - 1) * 8; h += 8) {
+        for (Path p : PATHS_HAVING_NO_DOT) {
+            if (p.w != 0) {
+                for (int x = p.x * 8; x <= (p.x + p.w - 1) * 8; x += 8) {
                     playfield.get(Integer.valueOf(p.y * 8))
-                                .get(Integer.valueOf(h))
+                                .get(Integer.valueOf(x))
                                 .setDot(Dot.NONE);
                     dotsRemaining--;
                 }
-            else
-                for (int f = p.y * 8; f <= (p.y + p.h - 1) * 8; f += 8) {
-                    playfield.get(Integer.valueOf(f))
+            } else {
+                for (int y = p.y * 8; y <= (p.y + p.h - 1) * 8; y += 8) {
+                    playfield.get(Integer.valueOf(y))
                                 .get(Integer.valueOf(p.x * 8))
                                 .setDot(Dot.NONE);
                     dotsRemaining--;
                 }
+            }
+        }
     }
 
     private void prepareAllowedDirections() {
-        for (int b = 8; b <= playfieldHeight * 8; b += 8)
-            for (int c = 8; c <= playfieldWidth * 8; c += 8) {
-                PathElement pe = playfield.get(Integer.valueOf(b))
-                                        .get(Integer.valueOf(c));
+        for (int y = 8; y <= playfieldHeight * 8; y += 8) {
+            for (int x = 8; x <= playfieldWidth * 8; x += 8) {
+                PathElement pe = playfield.get(Integer.valueOf(y))
+                                        .get(Integer.valueOf(x));
                 EnumSet<Direction> allowedDir = EnumSet.noneOf(Direction.class);
-                if (playfield.get(Integer.valueOf(b - 8))
-                        .get(Integer.valueOf(c)).isPath())
+                if (playfield.get(Integer.valueOf(y - 8))
+                        .get(Integer.valueOf(x)).isPath()) {
                     allowedDir.add(Direction.UP);
-                if (playfield.get(Integer.valueOf(b + 8))
-                        .get(Integer.valueOf(c)).isPath())
+                }
+                if (playfield.get(Integer.valueOf(y + 8))
+                        .get(Integer.valueOf(x)).isPath()) {
                     allowedDir.add(Direction.DOWN);
-                if (playfield.get(Integer.valueOf(b))
-                        .get(Integer.valueOf(c - 8)).isPath())
+                }
+                if (playfield.get(Integer.valueOf(y))
+                        .get(Integer.valueOf(x - 8)).isPath()) {
                     allowedDir.add(Direction.LEFT);
-                if (playfield.get(Integer.valueOf(b))
-                        .get(Integer.valueOf(c + 8)).isPath())
+                }
+                if (playfield.get(Integer.valueOf(y))
+                        .get(Integer.valueOf(x + 8)).isPath()) {
                     allowedDir.add(Direction.RIGHT);
+                }
                 pe.setAllowedDir(allowedDir);
             }
+        }
     }
 
     // エサを作成
     private void createDotElements() {
         foods = new HashMap<Integer, Map<Integer, DotElement>>();
-        for (int b = 8; b <= playfieldHeight * 8; b += 8) {
+        for (int y = 8; y <= playfieldHeight * 8; y += 8) {
             Map<Integer, DotElement> row = new HashMap<Integer, DotElement>();
-            foods.put(Integer.valueOf(b), row);
-            for (int c = 8; c <= playfieldWidth * 8; c += 8) {
-                if (playfield.get(Integer.valueOf(b))
-                            .get(Integer.valueOf(c)).getDot()
+            foods.put(Integer.valueOf(y), row);
+            for (int x = 8; x <= playfieldWidth * 8; x += 8) {
+                if (playfield.get(Integer.valueOf(y))
+                            .get(Integer.valueOf(x)).getDot()
                         != PathElement.Dot.NONE) {
                     DotElement dot = new Food(getAppearance().getSourceImage());
-                    dot.init(c, b);
+                    dot.init(x, y);
                     dot.setParent(this);
-                    row.put(Integer.valueOf(c), dot);
+                    row.put(Integer.valueOf(x), dot);
                 }
             }
         }
@@ -413,7 +426,7 @@ public class Playfield extends BaseEntity {
     }
 
     public DotElement getDotElement(final int x, final int y) {
-        return iterateDotElements(x, y, new DotElementHandler() {
+        return handleDotRow(y, new DotRowHandler() {
             @Override
             public DotElement handle(Map<Integer, DotElement> row) {
                 return row.get(Integer.valueOf(x)); 
@@ -422,7 +435,7 @@ public class Playfield extends BaseEntity {
     }
 
     private DotElement removeDotElement(final int x, final int y) {
-        return iterateDotElements(x, y, new DotElementHandler() {
+        return handleDotRow(y, new DotRowHandler() {
             @Override
             public DotElement handle(Map<Integer, DotElement> row) {
                 return row.remove(Integer.valueOf(x)); 
@@ -430,16 +443,16 @@ public class Playfield extends BaseEntity {
         }); 
     }
 
-    private DotElement putDotElement(final int x, final int y, final DotElement f) {
-        return iterateDotElements(x, y, new DotElementHandler() {
+    private DotElement putDotElement(final int x, final int y, final DotElement d) {
+        return handleDotRow(y, new DotRowHandler() {
             @Override
             public DotElement handle(Map<Integer, DotElement> row) {
-                return row.put(Integer.valueOf(x), f); 
+                return row.put(Integer.valueOf(x), d); 
             }
         }); 
     }
     
-    private DotElement iterateDotElements(int x, int y, DotElementHandler h) {
+    private DotElement handleDotRow(int y, DotRowHandler h) {
         Map<Integer, DotElement> row = foods.get(Integer.valueOf(y));
         if (row == null) {
             return null;
@@ -448,7 +461,7 @@ public class Playfield extends BaseEntity {
         
     }
     
-    private static interface DotElementHandler {
+    private static interface DotRowHandler {
         DotElement handle(Map<Integer, DotElement> row);
     }
 
@@ -565,23 +578,27 @@ public class Playfield extends BaseEntity {
         createKillScreenElement(280, 80, 192, 56, false);
         killScreenTileX = 80;
         killScreenTileY = 0;
-        for (int b = 280; b <= 472; b += 8) {
-            for (int c = 0; c <= 136; c += 8) {
+        for (int x = 280; x <= 472; x += 8) {
+            for (int y = 0; y <= 136; y += 8) {
                 if (game.rand() < 0.03) {
                     killScreenTileX = (int) FloatMath.floor(game.rand() * 25) * 10;
                     killScreenTileY = (int) FloatMath.floor(game.rand() * 2) * 10;
                 }
-                createKillScreenElement(b, c, 8, 8, true);
+                createKillScreenElement(x, y, 8, 8, true);
             }
         }
     }
 
     private void createKillScreenElement(
-                                int b, int c, int d, int f, boolean h) {
+                                    int x,
+                                    int y,
+                                    int width,
+                                    int height,
+                                    boolean bgImage) {
         KillScreenTile tile =
                 new KillScreenTile(getAppearance().getSourceImage());
-        tile.init(b, c, d, f);
-        if (h) {
+        tile.init(x, y, width, height);
+        if (bgImage) {
             // j.style.background = "url(src/pacman10-hp-sprite-2.png) -" + killScreenTileX + "px -" + killScreenTileY + "px no-repeat";
             tile.setBgPos(killScreenTileX, killScreenTileY);
             killScreenTileY += 8;
@@ -592,10 +609,11 @@ public class Playfield extends BaseEntity {
     }
     
     public void blink(float gameplayModeTime, float interval) {
-        if (FloatMath.floor(gameplayModeTime / (interval / 8)) % 2 == 0)
+        if (FloatMath.floor(gameplayModeTime / (interval / 8)) % 2 == 0) {
             getAppearance().changeBkPos(322, 2, false);
-        else
+        } else {
             getAppearance().changeBkPos(322, 138, false);
+        }
     }
 
     @Override
@@ -846,10 +864,10 @@ public class Playfield extends BaseEntity {
             super(sourceImage);
         }
 
-        void init(int left, int top, int width, int height) {
+        void init(int x, int y, int width, int height) {
             Appearance a = getAppearance();
-            a.setLeft(left);
-            a.setTop(top);
+            a.setLeft(x);
+            a.setTop(y);
             a.setWidth(width);
             a.setHeight(height);
             a.setOrder(119);

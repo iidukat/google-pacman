@@ -84,8 +84,8 @@ public class CutsceneBlinky extends CutsceneActor {
     
     private Mode mode;
     
-    CutsceneBlinky(Bitmap sourceImage, PacmanGame g) {
-        super(sourceImage, g);
+    CutsceneBlinky(Bitmap sourceImage, PacmanGame game) {
+        super(sourceImage, game);
     }
     
     @Override
@@ -104,54 +104,59 @@ public class CutsceneBlinky extends CutsceneActor {
     // モンスターの表示画像決定
     @Override
     int[] getImagePos() {
-        int b = 0;
-        int c = 0;
+        int x = 0;
+        int y = 0;
         switch (this.mode) {
         case FRIGHTENED:
             // ブルーモード.ただし、食べられてはいない
-            b = 0;
-            c = 8;
+            x = 0;
+            y = 8;
             // ブルーモード時間切れ間近の青白明滅
-            if (game.getFrightModeTime() < game.getLevels().getFrightTotalTime() - game.getLevels().getFrightTime()
-                    && FloatMath.floor(game.getFrightModeTime() / game.getTiming()[1]) % 2 == 0)
-                b += 2;
-    
-            b += (int) (Math.floor(game.getGlobalTime() / 16) % 2); // ブルーモードの画像切り替え
+            if (game.getFrightModeTime()
+                    < game.getLevels().getFrightTotalTime()
+                        - game.getLevels().getFrightTime()
+                && FloatMath.floor(
+                        game.getFrightModeTime() / game.getTiming()[1])
+                        % 2 == 0) {
+                x += 2;
+            }
+            x += (int) (Math.floor(game.getGlobalTime() / 16) % 2); // ブルーモードの画像切り替え
             break;
         case TORN_CLOTH:
-            b = 6;
-            c = 8;
-            b += (int) (Math.floor(game.getGlobalTime() / 16) % 2);
+            x = 6;
+            y = 8;
+            x += (int) (Math.floor(game.getGlobalTime() / 16) % 2);
             break;
         case BUG:
-            b = 6;
-            c = 9;
-            c += (int) (Math.floor(game.getGlobalTime() / 16) % 2);
+            x = 6;
+            y = 9;
+            y += (int) (Math.floor(game.getGlobalTime() / 16) % 2);
             break;
         case STUCK:
-            b = game.getCutsceneSequenceId() == 3 ? 6 : 7;
-            c = 11;
+            x = game.getCutsceneSequenceId() == 3 ? 6 : 7;
+            y = 11;
             break;
         default: // 通常時の画像表示
             switch (dir) {
             case LEFT:
-                b = 4;
+                x = 4;
                 break;
             case RIGHT:
-                b = 6;
+                x = 6;
                 break;
             case UP:
-                b = 0;
+                x = 0;
                 break;
             case DOWN:
-                b = 2;
+                x = 2;
                 break;
             }
-            c = 4;
-            if (speed > 0 || game.getGameplayMode() != GameplayMode.CUTSCENE)
-                b += (int) (Math.floor(game.getGlobalTime() / 16) % 2);
+            y = 4;
+            if (speed > 0 || game.getGameplayMode() != GameplayMode.CUTSCENE) {
+                x += (int) (Math.floor(game.getGlobalTime() / 16) % 2);
+            }
         }
-        return new int[] { c, b };
+        return new int[] { y, x };
     }
     
 }

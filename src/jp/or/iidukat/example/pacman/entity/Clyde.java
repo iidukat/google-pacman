@@ -28,8 +28,8 @@ public class Clyde extends Ghost {
         m.put(
             GhostMode.LEAVING_PEN,
             new MoveInPen[] {
-                new MoveInPen(41.4f, 7, Direction.LEFT, 39.5f, EXIT_PEN_SPEED),
-                new MoveInPen(39.5f, 7, Direction.UP, 4, EXIT_PEN_SPEED),
+                new MoveInPen(41.4f, 7, Direction.LEFT, 39.5f, LEAVING_PEN_SPEED),
+                new MoveInPen(39.5f, 7, Direction.UP, 4, LEAVING_PEN_SPEED),
             });
         m.put(
             GhostMode.ENTERING_PEN,
@@ -40,8 +40,8 @@ public class Clyde extends Ghost {
         m.put(
             GhostMode.RE_LEAVING_FROM_PEN,
             new MoveInPen[] {
-                new MoveInPen(41.4f, 7, Direction.LEFT, 39.5f, EXIT_PEN_SPEED),
-                new MoveInPen(39.5f, 7, Direction.UP, 4, EXIT_PEN_SPEED),
+                new MoveInPen(41.4f, 7, Direction.LEFT, 39.5f, LEAVING_PEN_SPEED),
+                new MoveInPen(39.5f, 7, Direction.UP, 4, LEAVING_PEN_SPEED),
             });
         MOVES_IN_PEN = Collections.unmodifiableMap(m);
     }
@@ -62,11 +62,11 @@ public class Clyde extends Ghost {
             return;
         }
         // Playerと距離が近ければ追尾する。遠ければScatterモードでの受け持ち場所を目指す。
-        PlayfieldActor b = game.getPacman();
-        float distance = getDistance(b.tilePos, this.tilePos);
+        PlayfieldActor pacman = game.getPacman();
+        float distance = getDistance(pacman.tilePos, this.tilePos);
         this.targetPos =
             distance > 64
-                ? new float[] { b.tilePos[0], b.tilePos[1] }
+                ? new float[] { pacman.tilePos[0], pacman.tilePos[1] }
                 : this.scatterPos;
     }
 

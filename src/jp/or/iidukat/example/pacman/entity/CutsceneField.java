@@ -43,8 +43,8 @@ public class CutsceneField extends BaseEntity {
     }
     
     @Override
-    void doDraw(Canvas c) {
-        getAppearance().drawRectShape(c);
+    void doDraw(Canvas canvas) {
+        getAppearance().drawRectShape(canvas);
     }
     
     public CutsceneActor[] getActors() {

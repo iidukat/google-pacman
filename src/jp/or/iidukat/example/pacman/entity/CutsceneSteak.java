@@ -34,8 +34,8 @@ public class CutsceneSteak extends CutsceneActor {
         CUTSCENES = Collections.unmodifiableMap(css);
     }
     
-    CutsceneSteak(Bitmap sourceImage, PacmanGame g) {
-        super(sourceImage, g);
+    CutsceneSteak(Bitmap sourceImage, PacmanGame game) {
+        super(sourceImage, game);
     }
     
     @Override
@@ -55,19 +55,21 @@ public class CutsceneSteak extends CutsceneActor {
 
     @Override
     public int[] getImagePos() {
-        int b = game.getCutsceneSequenceId() == 1
-                    ? game.getCutsceneTime() > 60
+        int sequenceId = game.getCutsceneSequenceId();
+        float time = game.getCutsceneTime();
+        int x = sequenceId == 1
+                    ? time > 60
                         ? 1
-                        : game.getCutsceneTime() > 45
+                        : time > 45
                             ? 2
                             : 3
-                    : game.getCutsceneSequenceId() == 2
+                    : sequenceId == 2
                         ? 3
-                        : game.getCutsceneSequenceId() == 3 || game.getCutsceneSequenceId() == 4
+                        : sequenceId == 3 || sequenceId == 4
                             ? 4
                             : 0;
-        int c = 13;
+        int y = 13;
         
-        return new int[] { c, b };
+        return new int[] { y, x };
     }
 }

@@ -54,14 +54,14 @@ public abstract class Actor extends BaseEntity {
     
     // 表示位置更新
     public final void updateElPos() {
-        float b = getFieldX();
-        float c = getFieldY();
-        if (this.elPos[0] != c || this.elPos[1] != b) {
-            this.elPos[0] = c;
-            this.elPos[1] = b;
+        float x = getFieldX();
+        float y = getFieldY();
+        if (this.elPos[0] != y || this.elPos[1] != x) {
+            this.elPos[0] = y;
+            this.elPos[1] = x;
             Appearance el = getAppearance();
-            el.setLeft(b);
-            el.setTop(c);
+            el.setLeft(x);
+            el.setTop(y);
         }
     }
 

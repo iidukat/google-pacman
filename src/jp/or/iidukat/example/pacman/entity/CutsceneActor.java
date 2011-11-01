@@ -3,7 +3,6 @@ package jp.or.iidukat.example.pacman.entity;
 import jp.or.iidukat.example.pacman.Direction;
 import jp.or.iidukat.example.pacman.Direction.Move;
 import jp.or.iidukat.example.pacman.PacmanGame;
-import jp.or.iidukat.example.pacman.PacmanGame.GameplayMode;
 import jp.or.iidukat.example.pacman.entity.CutsceneActor.Cutscene.StartPoint;
 import android.graphics.Bitmap;
 
@@ -29,8 +28,8 @@ public abstract class CutsceneActor extends Actor {
 
     @Override
     public final void move() {
-        Move d = dir.getMove();
-        pos[d.getAxis()] += d.getIncrement() * speed;
+        Move mv = dir.getMove();
+        pos[mv.getAxis()] += mv.getIncrement() * speed;
         updateAppearance();
     }
 
