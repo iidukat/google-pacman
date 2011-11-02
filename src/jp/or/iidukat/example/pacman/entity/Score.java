@@ -17,10 +17,10 @@ public class Score extends BaseEntity {
 
     public void init() {
         Appearance a = getAppearance();
-        a.setLeft(18);
-        a.setTop(16);
-        a.setWidth(8);
-        a.setHeight(56);
+        a.setLeft(40);
+        a.setTop(3);
+        a.setWidth(80);
+        a.setHeight(8);
         initScoreNumbers();
     }
 
@@ -28,7 +28,7 @@ public class Score extends BaseEntity {
         for (int i = 0; i < DIGITS; i++) {
             Score.Number n =
                 new Score.Number(getAppearance().getSourceImage());
-            n.init(i * 8);
+            n.init(i * Number.WIDTH);
             n.setParent(this);
             numbers.add(n);
         }
@@ -64,16 +64,19 @@ public class Score extends BaseEntity {
 
     public static class Number extends BaseEntity {
 
+        static final int WIDTH = 8;
+        static final int HEIGHT = 8;
+        
         public Number(Bitmap sourceImage) {
             super(sourceImage);
         }
 
-        void init(int top) {
+        void init(int left) {
             Appearance a = getAppearance();
-            a.setTop(top);
-            a.setLeft(0);
-            a.setWidth(8);
-            a.setHeight(8);
+            a.setTop(0);
+            a.setLeft(left);
+            a.setWidth(WIDTH);
+            a.setHeight(HEIGHT);
             a.prepareBkPos(48, 0);
         }
 

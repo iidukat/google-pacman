@@ -15,10 +15,10 @@ public class Lives extends BaseEntity {
 
     public void init() {
         Appearance a = getAppearance();
-        a.setLeft(523);
+        a.setLeft(384);
         a.setTop(0);
-        a.setHeight(80);
-        a.setWidth(16);
+        a.setHeight(16);
+        a.setWidth(80);
     }
 
     public void update(int liveCount) {
@@ -26,7 +26,7 @@ public class Lives extends BaseEntity {
         for (int i = 0; i < liveCount; i++) {
             Lives.Life life =
                 new Lives.Life(getAppearance().getSourceImage());
-            life.init(i * 15);
+            life.init(getWidth() - (i + 1) * Life.HEIGHT);
             life.setParent(this);
             lives.add(life);
         }
@@ -42,16 +42,18 @@ public class Lives extends BaseEntity {
     }
 
     public static class Life extends BaseEntity {
-
+        static final int WIDTH = 16;
+        static final int HEIGHT = 16;
+        
         public Life(Bitmap sourceImage) {
             super(sourceImage);
         }
 
-        void init(int top) {
+        void init(int left) {
             Appearance a = getAppearance();
-            a.setWidth(16);
-            a.setHeight(12);
-            a.setTop(top); // margin-bottom: 3px
+            a.setWidth(WIDTH);
+            a.setHeight(HEIGHT);
+            a.setLeft(left);
             a.prepareBkPos(64, 129);
         }
         

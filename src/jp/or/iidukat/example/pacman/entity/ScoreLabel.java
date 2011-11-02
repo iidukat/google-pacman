@@ -12,8 +12,8 @@ public class ScoreLabel extends BaseEntity {
 
     public void init() {
         Appearance a = getAppearance();
-        a.setLeft(-2);
-        a.setTop(0);
+        a.setLeft(-8);
+        a.setTop(3);
         a.setWidth(48);
         a.setHeight(8);
         a.prepareBkPos(160, 56);

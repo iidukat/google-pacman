@@ -11,8 +11,8 @@ import android.view.View;
 
 class GameView extends View {
 
-    private static final int CANVAS_WIDTH = 554;
-    private static final int CANVAS_HEIGHT = 136;
+    private static final int CANVAS_WIDTH = 464;
+    private static final int CANVAS_HEIGHT = 168;
     
     private int canvasHeight = -1;
     private int canvasWidth = -1;

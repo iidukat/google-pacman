@@ -8,6 +8,7 @@ public class Fruit extends BaseEntity {
     
     static final int WIDTH = 32;
     static final int HEIGHT = 16;
+    static final int WIDTH_ON_LEVEL = 16;
     
     private final int level;
     
@@ -28,13 +29,14 @@ public class Fruit extends BaseEntity {
         a.setOrder(105);
     }
     
-    void initOnLevel(int top) {
-        int[] bgPos = getSprite();
+    void initOnLevel(int left) {
+        int[] bgPos = getLevelSprite();
         Appearance a = getAppearance();
         a.prepareBkPos(bgPos[0], bgPos[1]);
-        a.setWidth(WIDTH);
+        a.setWidth(WIDTH_ON_LEVEL);
         a.setHeight(HEIGHT);
-        a.setTop(top);
+        a.setTop(0);
+        a.setLeft(left);
         a.setOrder(105);
     }
     
@@ -54,6 +56,12 @@ public class Fruit extends BaseEntity {
     
     private int[] getSprite() {
         int bgPosX = level <= 4 ? 128 : 160;
+        int bgPosY = 128 + 16 * ((level - 1) % 4);
+        return new int[] { bgPosX, bgPosY };
+    }
+
+    private int[] getLevelSprite() {
+        int bgPosX = level <= 4 ? 136 : 168;
         int bgPosY = 128 + 16 * ((level - 1) % 4);
         return new int[] { bgPosX, bgPosY };
     }

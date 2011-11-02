@@ -17,10 +17,10 @@ public class Level extends BaseEntity {
     
     public void init() {
         Appearance a = getAppearance();
-        a.setLeft(515);
-        a.setTop(74);
-        a.setHeight(64);
-        a.setWidth(32);
+        a.setLeft(404);
+        a.setTop(152);
+        a.setHeight(16);
+        a.setWidth(64);
     }
     
     @Override
@@ -29,11 +29,11 @@ public class Level extends BaseEntity {
 
     public void update(int level, LevelConfig[] levelConfigs) {
         clearFruits();
-        int top =
-            (MAX_COUNT_OF_FRUITS - Math.min(level, MAX_COUNT_OF_FRUITS)) * Fruit.HEIGHT
-                - Fruit.HEIGHT;
-        for (int i = level, bottom = Math.max(level - MAX_COUNT_OF_FRUITS + 1, 1);
-                i >= bottom; i--) {
+        int left =
+            (MAX_COUNT_OF_FRUITS - Math.min(level, MAX_COUNT_OF_FRUITS)) * Fruit.WIDTH_ON_LEVEL
+                - Fruit.WIDTH_ON_LEVEL;
+        for (int i = level, limit = Math.max(level - MAX_COUNT_OF_FRUITS + 1, 1);
+                i >= limit; i--) {
             int fruitLevel =
                 (i >= levelConfigs.length)
                     ? levelConfigs[levelConfigs.length - 1].getFruit()
@@ -42,8 +42,8 @@ public class Level extends BaseEntity {
                 new Fruit(
                         getAppearance().getSourceImage(),
                         fruitLevel);
-            top += Fruit.HEIGHT;
-            fruit.initOnLevel(top);
+            left += Fruit.WIDTH_ON_LEVEL;
+            fruit.initOnLevel(left);
             fruit.setParent(this);
             fruits.add(fruit);
         }

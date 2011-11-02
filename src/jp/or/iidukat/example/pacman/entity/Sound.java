@@ -11,8 +11,8 @@ public class Sound extends BaseEntity {
 
     public void init() {
         Appearance a = getAppearance();
-        a.setLeft(15); // 7 + 8
-        a.setTop(124); // 116 + 8
+        a.setLeft(0);
+        a.setTop(156);
         a.setWidth(12);
         a.setHeight(12);
         a.prepareBkPos(-32, -16);

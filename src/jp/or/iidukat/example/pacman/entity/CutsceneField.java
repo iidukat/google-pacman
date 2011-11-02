@@ -17,7 +17,8 @@ public class CutsceneField extends BaseEntity {
     
     public void init() {
         Appearance a = getAppearance();
-        a.setLeft(45);
+        a.setTop(16);
+        a.setLeft(0);
         a.setWidth(464);
         a.setHeight(136);
     }
