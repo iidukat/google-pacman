@@ -68,6 +68,57 @@ public class Pacman extends PlayfieldActor {
         }
     }
 
+    // 位置, 速度の決定
+    private void handleInput(Direction inputDir) {
+        if (this.dir == inputDir.getOpposite()) {
+            this.dir = inputDir;
+            this.posDelta = new float[] { 0, 0 };
+            if (this.currentSpeed != CurrentSpeed.PASSING_TUNNEL) {
+                this.changeSpeed(CurrentSpeed.NORMAL);
+            }
+            if (this.dir != Direction.NONE) {
+                this.lastActiveDir = this.dir;
+            }
+            this.nextDir = Direction.NONE;
+        } else if (this.dir != inputDir) {
+            if (this.dir == Direction.NONE) {
+                if (game.getPathElement((int) this.pos[1], (int) this.pos[0])
+                        .allow(inputDir)) {
+                    this.dir = inputDir;
+                }
+            } else {
+                PathElement p =
+                    game.getPathElement(this.tilePos[1], this.tilePos[0]);
+                if (p != null && p.allow(inputDir)) { // 移動可能な方向が入力された場合
+                    // 遅延ぎみに方向入力されたかどうか判定
+                    Move mv = this.dir.getMove();
+                    float[] pastPos = new float[] { this.pos[0], this.pos[1] };
+                    pastPos[mv.getAxis()] -= mv.getIncrement();
+                    int stepCount = 0;
+                    if (pastPos[0] == this.tilePos[0] && pastPos[1] == this.tilePos[1]) {
+                        stepCount = 1;
+                    } else {
+                        pastPos[mv.getAxis()] -= mv.getIncrement();
+                        if (pastPos[0] == this.tilePos[0] && pastPos[1] == this.tilePos[1]) {
+                            stepCount = 2;
+                        }
+                    }
+                    if (stepCount != 0) { // 遅延ぎみに方向入力された場合、新しい移動方向に応じて位置を補正
+                        this.dir = inputDir;
+                        this.pos[0] = this.tilePos[0];
+                        this.pos[1] = this.tilePos[1];
+                        mv = this.dir.getMove();
+                        this.pos[mv.getAxis()] += mv.getIncrement() * stepCount;
+                        return;
+                    }
+                }
+                // 移動方向の先行入力対応
+                this.nextDir = inputDir;
+                this.posDelta = new float[] { 0, 0 };
+            }
+        }
+    }
+
     @Override
     boolean supportShortcut() {
         return true;
@@ -141,7 +192,7 @@ public class Pacman extends PlayfieldActor {
     }
     
     @Override
-    void reverseOnEnteredTile() {
+    void decideNextDirOnEnteredTile() {
     }
     
     @Override
@@ -236,57 +287,6 @@ public class Pacman extends PlayfieldActor {
             }
         }
         return new int[] { y, x };
-    }
-
-    // 位置, 速度の決定
-    private void handleInput(Direction inputDir) {
-        if (this.dir == inputDir.getOpposite()) {
-            this.dir = inputDir;
-            this.posDelta = new float[] { 0, 0 };
-            if (this.currentSpeed != CurrentSpeed.PASSING_TUNNEL) {
-                this.changeSpeed(CurrentSpeed.NORMAL);
-            }
-            if (this.dir != Direction.NONE) {
-                this.lastActiveDir = this.dir;
-            }
-            this.nextDir = Direction.NONE;
-        } else if (this.dir != inputDir) {
-            if (this.dir == Direction.NONE) {
-                if (game.getPathElement((int) this.pos[1], (int) this.pos[0])
-                        .allow(inputDir)) {
-                    this.dir = inputDir;
-                }
-            } else {
-                PathElement p =
-                    game.getPathElement(this.tilePos[1], this.tilePos[0]);
-                if (p != null && p.allow(inputDir)) { // 移動可能な方向が入力された場合
-                    // 遅延ぎみに方向入力されたかどうか判定
-                    Move mv = this.dir.getMove();
-                    float[] pastPos = new float[] { this.pos[0], this.pos[1] };
-                    pastPos[mv.getAxis()] -= mv.getIncrement();
-                    int stepCount = 0;
-                    if (pastPos[0] == this.tilePos[0] && pastPos[1] == this.tilePos[1]) {
-                        stepCount = 1;
-                    } else {
-                        pastPos[mv.getAxis()] -= mv.getIncrement();
-                        if (pastPos[0] == this.tilePos[0] && pastPos[1] == this.tilePos[1]) {
-                            stepCount = 2;
-                        }
-                    }
-                    if (stepCount != 0) { // 遅延ぎみに方向入力された場合、新しい移動方向に応じて位置を補正
-                        this.dir = inputDir;
-                        this.pos[0] = this.tilePos[0];
-                        this.pos[1] = this.tilePos[1];
-                        mv = this.dir.getMove();
-                        this.pos[mv.getAxis()] += mv.getIncrement() * stepCount;
-                        return;
-                    }
-                }
-                // 移動方向の先行入力対応
-                this.nextDir = inputDir;
-                this.posDelta = new float[] { 0, 0 };
-            }
-        }
     }
     
     @Override

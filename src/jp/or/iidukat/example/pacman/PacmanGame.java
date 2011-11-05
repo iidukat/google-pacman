@@ -43,7 +43,7 @@ public class PacmanGame {
     // そのしきい値をモンスター毎に設定
     private static final int[] PEN_LEAVING_FOOD_LIMITS = { 0, 7, 17, 32 };
 
-    // イベント時間管理テーブル. index 7, 8しか使わない
+    // イベント時間管理テーブル
     private static final float[] EVENT_TIME_TABLE = {
         0.16f,
         0.23f,

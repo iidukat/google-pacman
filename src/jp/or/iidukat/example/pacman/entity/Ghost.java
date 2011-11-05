@@ -157,7 +157,6 @@ public abstract class Ghost extends PlayfieldActor {
     }    
 
     // モンスターが交差点/行き止まり にたどり着いたときの動作. nextDirの決定
-    //     b: 反転済みフラグ
     private void decideNextDir(boolean reversed) {
         int[] currentTilePos = tilePos;
         Move currentMove = dir.getMove();
@@ -356,7 +355,7 @@ public abstract class Ghost extends PlayfieldActor {
     }
     
     @Override
-    final void reverseOnEnteredTile() {
+    final void decideNextDirOnEnteredTile() {
         decideNextDir(false); // モンスターの交差点/行き止まりでの進行方向決定
     }
     

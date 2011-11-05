@@ -112,7 +112,7 @@ public abstract class PlayfieldActor extends Actor {
     final void enteredTile() {
         warpIfPossible();
         handleAnObjectWhenEncountering();
-        reverseOnEnteredTile(); 
+        decideNextDirOnEnteredTile(); 
         PathElement p =
             game.getPathElement((int) this.pos[1], (int) this.pos[0]);
         if (p.isIntersection()) // 行き止まり/交差点にて
@@ -135,7 +135,7 @@ public abstract class PlayfieldActor extends Actor {
             }
     }
     
-    abstract void reverseOnEnteredTile(); 
+    abstract void decideNextDirOnEnteredTile(); 
     abstract void shortcutCorner();
 
     final void warpIfPossible() {
