@@ -14,7 +14,7 @@ public class Pinky extends Ghost {
     private static final InitPosition INIT_POS =
         InitPosition.createGhostInitPosition(39.5f, 7, Direction.DOWN, 0, -4);
 
-    // モンスターの巣の中での動き
+    // movements of Pinky in the pen
     private static final Map<GhostMode, MoveInPen[]> MOVES_IN_PEN;
     static {
         Map<GhostMode, MoveInPen[]> m =
@@ -48,14 +48,13 @@ public class Pinky extends Ghost {
         return INIT_POS;
     }
 
-    // ターゲットポジションを決定
     @Override
     public void updateTargetPos() {
         if (this.mode != GhostMode.CHASE) {
             return;
             
         }
-        // Playerを先回りする
+        // go to the player's destination.
         PlayfieldActor pacman = game.getPacman();
         Move mv = pacman.dir.getMove();
         this.targetPos = new float[] { pacman.tilePos[0], pacman.tilePos[1] };
@@ -76,6 +75,6 @@ public class Pinky extends Ghost {
     
     @Override
     int getOrdinaryImageRow() {
-        return 5; // 4 + this.id - 1;
+        return 5;
     }
 }

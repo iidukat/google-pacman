@@ -22,7 +22,6 @@ public class Pacman extends PlayfieldActor {
         super(sourceImage, game);
     }
 
-    // Actorを再配置
     @Override
     public void arrange() {
         InitPosition p = getInitPosition();
@@ -35,7 +34,6 @@ public class Pacman extends PlayfieldActor {
         this.changeSpeed(CurrentSpeed.NORMAL);
     }
 
-    // Actorの速度設定(currentSpeedフィールドを利用)
     @Override
     public void changeSpeed() {
         float s = 0;
@@ -68,7 +66,6 @@ public class Pacman extends PlayfieldActor {
         }
     }
 
-    // 位置, 速度の決定
     private void handleInput(Direction inputDir) {
         if (this.dir == inputDir.getOpposite()) {
             this.dir = inputDir;
@@ -89,8 +86,8 @@ public class Pacman extends PlayfieldActor {
             } else {
                 PathElement p =
                     game.getPathElement(this.tilePos[1], this.tilePos[0]);
-                if (p != null && p.allow(inputDir)) { // 移動可能な方向が入力された場合
-                    // 遅延ぎみに方向入力されたかどうか判定
+                if (p != null && p.allow(inputDir)) { // if an available direction is entered
+                    // determine whether the input of direction is slightly delayed.
                     Move mv = this.dir.getMove();
                     float[] pastPos = new float[] { this.pos[0], this.pos[1] };
                     pastPos[mv.getAxis()] -= mv.getIncrement();
@@ -103,7 +100,9 @@ public class Pacman extends PlayfieldActor {
                             stepCount = 2;
                         }
                     }
-                    if (stepCount != 0) { // 遅延ぎみに方向入力された場合、新しい移動方向に応じて位置を補正
+                    if (stepCount != 0) {
+                        // the input of direction is slightly delayed,
+                        // correct the location according to the new direction.
                         this.dir = inputDir;
                         this.pos[0] = this.tilePos[0];
                         this.pos[1] = this.tilePos[1];
@@ -112,7 +111,7 @@ public class Pacman extends PlayfieldActor {
                         return;
                     }
                 }
-                // 移動方向の先行入力対応
+                // prepare for handling with a precede input of direction
                 this.nextDir = inputDir;
                 this.posDelta = new float[] { 0, 0 };
             }
@@ -150,7 +149,7 @@ public class Pacman extends PlayfieldActor {
             b = new float[] { this.tilePos[0], this.tilePos[1] };
             break;
         default:
-            // posDeltaの更新が行われないようにダミーの値をセット
+            // set dummy values so that posDelta is prevented from being updated
             a = new float[] { 1, 1 };
             b = new float[] { -1, -1 };
             break;
@@ -167,8 +166,8 @@ public class Pacman extends PlayfieldActor {
 
     @Override
     void adjustPosOnEnteringTile(int[] tilePos) {
-        if (!game.getPathElement(tilePos[1], tilePos[0]).isPath()) { // プレイヤーがパスでないところへ移動しようとする
-            // 最後に正常に移動成功した位置に補正
+        if (!game.getPathElement(tilePos[1], tilePos[0]).isPath()) { // try moving to where is not a path
+            // correct the position to where Pacman has actually moved to the last
             this.pos[0] = this.lastGoodTilePos[0];
             this.pos[1] = this.lastGoodTilePos[1];
             tilePos[0] = this.lastGoodTilePos[0];
@@ -197,7 +196,7 @@ public class Pacman extends PlayfieldActor {
     
     @Override
     void shortcutCorner() {
-        // 先行入力された移動方向分を更新(メソッドhandlePrecedeInputを参照)
+        // update the position according to the precede input (see handlePrecedeInput method)
         this.pos[0] += this.posDelta[0];
         this.pos[1] += this.posDelta[1];
         this.posDelta = new float[] { 0, 0 };
@@ -205,7 +204,7 @@ public class Pacman extends PlayfieldActor {
     
     @Override
     void handleAnObjectWhenEncountering() {
-        // フルーツを食べる
+        // eat a fruit
         if (this.pos[0] == Playfield.FRUIT_POSITION[0]
                 && (this.pos[1] == Playfield.FRUIT_POSITION[1]
                     || this.pos[1] == Playfield.FRUIT_POSITION[1] + 8)) {
@@ -213,7 +212,7 @@ public class Pacman extends PlayfieldActor {
         }
     }
     
-    // Pacman, Ms.Pacman表示画像決定(アニメーション対応)
+    // determine the display image of Pacman
     @Override
     int[] getImagePos() {
         int x = 0;
@@ -222,19 +221,19 @@ public class Pacman extends PlayfieldActor {
         if (d == Direction.NONE) {
             d = this.lastActiveDir;
         }
-        if (game.getGameplayMode() == GameplayMode.GHOST_DIED) { // モンスターを食べたとき。画像なし
+        if (game.getGameplayMode() == GameplayMode.GHOST_DIED) { // eat a ghost. no image.
             x = 3;
             y = 0;
         } else if (game.getGameplayMode() == GameplayMode.LEVEL_BEING_COMPLETED
-                    || game.getGameplayMode() == GameplayMode.LEVEL_COMPLETED) { // レベルクリア。Pacmanは丸まる
+                    || game.getGameplayMode() == GameplayMode.LEVEL_COMPLETED) { // complete a level. Pacman is rounded.
             x = 2;
             y = 0;
         } else if (game.getGameplayMode() == GameplayMode.NEWGAME_STARTING
                     || game.getGameplayMode() == GameplayMode.NEWGAME_STARTED
-                    || game.getGameplayMode() == GameplayMode.GAME_RESTARTED) { // ゲーム開始直後の表示画像決定
+                    || game.getGameplayMode() == GameplayMode.GAME_RESTARTED) { // Immediately after game starts
             x = 2;
             y = 0;
-        } else if (game.getGameplayMode() == GameplayMode.PLAYER_DIED) { // プレイヤーが死んだ時の画像決定.
+        } else if (game.getGameplayMode() == GameplayMode.PLAYER_DIED) {
             int t = 20 - (int) FloatMath.floor(game.getGameplayModeTime() / game.getTiming()[4] * 21);
             x = t - 1;
             switch (x) {
@@ -257,7 +256,7 @@ public class Pacman extends PlayfieldActor {
                 break;
             }
             y = 12;
-        } else { // 通常時のプレイヤー画像決定
+        } else { // display the image in the ordinary way.
             switch (d) {
             case LEFT:
                 y = 0;

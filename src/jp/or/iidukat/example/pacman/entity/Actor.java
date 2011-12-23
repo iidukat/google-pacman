@@ -35,9 +35,9 @@ public abstract class Actor extends BaseEntity {
 
     public abstract void move();
 
-    // Actor表示画像切り替え(アニメーション対応)&表示位置更新
+    // switch display image and update the display position
     public final void updateAppearance() {
-        updateElPos(); //位置移動 
+        updateElPos(); // move its position
         int[] bgPos = { 0, 0 };
         bgPos = canAppear() ? getImagePos() : new int[] { 0, 3 };
         if (this.elBackgroundPos[0] != bgPos[0] || this.elBackgroundPos[1] != bgPos[1]) {
@@ -52,7 +52,7 @@ public abstract class Actor extends BaseEntity {
     abstract boolean canAppear();
     abstract int[] getImagePos();
     
-    // 表示位置更新
+    // update the display position
     public final void updateElPos() {
         float x = getFieldX();
         float y = getFieldY();

@@ -39,11 +39,11 @@ public class PacmanGame {
 
     private static final int DEFAULT_KILL_SCREEN_LEVEL = 256;
     
-    // レベル再開後、一定数のエサが食べられるとモンスターが巣から出てくる
-    // そのしきい値をモンスター毎に設定
+    // After a level restart, when a number of dots eaten by the player has reached the threshold,
+    // each ghost leaves from the pen.
+    // This is the thresholds of each ghost.
     private static final int[] PEN_LEAVING_FOOD_LIMITS = { 0, 7, 17, 32 };
 
-    // イベント時間管理テーブル
     private static final float[] EVENT_TIME_TABLE = {
         0.16f,
         0.23f,
@@ -65,8 +65,8 @@ public class PacmanGame {
         0.26f
     };
 
-    private static final int[] FPS_OPTIONS = { 90, 45, 30, }; // fps オプション
-    private static final int DEFAULT_FPS = FPS_OPTIONS[0]; // 本来想定されているfps
+    private static final int[] FPS_OPTIONS = { 90, 45, 30, }; // fps option
+    private static final int DEFAULT_FPS = FPS_OPTIONS[0]; // default fps
 
     public static class LevelConfig {
         private final float ghostSpeed;
@@ -268,7 +268,7 @@ public class PacmanGame {
 
     }
 
-    // ゲームレベル毎の設定
+    // Configurations of each level.
     private static final LevelConfig[] LEVEL_CONFIGS = {
         new LevelConfig.Builder().build(),
         new LevelConfig.Builder()
@@ -1038,14 +1038,13 @@ public class PacmanGame {
         }
     }
 
-    // MainGhostMode切り替え
     private void switchMainGhostMode(GhostMode ghostMode,
                                     boolean justRestartGame) {
         Ghost[] ghosts = getGhosts();
         if (ghostMode == GhostMode.FRIGHTENED
                 && levelConfig.frightTime == 0) {
             for (Ghost ghost : ghosts) {
-                ghost.setReverseDirectionsNext(true); // frightTimeが0なら、ブルーモードになってもモンスターは反対に向きを変えるだけ
+                ghost.setReverseDirectionsNext(true); // If frightTime is 0, a frightened ghost only reverse its direction.
             }
         } else {
             GhostMode oldMainGhostMode = mainGhostMode;
@@ -1072,9 +1071,6 @@ public class PacmanGame {
                 break;
             }
             for (Ghost ghost : ghosts) {
-                // Main Ghost ModeはCHASE(1), SCATTER(2), FRIGHTENED(4). 
-                // ENTERING_PEN(64)になるケースは存在しないように思える.
-                // 巣の中にいるときにGhostMainModeが変わった、という条件にも合致していない
                 if (ghostMode != GhostMode.ENTERING_PEN && !justRestartGame) {
                     ghost.setModeChangedWhileInPen(true);
                 }
@@ -1086,15 +1082,18 @@ public class PacmanGame {
                         && ghost.getMode() != GhostMode.LEAVING_PEN
                         && ghost.getMode() != GhostMode.RE_LEAVING_FROM_PEN
                         && ghost.getMode() != GhostMode.ENTERING_PEN || justRestartGame) {
-                    // ゲーム再開直後(justRestartGmae:true)以外では,
-                    // モンスターのモードがEATEN(8), IN_PEN(16), LEAVING_PEN(32), ENTERING_PEN(64),
-                    // RE_LEAVING_FROM_PEN(128)ならモード更新対象とならない
-                    // ゲーム再開直後以外でFRIGHTENED(4)以外から異なるモード[CHASE(1), SCATTER(2),
-                    // FRIGHTENED(4)]への切り替え時が行われるとき、反対に向きを変える
+
+                    // If it is not immediately after restart the game (justRestartGmae:false),
+                    // a ghost reverse its direction 
+                    // when its mode change from other than FRIGHTENED (CHASE or SCATTER) to another mode.
                     if (!justRestartGame && ghost.getMode() != GhostMode.FRIGHTENED
                             && ghost.getMode() != ghostMode) {
                         ghost.setReverseDirectionsNext(true);
                     }
+
+                    // If it is not immediately after restart the game
+                    // and a mode of each ghost is any of EATEN, IN_PEN, LEAVING_PEN, RE_LEAVING_FROM_PEN, or ENTERING_PEN,
+                    // it is not updated.
                     ghost.switchGhostMode(ghostMode);
                 }
             }
@@ -1111,7 +1110,9 @@ public class PacmanGame {
         Ghost pinky = getPinky();
         Ghost inky = getInky();
         Ghost clyde = getClyde();
-        if (alternatePenLeavingScheme) { // レベル再開後のみ食べられたエサの数によりモンスターが出撃するタイミングを管理
+        if (alternatePenLeavingScheme) {
+            // By using a number of dots eaten after a level restart,
+            // manage the timing of the ghosts leaving from the pen.
             alternateDotCount++;
             if (alternateDotCount == PEN_LEAVING_FOOD_LIMITS[1]) {
                 pinky.setFreeToLeavePen(true);
@@ -1152,11 +1153,11 @@ public class PacmanGame {
         getPlayfieldEl().incrementDotsEaten();
         getPacman().changeSpeed(CurrentSpeed.PACMAN_EATING_DOT);
         playDotEatingSound();
-        if (getPathElement(dotPos[1], dotPos[0]).getDot() == Dot.ENERGIZER) { // パワーエサを食べたとき
+        if (getPathElement(dotPos[1], dotPos[0]).getDot() == Dot.ENERGIZER) { // when eating an energizer
             switchMainGhostMode(GhostMode.FRIGHTENED, false);
             addToScore(50);
-        } else {
-            addToScore(10); // 普通のエサ
+        } else { // when eating a normal food
+            addToScore(10);
         }
 
         getPlayfieldEl().clearDot(dotPos[1], dotPos[0]);
@@ -1264,13 +1265,14 @@ public class PacmanGame {
         }
         if (speed != cruiseElroySpeed) {
             cruiseElroySpeed = speed;
-            getBlinky().changeSpeed(); // アカベエの速度を更新
+            getBlinky().changeSpeed(); // update the speed of Blinky.
         }
     }
 
-    // speed: intervalTimeをインデックスに対応させた配列。
-    // あるintervalTimeでキャラの移動処理が必要かどうかが配列の要素(true/false)
-    // ex) 0.64: [false, true, false, true, false, true, ...]
+    // argument:speed
+    // return value: an array of boolean using intervalTime as its index.
+    //               an element of this array represents whether it is necessary to move the character in a intervalTime.
+    // ex) speed: 0.64 -> return value: [false, true, false, true, false, true, ...]
     public Boolean[] getSpeedIntervals(float speed) {
         Float key = Float.valueOf(speed);
         if (!speedIntervals.containsKey(key)) {
@@ -1499,7 +1501,7 @@ public class PacmanGame {
                     playAmbientSound();
                     ghostBeingEaten.resetDisplayOrder();
                     ghostBeingEaten.switchGhostMode(GhostMode.EATEN);
-                    // ブルーモードのモンスターがいない場合、 ブルーモードを終了させる
+                    // If there is no ghost frightened, finish fright mode.
                     boolean frightenedGhostExists = false;
                     for (Ghost ghost : ghosts) {
                         if (ghost.getMode() == GhostMode.FRIGHTENED
@@ -1623,24 +1625,28 @@ public class PacmanGame {
             return;
         }
 
-        lastTimeDelta += now - lastTime - tickInterval; // 処理遅延時間累計
+        lastTimeDelta += now - lastTime - tickInterval; // total processing delay
         if (lastTimeDelta > 100) {
             lastTimeDelta = 100;
         }
-        if (canDecreaseFps && lastTimeDelta > 50) { // fpsを下げることができるなら、処理遅延時間50ms超の回数をカウント
+        if (canDecreaseFps && lastTimeDelta > 50) {
+            // If the fps can be reduced, count the number of process which latency is over 50 ms.
             lastTimeSlownessCount++;
             if (lastTimeSlownessCount == 20) {
-                decreaseFps(); // 処理遅延時間50ms超 20回でfpsを下げる
+                decreaseFps(); // reduce the fps when the number of process, which latency is over 50 ms, becomes 20.
             }
         }
         int latencyMultiplyer = 0;
-        if (lastTimeDelta > tickInterval) { // 処理遅延時間累計がtickインターバルより大きい場合、tickインターバル未満に値を切り詰める
+        if (lastTimeDelta > tickInterval) {
+            // If the total processing delay is greater than tick​​Interval,
+            // the total processing delay is cut down to less than tickInterval.
             latencyMultiplyer = (int) FloatMath.floor(lastTimeDelta / tickInterval);
             lastTimeDelta -= tickInterval * latencyMultiplyer;
         }
         lastTime = now;
         if (gameplayMode == GameplayMode.CUTSCENE) { // Cutscene
-            for (int i = 0; i < tickMultiplier + latencyMultiplyer; i++) { // tickMultiplierと処理遅延に応じて複数回のロジックを実行
+            for (int i = 0; i < tickMultiplier + latencyMultiplyer; i++) {
+                // run multiple time depending on the tickMultiplier and latency
                 advanceCutscene();
                 intervalTime = (intervalTime + 1) % DEFAULT_FPS;
                 globalTime++;
@@ -1650,7 +1656,8 @@ public class PacmanGame {
         } else {
             updateSoundIcon();
             
-            for (int i = 0; i < tickMultiplier + latencyMultiplyer; i++) { // tickMultiplierと処理遅延に応じて複数回のロジックを実行
+            for (int i = 0; i < tickMultiplier + latencyMultiplyer; i++) {
+                // run multiple time depending on the tickMultiplier and latency
                 moveActors();
                 if (gameplayMode == GameplayMode.ORDINARY_PLAYING) {
                     if (tilesChanged) {
@@ -1753,8 +1760,8 @@ public class PacmanGame {
                                 ? "eating_dot_1"
                                 : "eating_dot_2";
                 playSound(track, 1 + dotEatingChannel, true);
-                dotEatingChannel = (dotEatingChannel + 1) % 2; // 0 と 1をスイッチ
-                dotEatingSoundPart = 3 - dotEatingSoundPart; // 1 と 2 をスイッチ
+                dotEatingChannel = (dotEatingChannel + 1) % 2; // switch between 0 and 1
+                dotEatingSoundPart = 3 - dotEatingSoundPart; // switch between 1 and 2
             }
         }
     }

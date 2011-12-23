@@ -13,7 +13,7 @@ public class Clyde extends Ghost {
     private static final InitPosition INIT_POS =
         InitPosition.createGhostInitPosition(41.375f, 7, Direction.UP, 0, 20);
 
-    // モンスターの巣の中での動き
+    // movements of Clyde in the pen
     private static final Map<GhostMode, MoveInPen[]> MOVES_IN_PEN;
     static {
         Map<GhostMode, MoveInPen[]> m =
@@ -55,13 +55,13 @@ public class Clyde extends Ghost {
         return INIT_POS;
     }
 
-    // ターゲットポジションを決定
     @Override
     public void updateTargetPos() {
         if (this.mode != GhostMode.CHASE) {
             return;
         }
-        // Playerと距離が近ければ追尾する。遠ければScatterモードでの受け持ち場所を目指す。
+        // If near the player, trace it.
+        // If distant from the player,  go to the location assigned in the scatter mode.
         PlayfieldActor pacman = game.getPacman();
         float distance = getDistance(pacman.tilePos, this.tilePos);
         this.targetPos =
@@ -81,6 +81,6 @@ public class Clyde extends Ghost {
 
     @Override
     int getOrdinaryImageRow() {
-        return 7; // 4 + this.id - 1;
+        return 7;
     }
 }

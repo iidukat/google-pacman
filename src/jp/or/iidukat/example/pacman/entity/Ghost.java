@@ -59,7 +59,6 @@ public abstract class Ghost extends PlayfieldActor {
         super(sourceImage, game);
     }
 
-    // Actorを再配置
     @Override
     public final void arrange() {
         InitPosition p = getInitPosition();
@@ -76,7 +75,6 @@ public abstract class Ghost extends PlayfieldActor {
 
     public abstract void updateTargetPos();
 
-    // モンスターのモード設定
     public final void switchGhostMode(GhostMode mode) {
         GhostMode oldMode = this.mode;
         this.mode = mode;
@@ -134,7 +132,6 @@ public abstract class Ghost extends PlayfieldActor {
         this.changeSpeed();
     }
     
-    // Actorの速度設定(currentSpeedフィールドを利用)
     @Override
     public final void changeSpeed() {
         float s = 0;
@@ -156,25 +153,31 @@ public abstract class Ghost extends PlayfieldActor {
         return fullSpeed;
     }    
 
-    // モンスターが交差点/行き止まり にたどり着いたときの動作. nextDirの決定
     private void decideNextDir(boolean reversed) {
         int[] currentTilePos = tilePos;
         Move currentMove = dir.getMove();
         int[] newTilePos = new int[] {currentTilePos[0], currentTilePos[1]};
-        newTilePos[currentMove.getAxis()] += currentMove.getIncrement() * 8; // 進行方向へ1マス先取り
+        newTilePos[currentMove.getAxis()] += currentMove.getIncrement() * 8; // anticipate the next tile by the direction of the progress
         PathElement destination = game.getPathElement(newTilePos[1], newTilePos[0]);
         if (reversed && !destination.isIntersection()) {
-            destination = game.getPathElement(currentTilePos[1], currentTilePos[0]); // 交差点/行き止まり でなければ現在位置に戻る(反転済みの場合)
+            // when the ghost has already reversed its direction and its destination is neither a dead end nor a intersection,
+            // it return to the current position.
+            destination = game.getPathElement(currentTilePos[1], currentTilePos[0]);
         }
-        
+
+        // The destination of the ghost is a dead end or a intersection.
         if (destination.isIntersection()) {
             switch (mode) {
-            case SCATTER: // Scatter
-            case CHASE: // 追跡
-            case EATEN: // プレイヤーに食べられる
-                if (destination.allowOnlyOpposite(dir)) {// 反対向きしか通れないなら反対向きを選ぶ
+            case SCATTER:
+            case CHASE:
+            case EATEN:
+                if (destination.allowOnlyOpposite(dir)) {
+                    // If the opposite direction is available and other directions is not available,
+                    // choose the opposite direction.
                     nextDir = dir.getOpposite();
-                } else { // 反対向き以外を選択可能なら、目的地に最も近い方向を選択する
+                } else {
+                    // If the ghost can choose some directions except the opposite,
+                    // the ghost choose the direction in which it is the closest to its target position.
                     float max = 99999999999f;
                     float distance = 0;
                     Direction dirCandidate = Direction.NONE;
@@ -197,10 +200,14 @@ public abstract class Ghost extends PlayfieldActor {
                     }
                 }
                 break;
-            case FRIGHTENED: // ブルーモード
-                if (destination.allowOnlyOpposite(dir)) { // 反対向きしか通れないなら反対向きを選ぶ
+            case FRIGHTENED:
+                if (destination.allowOnlyOpposite(dir)) {
+                    // If the opposite direction is available and other directions is not available,
+                    // choose the opposite direction.
                     this.nextDir = dir.getOpposite();
-                } else { // 移動可能な方向のうち反対向き以外を選択
+                } else {
+                    // If the ghost can choose some directions except the opposite,
+                    // the ghost randomly choose one of them.
                     Direction nDir = Direction.NONE;
                     do {
                         nDir =
@@ -216,12 +223,12 @@ public abstract class Ghost extends PlayfieldActor {
         }
     }
 
-    // モンスターの巣の中/巣から出る挙動を管理(モンスター個別のモード管理)
+    // when the ghost stays in the pen or goes out of the pen, manage its behaviors
     private void switchFollowingRoutine() {
         this.routineMoveId++;
-        if (this.routineMoveId == getMovesInPen().length) { // ルーチンの最後に到達
+        if (this.routineMoveId == getMovesInPen().length) { // the end of the routine
             if (this.mode == GhostMode.IN_PEN && this.freeToLeavePen
-                    && !game.isGhostExitingPenNow()) { // 外に出る条件が満たされた
+                    && !game.isGhostExitingPenNow()) { // the conditions of going out are met
                 if (this.eatenInThisFrightMode) {
                     this.switchGhostMode(GhostMode.RE_LEAVING_FROM_PEN);
                 } else {
@@ -229,7 +236,7 @@ public abstract class Ghost extends PlayfieldActor {
                 }
                 return;
             } else if (this.mode == GhostMode.LEAVING_PEN
-                        || this.mode == GhostMode.RE_LEAVING_FROM_PEN) { // 将に外に出むとす
+                        || this.mode == GhostMode.RE_LEAVING_FROM_PEN) { // go out of the pen right now
                 this.pos =
                     new float[] {
                         Playfield.PEN_ENTRANCE[0],
@@ -243,15 +250,15 @@ public abstract class Ghost extends PlayfieldActor {
                 }
                 this.switchGhostMode(mainMode);
                 return;
-            } else if (this.mode == GhostMode.ENTERING_PEN) { // 食べられて巣に入る
+            } else if (this.mode == GhostMode.ENTERING_PEN) { // After the ghost has been eaten, it enters the pen.
                 if (this == game.getBlinky() || this.freeToLeavePen) {
-                    this.switchGhostMode(GhostMode.RE_LEAVING_FROM_PEN); // アカベエはすぐに巣から出てくる
+                    this.switchGhostMode(GhostMode.RE_LEAVING_FROM_PEN); // Blinky goes out from the pen soon.
                 } else {
                     this.eatenInThisFrightMode = true;
                     this.switchGhostMode(GhostMode.IN_PEN);
                 }
                 return;
-            } else { // 外にでる条件が満たされなければ、ルーチンを繰り返す
+            } else { // If the conditions of going out aren't met, repeat the routines.
                 this.routineMoveId = 0;
             }
         }
@@ -266,7 +273,8 @@ public abstract class Ghost extends PlayfieldActor {
         this.updateAppearance();
     }
     
-    // モンスターの巣の中/巣から出る挙動を管理(表示画像決定&位置移動)
+    // When the ghost stays in the pen or goes out of the pen, manage its behaviors
+    // (switch display image and update the display position)
     private void continueFollowingRoutine() {
         
         MoveInPen mv = null;
@@ -303,7 +311,7 @@ public abstract class Ghost extends PlayfieldActor {
     
     abstract MoveInPen[] getMovesInPen();
     
-    // モンスターの巣の中/巣から出る挙動を管理
+    // When the ghost stays in the pen or goes out of the pen, manage its behaviors
     private void followRoutine() {
         if (this.routineMoveId == -1 || this.proceedToNextRoutineMove) {
             this.switchFollowingRoutine();
@@ -314,7 +322,7 @@ public abstract class Ghost extends PlayfieldActor {
 
     @Override
     final void handleAnObjectWhenEncountering() {
-        // 巣に入る
+        // enter into the pen
         if (this.mode == GhostMode.EATEN
                 && this.pos[0] == Playfield.PEN_ENTRANCE[0]
                 && this.pos[1] == Playfield.PEN_ENTRANCE[1]) {
@@ -337,7 +345,7 @@ public abstract class Ghost extends PlayfieldActor {
     
     @Override
     final void reverseOnEnteringTile() {
-        if (this.reverseDirectionsNext) { // 方向を反転する
+        if (this.reverseDirectionsNext) { // reverse its direction
             this.dir = this.dir.getOpposite();
             this.nextDir = Direction.NONE;
             this.reverseDirectionsNext = false;
@@ -356,14 +364,14 @@ public abstract class Ghost extends PlayfieldActor {
     
     @Override
     final void decideNextDirOnEnteredTile() {
-        decideNextDir(false); // モンスターの交差点/行き止まりでの進行方向決定
+        decideNextDir(false);
     }
     
     @Override
     final void shortcutCorner() {
     }
     
-    // モンスターの表示画像決定
+    // determine the display image of the ghost
     @Override
     final int[] getImagePos() {
         int x = 0;
@@ -371,12 +379,13 @@ public abstract class Ghost extends PlayfieldActor {
         if (game.getGameplayMode() == GameplayMode.LEVEL_COMPLETED
                 || game.getGameplayMode() == GameplayMode.NEWGAME_STARTING
                 || game.getGameplayMode() == GameplayMode.PLAYER_DIED) {
-            // Pacman or Ms.Pacmanが死んだ直後。モンスターの姿は消える 
+            // Immediately after the player dies, the ghost disappears.
             x = 3;
             y = 0;
         } else if (game.getGameplayMode() == GameplayMode.GHOST_DIED
                         && this== game.getGhostBeingEaten()) {
-            switch (game.getModeScoreMultiplier()) {// モンスターが食べられたときに表示させるスコアを決定
+            // Determine the score to be displayed when the ghost has been eaten
+            switch (game.getModeScoreMultiplier()) {
             case 2:
                 x = 0;
                 break;
@@ -396,17 +405,17 @@ public abstract class Ghost extends PlayfieldActor {
                       || (this.mode == GhostMode.IN_PEN || this.mode == GhostMode.LEAVING_PEN)
                           && game.getMainGhostMode() == GhostMode.FRIGHTENED
                           && !this.eatenInThisFrightMode) {
-            // ブルーモード.ただし、食べられてはいない
+            // in the frighten mode, however, not eaten.
             x = 0;
             y = 8;
-            // ブルーモード時間切れ間近の青白明滅
+            // blinking before the end of the frighten mode
             if (game.getFrightModeTime() < game.getLevels().getFrightTotalTime() - game.getLevels().getFrightTime()
                     && FloatMath.floor(game.getFrightModeTime() / game.getTiming()[1]) % 2 == 0) {
                 x += 2;
             }
     
-            x += (int) (Math.floor(game.getGlobalTime() / 16) % 2); // ブルーモードの画像切り替え
-        } else if (this.mode == GhostMode.EATEN || this.mode == GhostMode.ENTERING_PEN) { // 食べられて目玉だけ
+            x += (int) (Math.floor(game.getGlobalTime() / 16) % 2); // switch display image in frighten mode.
+        } else if (this.mode == GhostMode.EATEN || this.mode == GhostMode.ENTERING_PEN) { // eyes only
             Direction ndir = this.nextDir;
             if (ndir != Direction.NONE) {
                 ndir = this.dir;
@@ -426,7 +435,7 @@ public abstract class Ghost extends PlayfieldActor {
                 break;
             }
             y = 10;
-        } else { // 通常時の画像表示
+        } else { // display the image in the ordinary way.
             Direction ndir = this.nextDir;
             if (ndir == Direction.NONE
                 || game.getPathElement(this.tilePos[1], this.tilePos[0]).isTunnel()) {

@@ -101,17 +101,17 @@ public class CutsceneBlinky extends CutsceneActor {
         
     }
 
-    // モンスターの表示画像決定
+    // determine the display image of Blinky
     @Override
     int[] getImagePos() {
         int x = 0;
         int y = 0;
         switch (this.mode) {
         case FRIGHTENED:
-            // ブルーモード.ただし、食べられてはいない
+            // in the frighten mode, however, not eaten.
             x = 0;
             y = 8;
-            // ブルーモード時間切れ間近の青白明滅
+            // blinking before the end of the frighten mode
             if (game.getFrightModeTime()
                     < game.getLevels().getFrightTotalTime()
                         - game.getLevels().getFrightTime()
@@ -120,7 +120,7 @@ public class CutsceneBlinky extends CutsceneActor {
                         % 2 == 0) {
                 x += 2;
             }
-            x += (int) (Math.floor(game.getGlobalTime() / 16) % 2); // ブルーモードの画像切り替え
+            x += (int) (Math.floor(game.getGlobalTime() / 16) % 2); // switching the display image in the frighten mode
             break;
         case TORN_CLOTH:
             x = 6;
@@ -136,7 +136,7 @@ public class CutsceneBlinky extends CutsceneActor {
             x = game.getCutsceneSequenceId() == 3 ? 6 : 7;
             y = 11;
             break;
-        default: // 通常時の画像表示
+        default: // display the image in the ordinary way
             switch (dir) {
             case LEFT:
                 x = 4;

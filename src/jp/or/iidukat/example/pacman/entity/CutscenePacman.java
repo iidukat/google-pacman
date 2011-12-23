@@ -93,7 +93,7 @@ public class CutscenePacman extends CutsceneActor {
         mode = s.mode;
     }
     
-    // Pacmanの表示画像決定(アニメーション対応)
+    // determine the display image of Pacman
     @Override
     int[] getImagePos() {
         int x = 0;

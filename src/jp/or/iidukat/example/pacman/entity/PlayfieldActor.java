@@ -72,20 +72,19 @@ public abstract class PlayfieldActor extends Actor {
         super(sourceImage, game);
     }
     
-    // Actorを再配置
     public abstract void arrange();
     
     abstract InitPosition getInitPosition();
     
-    // tilePosとposの差分が有意になったとき呼び出される
+    // be invoked when the difference between tilePos and pos is significant.
     final void enteringTile(int[] tilePos) {
         game.setTilesChanged(true);
         adjustPosOnEnteringTile(tilePos);
         reverseOnEnteringTile();
-        // モンスター or プレイヤーがパスであるところへ移動
+
         this.lastGoodTilePos = new int[] { tilePos[0], tilePos[1] };
 
-        // トンネル通過(currentSpeed:2) or それ以外(currentSpeed:0)
+        // passing the tunnel(currentSpeed:2) or the others(currentSpeed:0)
         if (game.getPathElement(tilePos[1], tilePos[0]).isTunnel()) {
             if (canChangeSpeedInTunnel()) {
                 this.changeSpeed(CurrentSpeed.PASSING_TUNNEL);
@@ -94,7 +93,6 @@ public abstract class PlayfieldActor extends Actor {
             this.changeSpeed(CurrentSpeed.NORMAL);
         }
 
-        // エサとエンカウント
         if (game.getPathElement(tilePos[1], tilePos[0]).getDot() != Dot.NONE) {
             encounterDot(tilePos);
         }
@@ -108,16 +106,16 @@ public abstract class PlayfieldActor extends Actor {
     abstract boolean canChangeSpeedInTunnel();
     abstract void encounterDot(int[] tilePos);
     
-    // posの値がtilePosと一致(pos が8の倍数)したときに呼び出される
+    // be invoked when pos's value is equal to tilePos (pos is a multiple of 8)
     final void enteredTile() {
         warpIfPossible();
         handleAnObjectWhenEncountering();
         decideNextDirOnEnteredTile(); 
         PathElement p =
             game.getPathElement((int) this.pos[1], (int) this.pos[0]);
-        if (p.isIntersection()) // 行き止まり/交差点にて
+        if (p.isIntersection()) // at either dead end or intersection
             if (this.nextDir != Direction.NONE
-                    && p.allow(this.nextDir)) { // nextDirで指定された方向へ移動可能
+                    && p.allow(this.nextDir)) { // enable to move towards the direction which nextDir shows
                 if (this.dir != Direction.NONE) {
                     this.lastActiveDir = this.dir;
                 }
@@ -126,7 +124,7 @@ public abstract class PlayfieldActor extends Actor {
                 if (supportShortcut()) {
                     shortcutCorner();
                 }
-            } else if (!p.allow(this.dir)) { // nextDirもdirも移動不可だったら、停止
+            } else if (!p.allow(this.dir)) { // stop if neither nextDir nor dir shows a movable direction.
                 if (this.dir != Direction.NONE) {
                     this.lastActiveDir = this.dir;
                 }
@@ -140,11 +138,11 @@ public abstract class PlayfieldActor extends Actor {
 
     final void warpIfPossible() {
         if (this.pos[0] == Playfield.TUNNEL_POS[0].getY() * 8
-                && this.pos[1] == Playfield.TUNNEL_POS[0].getX() * 8) { // 画面左から右へワープ
+                && this.pos[1] == Playfield.TUNNEL_POS[0].getX() * 8) { // warp from left to right
             this.pos[0] = Playfield.TUNNEL_POS[1].getY() * 8;
             this.pos[1] = (Playfield.TUNNEL_POS[1].getX() - 1) * 8;
         } else if (this.pos[0] == Playfield.TUNNEL_POS[1].getY() * 8
-                    && this.pos[1] == Playfield.TUNNEL_POS[1].getX() * 8) { // 画面右から左へワープ
+                    && this.pos[1] == Playfield.TUNNEL_POS[1].getX() * 8) { // warp from right to left
             this.pos[0] = Playfield.TUNNEL_POS[0].getY() * 8;
             this.pos[1] = (Playfield.TUNNEL_POS[0].getX() + 1) * 8;
         }
@@ -152,16 +150,14 @@ public abstract class PlayfieldActor extends Actor {
     
     abstract void handleAnObjectWhenEncountering();
     
-    // Actorの速度設定変更
     public final void changeSpeed(CurrentSpeed speed) {
         this.currentSpeed = speed;
         this.changeSpeed();
     }
     
-    // Actorの速度設定(currentSpeedプロパティを利用)
     public abstract void changeSpeed();
     
-    // Actorの移動(ルーチン以外)
+    // move when the actor doesn't follow routine
     final void step() {
         if (this.dir == Direction.NONE
             || !this.speedIntervals[game.getIntervalTime()]) {
@@ -176,13 +172,13 @@ public abstract class PlayfieldActor extends Actor {
         int[] nextTile = { Math.round(imaginaryTileY) * 8,
                             Math.round(imaginaryTileX) * 8 };
         if (nextTile[0] != this.tilePos[0]
-                || nextTile[1] != this.tilePos[1]) { // tileが切り替わる
+                || nextTile[1] != this.tilePos[1]) { // the actor is entering into a tile.
             enteringTile(nextTile);
         } else {
             float[] tile = { FloatMath.floor(imaginaryTileY) * 8,
                                 FloatMath.floor(imaginaryTileX) * 8 };
             if (this.pos[1] == tile[1]
-                    && this.pos[0] == tile[0]) { // tileが切り替わった直後
+                    && this.pos[0] == tile[0]) { // the actor has entered into a tile.
                 enteredTile(); 
             }
         }

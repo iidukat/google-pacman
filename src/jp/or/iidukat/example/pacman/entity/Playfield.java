@@ -16,12 +16,6 @@ import android.util.FloatMath;
 
 public class Playfield extends BaseEntity {
 
-    // パスの配列.左上:(5, 1), 左下:(5, 15), 右上:(60, 1), 右下:(60, 15).
-    // 配列要素のオブジェクトのプロパティは(x, y, w) もしくは(x, y, h)
-    // 要素のオブジェクトにwプロパティがあり:横方向, 要素のオブジェクトにhプロパティがあり:縦方向
-    // x, yはパスの始点の座標
-    // h, wは各々パスの長さを表現
-    // [例外] typeプロパティを値1でもつパスはワープつき
     private static class Path {
         final int x;
         final int y;
@@ -54,6 +48,15 @@ public class Playfield extends BaseEntity {
         }
     }
 
+    // a element of the path array has either (x, y, w) or (x, y, h).
+    // the element has w field's value: horizontal path
+    // the element has h field's value: vertical path
+    // (x, y) is a coordinate of start point.
+    // Both h and w represent a length of path.
+    // [exception] If the type field's value is 1, the path is a warp tunnel.
+    //
+    // upper left:(5, 1), lower left:(5, 15),
+    // upper right:(60, 1), lower right:(60, 15).
     private static final Path[] PATHS = {
         Path.createHorizontalPath(5, 1, 56),
         Path.createHorizontalPath(5, 4, 5),
@@ -94,8 +97,6 @@ public class Playfield extends BaseEntity {
         Path.createTunnelPath(1, 8, 9),
     };
 
-    // エサの存在しないパス
-    // 左上:(5, 1), 左下:(5, 15), 右上:(60, 1), 右下:(60, 15).
     private static final Path[] PATHS_HAVING_NO_DOT = {
         Path.createHorizontalPath(1, 8, 8),
         Path.createHorizontalPath(57, 8, 9),
@@ -124,7 +125,6 @@ public class Playfield extends BaseEntity {
         }
     }
 
-    // パワーエサ
     private static final Position[] ENERGIZER_POSITIONS = {
         new Position(5, 15),
         new Position(5, 3),
@@ -133,14 +133,14 @@ public class Playfield extends BaseEntity {
         new Position(60, 15),
     };
 
-    // ワープトンネル
+    // warp tunnel
     static final Position[] TUNNEL_POS = {
         new Position(2, 8),
         new Position(63, 8),
     };
 
-    static final int[] PEN_ENTRANCE = {32, 312}; // モンスターの巣の入り口の位置
-    static final int[] FRUIT_POSITION = { 80, 312 }; // フルーツ出現位置
+    static final int[] PEN_ENTRANCE = {32, 312}; // the entrance position of the ghost's nest
+    static final int[] FRUIT_POSITION = { 80, 312 };
 
     public static class PathElement {
         public static enum Dot {
@@ -227,8 +227,6 @@ public class Playfield extends BaseEntity {
     private Fruit fruit;
     private Ready ready;
     private GameOver gameover;
-
-    // private final List<Entity> entities = new ArrayList<Entity>();
 
     public Playfield(Bitmap sourceImage, PacmanGame game) {
         super(sourceImage, true);
@@ -381,7 +379,6 @@ public class Playfield extends BaseEntity {
         }
     }
 
-    // エサを作成
     private void createDotElements() {
         foods = new HashMap<Integer, Map<Integer, DotElement>>();
         for (int y = 8; y <= playfieldHeight * 8; y += 8) {
@@ -400,7 +397,6 @@ public class Playfield extends BaseEntity {
         }
     }
 
-    // パワーエサを作成
     private void createEnergizerElements() {
         List<Energizer> es = new ArrayList<Energizer>();
         for (Position c : ENERGIZER_POSITIONS) {
@@ -600,13 +596,12 @@ public class Playfield extends BaseEntity {
                 new KillScreenTile(getAppearance().getSourceImage());
         tile.init(x, y, width, height);
         if (bgImage) {
-            // j.style.background = "url(src/pacman10-hp-sprite-2.png) -" + killScreenTileX + "px -" + killScreenTileY + "px no-repeat";
             tile.setBgPos(killScreenTileX, killScreenTileY);
             killScreenTileY += 8;
         } else {
-            tile.setBgColor(0x000000); // j.style.background = "black";
+            tile.setBgColor(0x000000);
         }
-        tile.setParent(this); // playfieldEl.appendChild(j)
+        tile.setParent(this);
     }
     
     public void blink(float gameplayModeTime, float interval) {
@@ -727,8 +722,8 @@ public class Playfield extends BaseEntity {
         void init(int x, int y) {
             super.init(x, y);
             Appearance a = getAppearance();
-            a.setLeftOffset(3);// margin-left: 3
-            a.setTopOffset(3); // margint-top: 3
+            a.setLeftOffset(3);
+            a.setTopOffset(3);
             a.setWidth(2);
             a.setHeight(2);
             a.setBgColor(0xf8b090);

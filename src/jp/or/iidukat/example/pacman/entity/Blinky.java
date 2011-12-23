@@ -13,7 +13,7 @@ public class Blinky extends Ghost {
     private static final InitPosition INIT_POS =
         InitPosition.createGhostInitPosition(39.5f, 4, Direction.LEFT, 57, -4);
 
-    // モンスターの巣の中での動き
+    // movements of Blinky in the pen
     private static final Map<GhostMode, MoveInPen[]> MOVES_IN_PEN;
     static {
         Map<GhostMode, MoveInPen[]> m =
@@ -37,10 +37,9 @@ public class Blinky extends Ghost {
         return INIT_POS;
     }
     
-    // ターゲットポジションを決定
     @Override
     public void updateTargetPos() {
-        // Playerを追尾する
+        // chase the player
         PlayfieldActor pacman = game.getPacman();
         if (game.getDotsRemaining() < game.getLevels().getElroyDotsLeftPart1()
                 && this.mode == GhostMode.SCATTER
@@ -70,6 +69,6 @@ public class Blinky extends Ghost {
     
     @Override
     int getOrdinaryImageRow() {
-        return 4; // 4 + this.id - 1;
+        return 4;
     }
 }

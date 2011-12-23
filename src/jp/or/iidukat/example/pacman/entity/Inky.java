@@ -14,7 +14,7 @@ public class Inky extends Ghost {
     private static final InitPosition INIT_POS =
         InitPosition.createGhostInitPosition(37.625f, 7, Direction.UP, 57, 20);
 
-    // モンスターの巣の中での動き
+    // movements of Inky in the pen
     private static final Map<GhostMode, MoveInPen[]> MOVES_IN_PEN;
     static {
         Map<GhostMode, MoveInPen[]> m =
@@ -56,14 +56,13 @@ public class Inky extends Ghost {
         return INIT_POS;
     }
     
-    // ターゲットポジションを決定
     @Override
     public void updateTargetPos() {
         if (this.mode != GhostMode.CHASE) {
             return;
         }
         
-        // PlayerをBLINKYと挟み撃ちにする
+        // the player are attacked on both sides by Inky and Blinky
         PlayfieldActor pacman = game.getPacman();
         Move pacmanMove = pacman.dir.getMove();
         PlayfieldActor blinky = game.getBlinky();
@@ -87,6 +86,6 @@ public class Inky extends Ghost {
     
     @Override
     int getOrdinaryImageRow() {
-        return 6; // 4 + this.id - 1;
+        return 6;
     }
 }
