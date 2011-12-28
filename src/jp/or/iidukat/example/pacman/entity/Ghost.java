@@ -54,9 +54,23 @@ public abstract class Ghost extends PlayfieldActor {
     private boolean eatenInThisFrightMode;
     private boolean reverseDirectionsNext;
     private int dotCount;
+    
+    private final boolean manipulatable;
+    private final BehaviorsOnStep manipulatableBehaviors;
+    private final BehaviorsOnStep unmanipulatableBehaviors;
 
     Ghost(Bitmap sourceImage, PacmanGame game) {
+        this(sourceImage, game, false);
+    }
+
+    Ghost(Bitmap sourceImage, PacmanGame game, boolean manipulatable) {
         super(sourceImage, game);
+        this.manipulatable = manipulatable;
+        this.inputHandler =
+            manipulatable ? new GhostInputHandler() : new NopInputHandler();
+        this.manipulatableBehaviors = new ManipulatableBehaviorsOnStep(inputHandler);
+        this.unmanipulatableBehaviors = new GhostBehaviorsOnStep();
+        this.behaviorsOfStep = this.unmanipulatableBehaviors;
     }
 
     @Override
@@ -68,7 +82,7 @@ public abstract class Ghost extends PlayfieldActor {
         this.scatterPos = new float[] {p.scatterY * 8, p.scatterX * 8};
         this.lastActiveDir = this.dir = p.dir;
         this.physicalSpeed = 0;
-        this.nextDir = Direction.NONE;
+        this.requestedDir = this.nextDir = Direction.NONE;
         this.changeSpeed(CurrentSpeed.NORMAL);
         this.reverseDirectionsNext = this.freeToLeavePen = this.modeChangedWhileInPen = this.eatenInThisFrightMode = false;
     }
@@ -130,6 +144,22 @@ public abstract class Ghost extends PlayfieldActor {
             break;
         }
         this.changeSpeed();
+        
+        if (manipulatable) {
+            switch (this.mode) {
+            case CHASE:
+            case SCATTER:
+                this.behaviorsOfStep = this.manipulatableBehaviors;
+                break;
+            default:
+                this.behaviorsOfStep = this.unmanipulatableBehaviors;
+                break;
+            }
+            if (this.dir == Direction.NONE) {
+                decideNextDir(false);
+                this.dir = this.nextDir;
+            }
+        }
     }
     
     @Override
@@ -156,73 +186,83 @@ public abstract class Ghost extends PlayfieldActor {
     private void decideNextDir(boolean reversed) {
         int[] currentTilePos = tilePos;
         Move currentMove = dir.getMove();
-        int[] newTilePos = new int[] {currentTilePos[0], currentTilePos[1]};
-        newTilePos[currentMove.getAxis()] += currentMove.getIncrement() * 8; // anticipate the next tile by the direction of the progress
-        PathElement destination = game.getPathElement(newTilePos[1], newTilePos[0]);
-        if (reversed && !destination.isIntersection()) {
+        int[] destTilePos = new int[] {currentTilePos[0], currentTilePos[1]};
+        destTilePos[currentMove.getAxis()] += currentMove.getIncrement() * 8; // anticipate the next tile by the direction of the progress
+        PathElement destPathElement = game.getPathElement(destTilePos[1], destTilePos[0]);
+        if (reversed && !destPathElement.isIntersection()) {
             // when the ghost has already reversed its direction and its destination is neither a dead end nor a intersection,
             // it return to the current position.
-            destination = game.getPathElement(currentTilePos[1], currentTilePos[0]);
+            destPathElement = game.getPathElement(currentTilePos[1], currentTilePos[0]);
         }
 
         // The destination of the ghost is a dead end or a intersection.
-        if (destination.isIntersection()) {
+        if (destPathElement.isIntersection()) {
             switch (mode) {
             case SCATTER:
             case CHASE:
             case EATEN:
-                if (destination.allowOnlyOpposite(dir)) {
-                    // If the opposite direction is available and other directions is not available,
-                    // choose the opposite direction.
-                    nextDir = dir.getOpposite();
-                } else {
-                    // If the ghost can choose some directions except the opposite,
-                    // the ghost choose the direction in which it is the closest to its target position.
-                    float max = 99999999999f;
-                    float distance = 0;
-                    Direction dirCandidate = Direction.NONE;
-                    for (Direction d : Direction.getAllMoves()) {
-                        if (destination.allow(d) && dir != d.getOpposite()) {
-                            float[] tilePosCandidate =
-                                new float[] {(float) newTilePos[0], (float) newTilePos[1]};
-                            tilePosCandidate[d.getMove().getAxis()] += d.getMove().getIncrement();
-                            distance = getDistance(
-                                            tilePosCandidate,
-                                            new float[] {targetPos[0], targetPos[1]});
-                            if (distance < max) {
-                                max = distance;
-                                dirCandidate = d;
-                            }
-                        }
-                    }
-                    if (dirCandidate != Direction.NONE) {
-                        nextDir = dirCandidate;
-                    }
-                }
+                decideNextDirInShortestPathToTarget(destTilePos, destPathElement);
                 break;
             case FRIGHTENED:
-                if (destination.allowOnlyOpposite(dir)) {
-                    // If the opposite direction is available and other directions is not available,
-                    // choose the opposite direction.
-                    this.nextDir = dir.getOpposite();
-                } else {
-                    // If the ghost can choose some directions except the opposite,
-                    // the ghost randomly choose one of them.
-                    Direction nDir = Direction.NONE;
-                    do {
-                        nDir =
-                            Direction.getAllMoves().get(
-                                (int) FloatMath.floor(
-                                        game.rand() * Direction.getAllMoves().size()));
-                    } while (!destination.allow(nDir)
-                                || nDir == dir.getOpposite());
-                    nextDir = nDir;
-                }
+                decideNextDirRandomly(destPathElement);
                 break;
           }
         }
     }
 
+    private void decideNextDirInShortestPathToTarget(
+                                        int[] nextTilePos,
+                                        PathElement destination) {
+        if (destination.allowOnlyOpposite(dir)) {
+            // If the opposite direction is available and other directions is not available,
+            // choose the opposite direction.
+            nextDir = dir.getOpposite();
+        } else {
+            // If the ghost can choose some directions except the opposite,
+            // the ghost choose the direction in which it is the closest to its target position.
+            float max = 99999999999f;
+            float distance = 0;
+            Direction dirCandidate = Direction.NONE;
+            for (Direction d : Direction.getAllMoves()) {
+                if (destination.allow(d) && dir != d.getOpposite()) {
+                    float[] tilePosCandidate =
+                        new float[] {(float) nextTilePos[0], (float) nextTilePos[1]};
+                    tilePosCandidate[d.getMove().getAxis()] += d.getMove().getIncrement();
+                    distance = getDistance(
+                                    tilePosCandidate,
+                                    new float[] {targetPos[0], targetPos[1]});
+                    if (distance < max) {
+                        max = distance;
+                        dirCandidate = d;
+                    }
+                }
+            }
+            if (dirCandidate != Direction.NONE) {
+                nextDir = dirCandidate;
+            }
+        }
+    }
+    
+    private void decideNextDirRandomly(PathElement destination) {
+        if (destination.allowOnlyOpposite(dir)) {
+            // If the opposite direction is available and other directions is not available,
+            // choose the opposite direction.
+            this.nextDir = dir.getOpposite();
+        } else {
+            // If the ghost can choose some directions except the opposite,
+            // the ghost randomly choose one of them.
+            Direction nDir = Direction.NONE;
+            do {
+                nDir =
+                    Direction.getAllMoves().get(
+                        (int) FloatMath.floor(
+                                game.rand() * Direction.getAllMoves().size()));
+            } while (!destination.allow(nDir)
+                        || nDir == dir.getOpposite());
+            nextDir = nDir;
+        }
+    }
+    
     // when the ghost stays in the pen or goes out of the pen, manage its behaviors
     private void switchFollowingRoutine() {
         this.routineMoveId++;
@@ -320,36 +360,136 @@ public abstract class Ghost extends PlayfieldActor {
         this.continueFollowingRoutine();
     }
 
-    @Override
-    final void handleAnObjectWhenEncountering() {
-        // enter into the pen
-        if (this.mode == GhostMode.EATEN
-                && this.pos[0] == Playfield.PEN_ENTRANCE[0]
-                && this.pos[1] == Playfield.PEN_ENTRANCE[1]) {
-            this.switchGhostMode(GhostMode.ENTERING_PEN);
+    private class GhostBehaviorsOnStep implements BehaviorsOnStep {
+        
+        @Override
+        public void adjustPosOnEnteringTile(int[] tilePos) {
+        }
+        
+        @Override
+        public void reverseOnEnteringTile() {
+            if (reverseDirectionsNext) { // reverse its direction
+                dir = dir.getOpposite();
+                nextDir = Direction.NONE;
+                reverseDirectionsNext = false;
+                decideNextDir(true);
+            }
+        }
+        
+        @Override
+        public void decideNextDirOnEnteredTile() {
+            decideNextDir(false);
+        }
+
+        @Override
+        public boolean supportShortcut() {
+            return false;
+        }
+        
+        @Override
+        public void prepareShortcut() {
+        }
+
+        @Override
+        public void shortcutCorner() {
         }
     }
+    
+    private class ManipulatableBehaviorsOnStep implements BehaviorsOnStep {
+    
+        private final InputHandler inputHandler;
+        
+        ManipulatableBehaviorsOnStep(InputHandler inputHandler) {
+            this.inputHandler = inputHandler;
+        }
+        
+        @Override
+        public void adjustPosOnEnteringTile(int[] tilePos) {
+            if (!game.getPathElement(tilePos[1], tilePos[0]).isPath()) { // try moving to where is not a path
+                // correct the position to where Pacman has actually moved to the last
+                pos[0] = lastGoodTilePos[0];
+                pos[1] = lastGoodTilePos[1];
+                tilePos[0] = lastGoodTilePos[0];
+                tilePos[1] = lastGoodTilePos[1];
+                dir = Direction.NONE;
+            } 
+        }
+        
+        @Override
+        public void reverseOnEnteringTile() {
+        }
 
-    @Override
-    final boolean supportShortcut() {
-        return false;
+        @Override
+        public void decideNextDirOnEnteredTile() {
+        }
+
+        @Override
+        public boolean supportShortcut() {
+            return false;
+        }
+
+        @Override
+        public void prepareShortcut() {
+            this.inputHandler.handlePrecedeInput();
+        }
+
+        @Override
+        public void shortcutCorner() {
+        }
     }
     
-    @Override
-    final void prepareShortcut() {
-    }
+    private class GhostInputHandler implements InputHandler {
+        public void handleInput() {
+            if (dir == requestedDir.getOpposite()) {
+                dir = requestedDir;
+                if (currentSpeed != CurrentSpeed.PASSING_TUNNEL) {
+                    changeSpeed(CurrentSpeed.NORMAL);
+                }
+                if (dir != Direction.NONE) {
+                    lastActiveDir = dir;
+                }
+                nextDir = Direction.NONE;
+            } else if (dir != requestedDir) {
+                if (dir == Direction.NONE) {
+                    if (game.getPathElement((int) pos[1], (int) pos[0])
+                            .allow(requestedDir)) {
+                        dir = requestedDir;
+                    }
+                } else {
+                    PathElement p =
+                        game.getPathElement(tilePos[1], tilePos[0]);
+                    if (p != null && p.allow(requestedDir)) { // if an available direction is entered
+                        // determine whether the input of direction is slightly delayed.
+                        Move mv = dir.getMove();
+                        float[] pastPos = new float[] { pos[0], pos[1] };
+                        pastPos[mv.getAxis()] -= mv.getIncrement();
+                        int stepCount = 0;
+                        if (pastPos[0] == tilePos[0] && pastPos[1] == tilePos[1]) {
+                            stepCount = 1;
+                        } else {
+                            pastPos[mv.getAxis()] -= mv.getIncrement();
+                            if (pastPos[0] == tilePos[0] && pastPos[1] == tilePos[1]) {
+                                stepCount = 2;
+                            }
+                        }
+                        if (stepCount != 0) {
+                            // the input of direction is slightly delayed,
+                            // correct the location according to the new direction.
+                            dir = requestedDir;
+                            pos[0] = tilePos[0];
+                            pos[1] = tilePos[1];
+                            mv = dir.getMove();
+                            pos[mv.getAxis()] += mv.getIncrement() * stepCount;
+                            return;
+                        }
+                    }
+                    // prepare for handling with a precede input of direction
+                    nextDir = requestedDir;
+                }
+            }
+        }
     
-    @Override
-    final void adjustPosOnEnteringTile(int[] tilePos) {
-    }
-    
-    @Override
-    final void reverseOnEnteringTile() {
-        if (this.reverseDirectionsNext) { // reverse its direction
-            this.dir = this.dir.getOpposite();
-            this.nextDir = Direction.NONE;
-            this.reverseDirectionsNext = false;
-            this.decideNextDir(true);
+        public void handlePrecedeInput() {
         }
     }
     
@@ -361,14 +501,15 @@ public abstract class Ghost extends PlayfieldActor {
     @Override
     final void encounterDot(int[] tilePos) {
     }
-    
+
     @Override
-    final void decideNextDirOnEnteredTile() {
-        decideNextDir(false);
-    }
-    
-    @Override
-    final void shortcutCorner() {
+    final void handleAnObjectWhenEncountering() {
+        // enter into the pen
+        if (this.mode == GhostMode.EATEN
+                && this.pos[0] == Playfield.PEN_ENTRANCE[0]
+                && this.pos[1] == Playfield.PEN_ENTRANCE[1]) {
+            this.switchGhostMode(GhostMode.ENTERING_PEN);
+        }
     }
     
     // determine the display image of the ghost
@@ -376,6 +517,10 @@ public abstract class Ghost extends PlayfieldActor {
     final int[] getImagePos() {
         int x = 0;
         int y = 0;
+        Direction d = this.dir;
+        if (d == Direction.NONE) {
+            d = this.lastActiveDir;
+        }
         if (game.getGameplayMode() == GameplayMode.LEVEL_COMPLETED
                 || game.getGameplayMode() == GameplayMode.NEWGAME_STARTING
                 || game.getGameplayMode() == GameplayMode.PLAYER_DIED) {
@@ -418,7 +563,7 @@ public abstract class Ghost extends PlayfieldActor {
         } else if (this.mode == GhostMode.EATEN || this.mode == GhostMode.ENTERING_PEN) { // eyes only
             Direction ndir = this.nextDir;
             if (ndir != Direction.NONE) {
-                ndir = this.dir;
+                ndir = d;
             }
             switch (ndir) {
             case LEFT:
@@ -439,7 +584,7 @@ public abstract class Ghost extends PlayfieldActor {
             Direction ndir = this.nextDir;
             if (ndir == Direction.NONE
                 || game.getPathElement(this.tilePos[1], this.tilePos[0]).isTunnel()) {
-                ndir = this.dir;
+                ndir = d;
             }
             
             switch (ndir) {
@@ -476,6 +621,12 @@ public abstract class Ghost extends PlayfieldActor {
                 this.followRoutine();
                 if (this.mode == GhostMode.ENTERING_PEN) this.followRoutine();
             } else {
+                if (manipulatable) {
+                    if (this.requestedDir != Direction.NONE) {
+                        inputHandler.handleInput();
+                        this.requestedDir = Direction.NONE;
+                    }
+                }
                 this.step();
                 if (this.mode == GhostMode.EATEN) this.step();
             }

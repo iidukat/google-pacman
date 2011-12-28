@@ -15,11 +15,12 @@ public class Pacman extends PlayfieldActor {
         InitPosition.createPlayerInitPosition(39.5f, 15, Direction.LEFT);
 
     private float[] posDelta;
-    Direction requestedDir = Direction.NONE;
     private float dotEatingSpeed;
     
     Pacman(Bitmap sourceImage, PacmanGame game) {
         super(sourceImage, game);
+        inputHandler = new PacmanInputHandler();
+        behaviorsOfStep = new PacmanBehaviorsOnStep(inputHandler);
     }
 
     @Override
@@ -58,7 +59,7 @@ public class Pacman extends PlayfieldActor {
     public void move() {
         if (game.getGameplayMode() == GameplayMode.ORDINARY_PLAYING) {
             if (this.requestedDir != Direction.NONE) {
-                this.handleInput(this.requestedDir);
+                inputHandler.handleInput();
                 this.requestedDir = Direction.NONE;
             }
 
@@ -66,118 +67,141 @@ public class Pacman extends PlayfieldActor {
         }
     }
 
-    private void handleInput(Direction inputDir) {
-        if (this.dir == inputDir.getOpposite()) {
-            this.dir = inputDir;
-            this.posDelta = new float[] { 0, 0 };
-            if (this.currentSpeed != CurrentSpeed.PASSING_TUNNEL) {
-                this.changeSpeed(CurrentSpeed.NORMAL);
-            }
-            if (this.dir != Direction.NONE) {
-                this.lastActiveDir = this.dir;
-            }
-            this.nextDir = Direction.NONE;
-        } else if (this.dir != inputDir) {
-            if (this.dir == Direction.NONE) {
-                if (game.getPathElement((int) this.pos[1], (int) this.pos[0])
-                        .allow(inputDir)) {
-                    this.dir = inputDir;
+    private class PacmanInputHandler implements InputHandler {
+        public void handleInput() {
+            if (dir == requestedDir.getOpposite()) {
+                dir = requestedDir;
+                posDelta = new float[] { 0, 0 };
+                if (currentSpeed != CurrentSpeed.PASSING_TUNNEL) {
+                    changeSpeed(CurrentSpeed.NORMAL);
                 }
-            } else {
-                PathElement p =
-                    game.getPathElement(this.tilePos[1], this.tilePos[0]);
-                if (p != null && p.allow(inputDir)) { // if an available direction is entered
-                    // determine whether the input of direction is slightly delayed.
-                    Move mv = this.dir.getMove();
-                    float[] pastPos = new float[] { this.pos[0], this.pos[1] };
-                    pastPos[mv.getAxis()] -= mv.getIncrement();
-                    int stepCount = 0;
-                    if (pastPos[0] == this.tilePos[0] && pastPos[1] == this.tilePos[1]) {
-                        stepCount = 1;
-                    } else {
+                if (dir != Direction.NONE) {
+                    lastActiveDir = dir;
+                }
+                nextDir = Direction.NONE;
+            } else if (dir != requestedDir) {
+                if (dir == Direction.NONE) {
+                    if (game.getPathElement((int) pos[1], (int) pos[0])
+                            .allow(requestedDir)) {
+                        dir = requestedDir;
+                    }
+                } else {
+                    PathElement p =
+                        game.getPathElement(tilePos[1], tilePos[0]);
+                    if (p != null && p.allow(requestedDir)) { // if an available direction is entered
+                        // determine whether the input of direction is slightly delayed.
+                        Move mv = dir.getMove();
+                        float[] pastPos = new float[] { pos[0], pos[1] };
                         pastPos[mv.getAxis()] -= mv.getIncrement();
-                        if (pastPos[0] == this.tilePos[0] && pastPos[1] == this.tilePos[1]) {
-                            stepCount = 2;
+                        int stepCount = 0;
+                        if (pastPos[0] == tilePos[0] && pastPos[1] == tilePos[1]) {
+                            stepCount = 1;
+                        } else {
+                            pastPos[mv.getAxis()] -= mv.getIncrement();
+                            if (pastPos[0] == tilePos[0] && pastPos[1] == tilePos[1]) {
+                                stepCount = 2;
+                            }
+                        }
+                        if (stepCount != 0) {
+                            // the input of direction is slightly delayed,
+                            // correct the location according to the new direction.
+                            dir = requestedDir;
+                            pos[0] = tilePos[0];
+                            pos[1] = tilePos[1];
+                            mv = dir.getMove();
+                            pos[mv.getAxis()] += mv.getIncrement() * stepCount;
+                            return;
                         }
                     }
-                    if (stepCount != 0) {
-                        // the input of direction is slightly delayed,
-                        // correct the location according to the new direction.
-                        this.dir = inputDir;
-                        this.pos[0] = this.tilePos[0];
-                        this.pos[1] = this.tilePos[1];
-                        mv = this.dir.getMove();
-                        this.pos[mv.getAxis()] += mv.getIncrement() * stepCount;
-                        return;
-                    }
+                    // prepare for handling with a precede input of direction
+                    nextDir = requestedDir;
+                    posDelta = new float[] { 0, 0 };
                 }
-                // prepare for handling with a precede input of direction
-                this.nextDir = inputDir;
-                this.posDelta = new float[] { 0, 0 };
+            }
+        }
+    
+        public void handlePrecedeInput() {
+            float[] a;
+            float[] b;
+            switch (dir) {
+            case UP:
+                a = new float[] { tilePos[0], tilePos[1] };
+                b = new float[] { tilePos[0] + 3.6f, tilePos[1] };
+                break;
+            case DOWN:
+                a = new float[] { tilePos[0] - 4, tilePos[1] };
+                b = new float[] { tilePos[0], tilePos[1] };
+                break;
+            case LEFT:
+                a = new float[] { tilePos[0], tilePos[1] };
+                b = new float[] { tilePos[0], tilePos[1] + 3.6f };
+                break;
+            case RIGHT:
+                a = new float[] { tilePos[0], tilePos[1] - 4 };
+                b = new float[] { tilePos[0], tilePos[1] };
+                break;
+            default:
+                // set dummy values so that posDelta is prevented from being updated
+                a = new float[] { 1, 1 };
+                b = new float[] { -1, -1 };
+                break;
+            }
+            if (pos[0] >= a[0]
+                && pos[0] <= b[0]
+                && pos[1] >= a[1]
+                && pos[1] <= b[1]) {
+                Move mv = nextDir.getMove();
+                posDelta[mv.getAxis()] += mv.getIncrement();
             }
         }
     }
-
-    @Override
-    boolean supportShortcut() {
-        return true;
-    }
     
-    @Override
-    void prepareShortcut() {
-        handlePrecedeInput();
-    }
+    private class PacmanBehaviorsOnStep implements BehaviorsOnStep {
     
-    private void handlePrecedeInput() {
-        float[] a;
-        float[] b;
-        switch (this.dir) {
-        case UP:
-            a = new float[] { this.tilePos[0], this.tilePos[1] };
-            b = new float[] { this.tilePos[0] + 3.6f, this.tilePos[1] };
-            break;
-        case DOWN:
-            a = new float[] { this.tilePos[0] - 4, this.tilePos[1] };
-            b = new float[] { this.tilePos[0], this.tilePos[1] };
-            break;
-        case LEFT:
-            a = new float[] { this.tilePos[0], this.tilePos[1] };
-            b = new float[] { this.tilePos[0], this.tilePos[1] + 3.6f };
-            break;
-        case RIGHT:
-            a = new float[] { this.tilePos[0], this.tilePos[1] - 4 };
-            b = new float[] { this.tilePos[0], this.tilePos[1] };
-            break;
-        default:
-            // set dummy values so that posDelta is prevented from being updated
-            a = new float[] { 1, 1 };
-            b = new float[] { -1, -1 };
-            break;
+        private final InputHandler inputHandler;
+        
+        PacmanBehaviorsOnStep(InputHandler inputHandler) {
+            this.inputHandler = inputHandler;
         }
-        if (this.pos[0] >= a[0]
-            && this.pos[0] <= b[0]
-            && this.pos[1] >= a[1]
-            && this.pos[1] <= b[1]) {
-            Move mv = this.nextDir.getMove();
-            this.posDelta[mv.getAxis()] += mv.getIncrement();
+        
+        @Override
+        public void adjustPosOnEnteringTile(int[] tilePos) {
+            if (!game.getPathElement(tilePos[1], tilePos[0]).isPath()) { // try moving to where is not a path
+                // correct the position to where Pacman has actually moved to the last
+                pos[0] = lastGoodTilePos[0];
+                pos[1] = lastGoodTilePos[1];
+                tilePos[0] = lastGoodTilePos[0];
+                tilePos[1] = lastGoodTilePos[1];
+                dir = Direction.NONE;
+            } 
+        
         }
-    }
-    
+        
+        @Override
+        public void reverseOnEnteringTile() {
+        }
 
-    @Override
-    void adjustPosOnEnteringTile(int[] tilePos) {
-        if (!game.getPathElement(tilePos[1], tilePos[0]).isPath()) { // try moving to where is not a path
-            // correct the position to where Pacman has actually moved to the last
-            this.pos[0] = this.lastGoodTilePos[0];
-            this.pos[1] = this.lastGoodTilePos[1];
-            tilePos[0] = this.lastGoodTilePos[0];
-            tilePos[1] = this.lastGoodTilePos[1];
-            this.dir = Direction.NONE;
-        } 
-    }
-    
-    @Override
-    void reverseOnEnteringTile() {
+        @Override
+        public void decideNextDirOnEnteredTile() {
+        }
+
+        @Override
+        public boolean supportShortcut() {
+            return true;
+        }
+
+        @Override
+        public void prepareShortcut() {
+            this.inputHandler.handlePrecedeInput();
+        }
+
+        @Override
+        public void shortcutCorner() {
+            // update the position according to the precede input (see handlePrecedeInput method)
+            pos[0] += posDelta[0];
+            pos[1] += posDelta[1];
+            posDelta = new float[] { 0, 0 };
+        }
     }
     
     @Override
@@ -189,19 +213,7 @@ public class Pacman extends PlayfieldActor {
     void encounterDot(int[] tilePos) {
         game.dotEaten(tilePos);
     }
-    
-    @Override
-    void decideNextDirOnEnteredTile() {
-    }
-    
-    @Override
-    void shortcutCorner() {
-        // update the position according to the precede input (see handlePrecedeInput method)
-        this.pos[0] += this.posDelta[0];
-        this.pos[1] += this.posDelta[1];
-        this.posDelta = new float[] { 0, 0 };
-    }
-    
+            
     @Override
     void handleAnObjectWhenEncountering() {
         // eat a fruit
@@ -303,10 +315,6 @@ public class Pacman extends PlayfieldActor {
         return PacmanGame.getFieldY(pos[0] + posDelta[0]);
     }
     
-    public void setRequestedDir(Direction requestedDir) {
-        this.requestedDir = requestedDir;
-    }
-
     public void setDotEatingSpeed(float dotEatingSpeed) {
         this.dotEatingSpeed = dotEatingSpeed;
     }

@@ -67,11 +67,16 @@ public abstract class PlayfieldActor extends Actor {
     float fullSpeed;
     float tunnelSpeed;
     Boolean[] speedIntervals;
+    
+    Direction requestedDir = Direction.NONE;
+    InputHandler inputHandler;
+    BehaviorsOnStep behaviorsOfStep;
 
+    
     PlayfieldActor(Bitmap sourceImage, PacmanGame game) {
         super(sourceImage, game);
     }
-    
+
     public abstract void arrange();
     
     abstract InitPosition getInitPosition();
@@ -79,8 +84,8 @@ public abstract class PlayfieldActor extends Actor {
     // be invoked when the difference between tilePos and pos is significant.
     final void enteringTile(int[] tilePos) {
         game.setTilesChanged(true);
-        adjustPosOnEnteringTile(tilePos);
-        reverseOnEnteringTile();
+        behaviorsOfStep.adjustPosOnEnteringTile(tilePos);
+        behaviorsOfStep.reverseOnEnteringTile();
 
         this.lastGoodTilePos = new int[] { tilePos[0], tilePos[1] };
 
@@ -101,8 +106,6 @@ public abstract class PlayfieldActor extends Actor {
         this.tilePos[1] = tilePos[1];
     }
 
-    abstract void adjustPosOnEnteringTile(int[] tilePos);
-    abstract void reverseOnEnteringTile();
     abstract boolean canChangeSpeedInTunnel();
     abstract void encounterDot(int[] tilePos);
     
@@ -110,7 +113,7 @@ public abstract class PlayfieldActor extends Actor {
     final void enteredTile() {
         warpIfPossible();
         handleAnObjectWhenEncountering();
-        decideNextDirOnEnteredTile(); 
+        behaviorsOfStep.decideNextDirOnEnteredTile(); 
         PathElement p =
             game.getPathElement((int) this.pos[1], (int) this.pos[0]);
         if (p.isIntersection()) // at either dead end or intersection
@@ -121,8 +124,8 @@ public abstract class PlayfieldActor extends Actor {
                 }
                 this.dir = this.nextDir;
                 this.nextDir = Direction.NONE;
-                if (supportShortcut()) {
-                    shortcutCorner();
+                if (behaviorsOfStep.supportShortcut()) {
+                    behaviorsOfStep.shortcutCorner();
                 }
             } else if (!p.allow(this.dir)) { // stop if neither nextDir nor dir shows a movable direction.
                 if (this.dir != Direction.NONE) {
@@ -133,9 +136,6 @@ public abstract class PlayfieldActor extends Actor {
             }
     }
     
-    abstract void decideNextDirOnEnteredTile(); 
-    abstract void shortcutCorner();
-
     final void warpIfPossible() {
         if (this.pos[0] == Playfield.TUNNEL_POS[0].getY() * 8
                 && this.pos[1] == Playfield.TUNNEL_POS[0].getX() * 8) { // warp from left to right
@@ -183,20 +183,17 @@ public abstract class PlayfieldActor extends Actor {
             }
         }
         
-        if (supportShortcut()) {
+        if (behaviorsOfStep.supportShortcut()) {
             PathElement path = game.getPathElement(nextTile[1], nextTile[0]);
             if (this.nextDir != Direction.NONE
                     && path.isIntersection()
                     && path.allow(this.nextDir)) {
-                prepareShortcut();
+                behaviorsOfStep.prepareShortcut();
             }
         }
         
         this.updateAppearance();
     }
-    
-    abstract boolean supportShortcut();
-    abstract void prepareShortcut();
 
     @Override
     final boolean canAppear() {
@@ -216,8 +213,32 @@ public abstract class PlayfieldActor extends Actor {
         this.tunnelSpeed = tunnelSpeed;
     }
 
+    public void setRequestedDir(Direction requestedDir) {
+        this.requestedDir = requestedDir;
+    }
+    
     public final void resetDisplayOrder() {
         getAppearance().setOrder(DEFAULT_DISPLAY_ORDER);
     }
     
+    interface InputHandler {
+        void handleInput();
+        void handlePrecedeInput();
+    }
+    
+    class NopInputHandler implements InputHandler {
+        public void handleInput() {
+        }
+        public void handlePrecedeInput() {
+        }
+    }
+    
+    interface BehaviorsOnStep {
+        void adjustPosOnEnteringTile(int[] tilePos);
+        void reverseOnEnteringTile();
+        void decideNextDirOnEnteredTile();
+        boolean supportShortcut();
+        void prepareShortcut();
+        void shortcutCorner();
+    }
 }

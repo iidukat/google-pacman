@@ -29,7 +29,7 @@ public class Blinky extends Ghost {
     }
 
     Blinky(Bitmap sourceImage, PacmanGame game) {
-        super(sourceImage, game);
+        super(sourceImage, game, true);
     }
 
     @Override

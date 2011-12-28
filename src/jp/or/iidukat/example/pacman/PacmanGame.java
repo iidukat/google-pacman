@@ -867,6 +867,27 @@ public class PacmanGame {
         getPlayfieldEl().createGameOverElement();
     }
 
+//    private void canvasClicked(float x, float y) {
+//        if (handleSoundIconClick(x, y)) {
+//            return;
+//        }
+//
+//        float[] offset = canvasEl.getAbsolutePos();
+//        float cx = x - offset[1];
+//        float cy = y - offset[0];
+//        
+//        Pacman pacman = getPacman();
+//        float px = pacman.getFieldX() + 48;
+//        float py = pacman.getFieldY() + 32;
+//        float xdiff = Math.abs(cx - px);
+//        float ydiff = Math.abs(cy - py);
+//        if (xdiff > 8 && ydiff < xdiff) {
+//            pacman.setRequestedDir(cx > px ? Direction.RIGHT : Direction.LEFT);
+//        } else if (ydiff > 8 && xdiff < ydiff) {
+//            pacman.setRequestedDir(cy > py ? Direction.DOWN : Direction.UP);
+//        }
+//    }
+
     private void canvasClicked(float x, float y) {
         if (handleSoundIconClick(x, y)) {
             return;
@@ -876,18 +897,18 @@ public class PacmanGame {
         float cx = x - offset[1];
         float cy = y - offset[0];
         
-        Pacman pacman = getPacman();
-        float px = pacman.getFieldX() + 48;
-        float py = pacman.getFieldY() + 32;
-        float xdiff = Math.abs(cx - px);
-        float ydiff = Math.abs(cy - py);
+        Ghost blinky = getBlinky();
+        float bx = blinky.getFieldX() + 48;
+        float by = blinky.getFieldY() + 32;
+        float xdiff = Math.abs(cx - bx);
+        float ydiff = Math.abs(cy - by);
         if (xdiff > 8 && ydiff < xdiff) {
-            pacman.setRequestedDir(cx > px ? Direction.RIGHT : Direction.LEFT);
+            blinky.setRequestedDir(cx > bx ? Direction.RIGHT : Direction.LEFT);
         } else if (ydiff > 8 && xdiff < ydiff) {
-            pacman.setRequestedDir(cy > py ? Direction.DOWN : Direction.UP);
+            blinky.setRequestedDir(cy > by ? Direction.DOWN : Direction.UP);
         }
     }
-
+    
     private boolean handleSoundIconClick(float x, float y) {
         if (!soundPlayer.isAvailable() || !getSoundEl().isVisible()) {
             return false;
