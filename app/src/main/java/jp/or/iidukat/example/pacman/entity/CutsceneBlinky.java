@@ -10,7 +10,6 @@ import jp.or.iidukat.example.pacman.PacmanGame.GameplayMode;
 import jp.or.iidukat.example.pacman.entity.CutsceneActor.Cutscene.Move;
 import jp.or.iidukat.example.pacman.entity.CutsceneActor.Cutscene.StartPoint;
 import android.graphics.Bitmap;
-import android.util.FloatMath;
 
 public class CutsceneBlinky extends CutsceneActor {
 
@@ -115,7 +114,7 @@ public class CutsceneBlinky extends CutsceneActor {
             if (game.getFrightModeTime()
                     < game.getLevels().getFrightTotalTime()
                         - game.getLevels().getFrightTime()
-                && FloatMath.floor(
+                && Math.floor(
                         game.getFrightModeTime() / game.getTiming()[1])
                         % 2 == 0) {
                 x += 2;

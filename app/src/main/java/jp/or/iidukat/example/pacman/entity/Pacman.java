@@ -7,16 +7,15 @@ import jp.or.iidukat.example.pacman.PacmanGame.GameplayMode;
 import jp.or.iidukat.example.pacman.entity.Playfield.PathElement;
 
 import android.graphics.Bitmap;
-import android.util.FloatMath;
 
 public class Pacman extends PlayfieldActor {
 
     private static final InitPosition INIT_POS =
         InitPosition.createPlayerInitPosition(39.5f, 15, Direction.LEFT);
 
-    private float[] posDelta;
+    private double[] posDelta;
     Direction requestedDir = Direction.NONE;
-    private float dotEatingSpeed;
+    private double dotEatingSpeed;
     
     Pacman(Bitmap sourceImage, PacmanGame game) {
         super(sourceImage, game);
@@ -25,8 +24,8 @@ public class Pacman extends PlayfieldActor {
     @Override
     public void arrange() {
         InitPosition p = getInitPosition();
-        this.pos = new float[] { p.y * 8, p.x * 8 };
-        this.posDelta = new float[] { 0, 0 };
+        this.pos = new double[] { p.y * 8, p.x * 8 };
+        this.posDelta = new double[] { 0, 0 };
         this.tilePos = new int[] { (int) p.y * 8, (int) p.x * 8 };
         this.lastActiveDir = this.dir = p.dir;
         this.physicalSpeed = 0;
@@ -36,7 +35,7 @@ public class Pacman extends PlayfieldActor {
 
     @Override
     public void changeSpeed() {
-        float s = 0;
+        double s = 0;
         switch (this.currentSpeed) {
         case NORMAL:
             s = this.fullSpeed;
@@ -69,7 +68,7 @@ public class Pacman extends PlayfieldActor {
     private void handleInput(Direction inputDir) {
         if (this.dir == inputDir.getOpposite()) {
             this.dir = inputDir;
-            this.posDelta = new float[] { 0, 0 };
+            this.posDelta = new double[] { 0, 0 };
             if (this.currentSpeed != CurrentSpeed.PASSING_TUNNEL) {
                 this.changeSpeed(CurrentSpeed.NORMAL);
             }
@@ -89,7 +88,7 @@ public class Pacman extends PlayfieldActor {
                 if (p != null && p.allow(inputDir)) { // if an available direction is entered
                     // determine whether the input of direction is slightly delayed.
                     Move mv = this.dir.getMove();
-                    float[] pastPos = new float[] { this.pos[0], this.pos[1] };
+                    double[] pastPos = new double[] { this.pos[0], this.pos[1] };
                     pastPos[mv.getAxis()] -= mv.getIncrement();
                     int stepCount = 0;
                     if (pastPos[0] == this.tilePos[0] && pastPos[1] == this.tilePos[1]) {
@@ -113,7 +112,7 @@ public class Pacman extends PlayfieldActor {
                 }
                 // prepare for handling with a precede input of direction
                 this.nextDir = inputDir;
-                this.posDelta = new float[] { 0, 0 };
+                this.posDelta = new double[] { 0, 0 };
             }
         }
     }
@@ -129,29 +128,29 @@ public class Pacman extends PlayfieldActor {
     }
     
     private void handlePrecedeInput() {
-        float[] a;
-        float[] b;
+        double[] a;
+        double[] b;
         switch (this.dir) {
         case UP:
-            a = new float[] { this.tilePos[0], this.tilePos[1] };
-            b = new float[] { this.tilePos[0] + 3.6f, this.tilePos[1] };
+            a = new double[] { this.tilePos[0], this.tilePos[1] };
+            b = new double[] { this.tilePos[0] + 3.6f, this.tilePos[1] };
             break;
         case DOWN:
-            a = new float[] { this.tilePos[0] - 4, this.tilePos[1] };
-            b = new float[] { this.tilePos[0], this.tilePos[1] };
+            a = new double[] { this.tilePos[0] - 4, this.tilePos[1] };
+            b = new double[] { this.tilePos[0], this.tilePos[1] };
             break;
         case LEFT:
-            a = new float[] { this.tilePos[0], this.tilePos[1] };
-            b = new float[] { this.tilePos[0], this.tilePos[1] + 3.6f };
+            a = new double[] { this.tilePos[0], this.tilePos[1] };
+            b = new double[] { this.tilePos[0], this.tilePos[1] + 3.6f };
             break;
         case RIGHT:
-            a = new float[] { this.tilePos[0], this.tilePos[1] - 4 };
-            b = new float[] { this.tilePos[0], this.tilePos[1] };
+            a = new double[] { this.tilePos[0], this.tilePos[1] - 4 };
+            b = new double[] { this.tilePos[0], this.tilePos[1] };
             break;
         default:
             // set dummy values so that posDelta is prevented from being updated
-            a = new float[] { 1, 1 };
-            b = new float[] { -1, -1 };
+            a = new double[] { 1, 1 };
+            b = new double[] { -1, -1 };
             break;
         }
         if (this.pos[0] >= a[0]
@@ -199,7 +198,7 @@ public class Pacman extends PlayfieldActor {
         // update the position according to the precede input (see handlePrecedeInput method)
         this.pos[0] += this.posDelta[0];
         this.pos[1] += this.posDelta[1];
-        this.posDelta = new float[] { 0, 0 };
+        this.posDelta = new double[] { 0, 0 };
     }
     
     @Override
@@ -234,7 +233,7 @@ public class Pacman extends PlayfieldActor {
             x = 2;
             y = 0;
         } else if (game.getGameplayMode() == GameplayMode.PLAYER_DIED) {
-            int t = 20 - (int) FloatMath.floor(game.getGameplayModeTime() / game.getTiming()[4] * 21);
+            int t = 20 - (int) Math.floor(game.getGameplayModeTime() / game.getTiming()[4] * 21);
             x = t - 1;
             switch (x) {
             case -1:
@@ -294,12 +293,12 @@ public class Pacman extends PlayfieldActor {
     }
 
     @Override
-    public float getFieldX() {
+    public double getFieldX() {
         return PacmanGame.getFieldX(pos[1] + posDelta[1]);
     }
     
     @Override
-    public float getFieldY() {
+    public double getFieldY() {
         return PacmanGame.getFieldY(pos[0] + posDelta[0]);
     }
     
@@ -307,7 +306,7 @@ public class Pacman extends PlayfieldActor {
         this.requestedDir = requestedDir;
     }
 
-    public void setDotEatingSpeed(float dotEatingSpeed) {
+    public void setDotEatingSpeed(double dotEatingSpeed) {
         this.dotEatingSpeed = dotEatingSpeed;
     }
 

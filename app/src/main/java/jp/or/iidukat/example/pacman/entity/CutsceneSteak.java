@@ -56,7 +56,7 @@ public class CutsceneSteak extends CutsceneActor {
     @Override
     public int[] getImagePos() {
         int sequenceId = game.getCutsceneSequenceId();
-        float time = game.getCutsceneTime();
+        double time = game.getCutsceneTime();
         int x = sequenceId == 1
                     ? time > 60
                         ? 1

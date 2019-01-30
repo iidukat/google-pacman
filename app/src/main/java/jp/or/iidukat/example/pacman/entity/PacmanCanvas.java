@@ -152,11 +152,11 @@ public class PacmanCanvas extends BaseEntity {
         cutsceneField = null;
     }
 
-    public void setTop(float top) {
+    public void setTop(double top) {
         getAppearance().setTop(top);
     }
     
-    public void setLeft(float left) {
+    public void setLeft(double left) {
         getAppearance().setLeft(left);
     }
 

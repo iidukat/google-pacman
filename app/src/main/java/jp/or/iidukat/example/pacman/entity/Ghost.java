@@ -6,7 +6,6 @@ import jp.or.iidukat.example.pacman.PacmanGame;
 import jp.or.iidukat.example.pacman.PacmanGame.GameplayMode;
 import jp.or.iidukat.example.pacman.entity.Playfield.PathElement;
 import android.graphics.Bitmap;
-import android.util.FloatMath;
 
 public abstract class Ghost extends PlayfieldActor {
 
@@ -26,15 +25,15 @@ public abstract class Ghost extends PlayfieldActor {
         }
     }
     
-    static final float LEAVING_PEN_SPEED = 0.8f * 0.4f;
+    static final double LEAVING_PEN_SPEED = 0.8f * 0.4f;
     
     static class MoveInPen {
-        final float x;
-        final float y;
+        final double x;
+        final double y;
         final Direction dir;
-        final float dest;
-        final float speed;
-        MoveInPen(float x, float y, Direction dir, float dest, float speed) {
+        final double dest;
+        final double speed;
+        MoveInPen(double x, double y, Direction dir, double dest, double speed) {
             this.x = x;
             this.y = y;
             this.dir = dir;
@@ -44,8 +43,8 @@ public abstract class Ghost extends PlayfieldActor {
     }
 
     GhostMode mode = GhostMode.NONE;
-    float[] targetPos;
-    float[] scatterPos;
+    double[] targetPos;
+    double[] scatterPos;
     private boolean followingRoutine;
     private boolean proceedToNextRoutineMove;
     private int routineMoveId;
@@ -62,10 +61,10 @@ public abstract class Ghost extends PlayfieldActor {
     @Override
     public final void arrange() {
         InitPosition p = getInitPosition();
-        this.pos = new float[] {p.y * 8, p.x * 8};
+        this.pos = new double[] {p.y * 8, p.x * 8};
         this.tilePos = new int[] {(int) p.y * 8, (int) p.x * 8};
-        this.targetPos = new float[] {p.scatterY * 8, p.scatterX * 8};
-        this.scatterPos = new float[] {p.scatterY * 8, p.scatterX * 8};
+        this.targetPos = new double[] {p.scatterY * 8, p.scatterX * 8};
+        this.scatterPos = new double[] {p.scatterY * 8, p.scatterX * 8};
         this.lastActiveDir = this.dir = p.dir;
         this.physicalSpeed = 0;
         this.nextDir = Direction.NONE;
@@ -111,7 +110,7 @@ public abstract class Ghost extends PlayfieldActor {
         case EATEN:
             this.tunnelSpeed = this.fullSpeed = 1.6f;
             this.targetPos =
-                    new float[] {
+                    new double[] {
                         Playfield.PEN_ENTRANCE[0],
                         Playfield.PEN_ENTRANCE[1]
                     };
@@ -134,7 +133,7 @@ public abstract class Ghost extends PlayfieldActor {
     
     @Override
     public final void changeSpeed() {
-        float s = 0;
+        double s = 0;
         switch (this.currentSpeed) {
         case NORMAL:
             s = getNormalSpeed();
@@ -149,7 +148,7 @@ public abstract class Ghost extends PlayfieldActor {
         }
     }
     
-    float getNormalSpeed() {
+    double getNormalSpeed() {
         return fullSpeed;
     }    
 
@@ -178,17 +177,17 @@ public abstract class Ghost extends PlayfieldActor {
                 } else {
                     // If the ghost can choose some directions except the opposite,
                     // the ghost choose the direction in which it is the closest to its target position.
-                    float max = 99999999999f;
-                    float distance = 0;
+                    double max = 99999999999f;
+                    double distance = 0;
                     Direction dirCandidate = Direction.NONE;
                     for (Direction d : Direction.getAllMoves()) {
                         if (destination.allow(d) && dir != d.getOpposite()) {
-                            float[] tilePosCandidate =
-                                new float[] {(float) newTilePos[0], (float) newTilePos[1]};
+                            double[] tilePosCandidate =
+                                new double[] {(double) newTilePos[0], (double) newTilePos[1]};
                             tilePosCandidate[d.getMove().getAxis()] += d.getMove().getIncrement();
                             distance = getDistance(
                                             tilePosCandidate,
-                                            new float[] {targetPos[0], targetPos[1]});
+                                            new double[] {targetPos[0], targetPos[1]});
                             if (distance < max) {
                                 max = distance;
                                 dirCandidate = d;
@@ -212,7 +211,7 @@ public abstract class Ghost extends PlayfieldActor {
                     do {
                         nDir =
                             Direction.getAllMoves().get(
-                                (int) FloatMath.floor(
+                                (int) Math.floor(
                                         game.rand() * Direction.getAllMoves().size()));
                     } while (!destination.allow(nDir)
                                 || nDir == dir.getOpposite());
@@ -238,7 +237,7 @@ public abstract class Ghost extends PlayfieldActor {
             } else if (this.mode == GhostMode.LEAVING_PEN
                         || this.mode == GhostMode.RE_LEAVING_FROM_PEN) { // go out of the pen right now
                 this.pos =
-                    new float[] {
+                    new double[] {
                         Playfield.PEN_ENTRANCE[0],
                         Playfield.PEN_ENTRANCE[1] + 4
                     };
@@ -410,7 +409,7 @@ public abstract class Ghost extends PlayfieldActor {
             y = 8;
             // blinking before the end of the frighten mode
             if (game.getFrightModeTime() < game.getLevels().getFrightTotalTime() - game.getLevels().getFrightTime()
-                    && FloatMath.floor(game.getFrightModeTime() / game.getTiming()[1]) % 2 == 0) {
+                    && Math.floor(game.getFrightModeTime() / game.getTiming()[1]) % 2 == 0) {
                 x += 2;
             }
     
@@ -483,12 +482,12 @@ public abstract class Ghost extends PlayfieldActor {
     }
 
     @Override
-    public final float getFieldX() {
+    public final double getFieldX() {
         return PacmanGame.getFieldX(pos[1]);
     }
     
     @Override
-    public final float getFieldY() {
+    public final double getFieldY() {
         return PacmanGame.getFieldY(pos[0]);
     }
     
@@ -524,12 +523,12 @@ public abstract class Ghost extends PlayfieldActor {
         this.dotCount++;
     }
     
-    static float getDistance(int[] p1, int[] p2) {
-        return FloatMath.sqrt((p2[1] - p1[1]) * (p2[1] - p1[1]) + (p2[0] - p1[0]) * (p2[0] - p1[0]));
+    static double getDistance(int[] p1, int[] p2) {
+        return Math.sqrt((p2[1] - p1[1]) * (p2[1] - p1[1]) + (p2[0] - p1[0]) * (p2[0] - p1[0]));
     }
 
-    static float getDistance(float[] p1, float[] p2) {
-        return FloatMath.sqrt((p2[1] - p1[1]) * (p2[1] - p1[1]) + (p2[0] - p1[0]) * (p2[0] - p1[0]));
+    static double getDistance(double[] p1, double[] p2) {
+        return Math.sqrt((p2[1] - p1[1]) * (p2[1] - p1[1]) + (p2[0] - p1[0]) * (p2[0] - p1[0]));
     }
     
 }
