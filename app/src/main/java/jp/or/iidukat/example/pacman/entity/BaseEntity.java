@@ -36,7 +36,7 @@ abstract class BaseEntity implements Entity {
     }
     
     @Override
-    public final float[] getAbsolutePos() {
+    public final double[] getAbsolutePos() {
         return appearance.getAbsolutePos();
     }
     
@@ -118,12 +118,12 @@ abstract class BaseEntity implements Entity {
     private class AppearanceImpl implements Appearance {
         private int height;
         private int width;
-        private float top;
-        private float topOffset;
-        private float left;
-        private float leftOffset;
-        private float bgPosX;
-        private float bgPosY;
+        private double top;
+        private double topOffset;
+        private double left;
+        private double leftOffset;
+        private double bgPosX;
+        private double bgPosY;
         private int bgColor;
         private Paint paint = new Paint();
         private Rect src = new Rect();
@@ -132,10 +132,10 @@ abstract class BaseEntity implements Entity {
         private int order;
         private final Bitmap sourceImage;
         
-        private final float[] parentSize = new float[] { 0, 0 };
-        private final float[] adjustedSize = new float[] { 0, 0 };
-        private final float[] adjustedPos = new float[] { 0, 0 };
-        private final float[] adjustedBgPos = new float[] { 0, 0 };
+        private final double[] parentSize = new double[] { 0, 0 };
+        private final double[] adjustedSize = new double[] { 0, 0 };
+        private final double[] adjustedPos = new double[] { 0, 0 };
+        private final double[] adjustedBgPos = new double[] { 0, 0 };
         
         AppearanceImpl(Bitmap sourceImage) {
             this.sourceImage = sourceImage;
@@ -162,9 +162,9 @@ abstract class BaseEntity implements Entity {
         }
 
         @Override
-        public float[] getAbsolutePos() {
+        public double[] getAbsolutePos() {
             Appearance a = this;
-            float[] pos = { 0, 0 };
+            double[] pos = { 0, 0 };
             do {
                 pos[0] += a.getTop();
                 pos[1] += a.getLeft();
@@ -174,62 +174,62 @@ abstract class BaseEntity implements Entity {
         }
 
         @Override
-        public float getTop() {
+        public double getTop() {
             return top + topOffset;
         }
 
         @Override
-        public void setTop(float top) {
+        public void setTop(double top) {
             this.top = top;
         }
         
         @Override
-        public float getTopOffset() {
+        public double getTopOffset() {
             return topOffset;
         }
         
         @Override
-        public void setTopOffset(float topOffset) {
+        public void setTopOffset(double topOffset) {
             this.topOffset = topOffset;
         }
 
         @Override
-        public float getLeft() {
+        public double getLeft() {
             return left + leftOffset;
         }
 
         @Override
-        public void setLeft(float left) {
+        public void setLeft(double left) {
             this.left = left;
         }
         
         @Override
-        public float getLeftOffset() {
+        public double getLeftOffset() {
             return leftOffset;
         }
         
         @Override
-        public void setLeftOffset(float leftOffset) {
+        public void setLeftOffset(double leftOffset) {
             this.leftOffset = leftOffset;
         }
 
         @Override
-        public float getBgPosX() {
+        public double getBgPosX() {
             return bgPosX;
         }
 
         @Override
-        public void setBgPosX(float bgPosX) {
+        public void setBgPosX(double bgPosX) {
             this.bgPosX = bgPosX;
         }
 
         @Override
-        public float getBgPosY() {
+        public double getBgPosY() {
             return bgPosY;
         }
 
         @Override
-        public void setBgPosY(float bgPosY) {
+        public void setBgPosY(double bgPosY) {
             this.bgPosY = bgPosY;
         }
 
@@ -343,15 +343,15 @@ abstract class BaseEntity implements Entity {
             }
 
             src.set(
-                Math.round(adjustedBgPos[1]),
-                Math.round(adjustedBgPos[0]),
-                Math.round(adjustedBgPos[1] + adjustedSize[1]),
-                Math.round(adjustedBgPos[0] + adjustedSize[0]));
+                    (int) Math.round(adjustedBgPos[1]),
+                    (int) Math.round(adjustedBgPos[0]),
+                    (int) Math.round(adjustedBgPos[1] + adjustedSize[1]),
+                    (int) Math.round(adjustedBgPos[0] + adjustedSize[0]));
             dest.set(
-                    adjustedPos[1],
-                    adjustedPos[0],
-                    adjustedPos[1] + adjustedSize[1],
-                    adjustedPos[0] + adjustedSize[0]);
+                    (float) adjustedPos[1],
+                    (float) adjustedPos[0],
+                    (float) (adjustedPos[1] + adjustedSize[1]),
+                    (float) (adjustedPos[0] + adjustedSize[0]));
             canvas.drawBitmap(sourceImage, src, dest, null);
         }
         
@@ -362,10 +362,10 @@ abstract class BaseEntity implements Entity {
             }
             
             dest.set(
-                    adjustedPos[1],
-                    adjustedPos[0],
-                    adjustedPos[1] + adjustedSize[1],
-                    adjustedPos[0] + adjustedSize[0]);
+                    (float) adjustedPos[1],
+                    (float) adjustedPos[0],
+                    (float) (adjustedPos[1] + adjustedSize[1]),
+                    (float) (adjustedPos[0] + adjustedSize[0]));
             
             paint.setColor(bgColor);
             paint.setAlpha(0xff);

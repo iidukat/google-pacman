@@ -8,7 +8,7 @@ import android.graphics.Bitmap;
 
 public abstract class CutsceneActor extends Actor {
 
-    float speed;
+    double speed;
 
     CutsceneActor(Bitmap sourceImage, PacmanGame game) {
         super(sourceImage, game);
@@ -17,13 +17,13 @@ public abstract class CutsceneActor extends Actor {
     @Override
     public void init() {
         super.init();
-        float[] start = getStartPoint(getCutscene());
-        pos = new float[] { start[0] * 8, start[1] * 8 };
+        double[] start = getStartPoint(getCutscene());
+        pos = new double[] { start[0] * 8, start[1] * 8 };
     }
 
-    final float[] getStartPoint(Cutscene cutscene) {
+    final double[] getStartPoint(Cutscene cutscene) {
         StartPoint p = cutscene.startPoint;
-        return new float[] { p.y, p.x };
+        return new double[] { p.y, p.x };
     }
 
     @Override
@@ -39,12 +39,12 @@ public abstract class CutsceneActor extends Actor {
     }
     
     @Override
-    public final float getFieldX() {
+    public final double getFieldX() {
         return PacmanGame.getFieldX(pos[1]);
     }
     
     @Override
-    public final float getFieldY() {
+    public final double getFieldY() {
         return PacmanGame.getFieldY(pos[0]);
     }
     
@@ -73,10 +73,10 @@ public abstract class CutsceneActor extends Actor {
         }
 
         static class StartPoint {
-            final float x;
-            final float y;
+            final double x;
+            final double y;
 
-            StartPoint(float x, float y) {
+            StartPoint(double x, double y) {
                 this.x = x;
                 this.y = y;
             }
@@ -92,9 +92,9 @@ public abstract class CutsceneActor extends Actor {
 
         static class Move {
             final Direction dir;
-            final float speed;
+            final double speed;
 
-            Move(Direction dir, float speed) {
+            Move(Direction dir, double speed) {
                 this.dir = dir;
                 this.speed = speed;
             }

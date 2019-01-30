@@ -7,7 +7,6 @@ import jp.or.iidukat.example.pacman.PacmanGame.GameplayMode;
 import jp.or.iidukat.example.pacman.entity.Playfield.PathElement;
 import jp.or.iidukat.example.pacman.entity.Playfield.PathElement.Dot;
 import android.graphics.Bitmap;
-import android.util.FloatMath;
 
 public abstract class PlayfieldActor extends Actor {
 
@@ -26,17 +25,17 @@ public abstract class PlayfieldActor extends Actor {
     }
     
     static class InitPosition {
-        final float x;
-        final float y;
+        final double x;
+        final double y;
         final Direction dir;
-        final float scatterX;
-        final float scatterY;
+        final double scatterX;
+        final double scatterY;
 
-        InitPosition(float x, float y, Direction dir) {
+        InitPosition(double x, double y, Direction dir) {
             this(x, y, dir, 0, 0);
         }
         
-        InitPosition(float x, float y, Direction dir, float scatterX, float scatterY) {
+        InitPosition(double x, double y, Direction dir, double scatterX, double scatterY) {
             this.x = x;
             this.y = y;
             this.dir = dir;
@@ -44,16 +43,16 @@ public abstract class PlayfieldActor extends Actor {
             this.scatterY = scatterY;
         }
         
-        static InitPosition createPlayerInitPosition(float x, float y, Direction dir) {
+        static InitPosition createPlayerInitPosition(double x, double y, Direction dir) {
             return new InitPosition(x, y, dir);
         }
         
         static InitPosition createGhostInitPosition(
-                                                float x,
-                                                float y,
+                                                double x,
+                                                double y,
                                                 Direction dir,
-                                                float scatterX,
-                                                float scatterY) {
+                                                double scatterX,
+                                                double scatterY) {
             return new InitPosition(x, y, dir, scatterX, scatterY);
         }
     }
@@ -61,11 +60,11 @@ public abstract class PlayfieldActor extends Actor {
     int[] tilePos;
     int[] lastGoodTilePos;
     Direction lastActiveDir = Direction.NONE;
-    float physicalSpeed;
+    double physicalSpeed;
     Direction nextDir = Direction.NONE;
     CurrentSpeed currentSpeed = CurrentSpeed.NONE;
-    float fullSpeed;
-    float tunnelSpeed;
+    double fullSpeed;
+    double tunnelSpeed;
     Boolean[] speedIntervals;
 
     PlayfieldActor(Bitmap sourceImage, PacmanGame game) {
@@ -167,16 +166,18 @@ public abstract class PlayfieldActor extends Actor {
         Move mv = this.dir.getMove();
         this.pos[mv.getAxis()] += mv.getIncrement();
         
-        float imaginaryTileY = this.pos[0] / 8;
-        float imaginaryTileX = this.pos[1] / 8;
-        int[] nextTile = { Math.round(imaginaryTileY) * 8,
-                            Math.round(imaginaryTileX) * 8 };
+        double imaginaryTileY = this.pos[0] / 8;
+        double imaginaryTileX = this.pos[1] / 8;
+        int[] nextTile = {
+                (int) Math.round(imaginaryTileY) * 8,
+                (int) Math.round(imaginaryTileX) * 8
+        };
         if (nextTile[0] != this.tilePos[0]
                 || nextTile[1] != this.tilePos[1]) { // the actor is entering into a tile.
             enteringTile(nextTile);
         } else {
-            float[] tile = { FloatMath.floor(imaginaryTileY) * 8,
-                                FloatMath.floor(imaginaryTileX) * 8 };
+            double[] tile = { Math.floor(imaginaryTileY) * 8,
+                                Math.floor(imaginaryTileX) * 8 };
             if (this.pos[1] == tile[1]
                     && this.pos[0] == tile[0]) { // the actor has entered into a tile.
                 enteredTile(); 
@@ -208,11 +209,11 @@ public abstract class PlayfieldActor extends Actor {
         return tilePos;
     }
 
-    public final void setFullSpeed(float fullSpeed) {
+    public final void setFullSpeed(double fullSpeed) {
         this.fullSpeed = fullSpeed;
     }
 
-    public final void setTunnelSpeed(float tunnelSpeed) {
+    public final void setTunnelSpeed(double tunnelSpeed) {
         this.tunnelSpeed = tunnelSpeed;
     }
 
