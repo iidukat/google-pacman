@@ -22,7 +22,7 @@ public class ScoreLabel extends BaseEntity {
     public void update(
                     GameplayMode gameplayMode,
                     long globalTime,
-                    float interval) {
+                    double interval) {
         if (gameplayMode != GameplayMode.CUTSCENE) {
             if (globalTime % (interval * 2) == 0) {
                 setVisibility(true);

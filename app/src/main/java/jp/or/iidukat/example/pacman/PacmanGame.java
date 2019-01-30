@@ -32,7 +32,6 @@ import jp.or.iidukat.example.pacman.entity.Sound;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.util.FloatMath;
 import android.view.MotionEvent;
 
 public class PacmanGame {
@@ -44,7 +43,7 @@ public class PacmanGame {
     // This is the thresholds of each ghost.
     private static final int[] PEN_LEAVING_FOOD_LIMITS = { 0, 7, 17, 32 };
 
-    private static final float[] EVENT_TIME_TABLE = {
+    private static final double[] EVENT_TIME_TABLE = {
         0.16f,
         0.23f,
         1,
@@ -69,79 +68,79 @@ public class PacmanGame {
     private static final int DEFAULT_FPS = FPS_OPTIONS[0]; // default fps
 
     public static class LevelConfig {
-        private final float ghostSpeed;
-        private final float ghostTunnelSpeed;
-        private final float playerSpeed;
-        private final float dotEatingSpeed;
-        private final float ghostFrightSpeed;
-        private final float playerFrightSpeed;
-        private final float dotEatingFrightSpeed;
+        private final double ghostSpeed;
+        private final double ghostTunnelSpeed;
+        private final double playerSpeed;
+        private final double dotEatingSpeed;
+        private final double ghostFrightSpeed;
+        private final double playerFrightSpeed;
+        private final double dotEatingFrightSpeed;
         private final int elroyDotsLeftPart1;
-        private final float elroySpeedPart1;
+        private final double elroySpeedPart1;
         private final int elroyDotsLeftPart2;
-        private final float elroySpeedPart2;
+        private final double elroySpeedPart2;
         private final int frightTime;
         private int frightTotalTime;
         private final int frightBlinkCount;
         private final int fruit;
         private final int fruitScore;
-        private final float[] ghostModeSwitchTimes;
+        private final double[] ghostModeSwitchTimes;
         private final int penForceTime;
-        private final float[] penLeavingLimits;
+        private final double[] penLeavingLimits;
         private final int cutsceneId;
 
         private static class Builder {
-            private float ghostSpeed;
-            private float ghostTunnelSpeed;
-            private float playerSpeed;
-            private float dotEatingSpeed;
-            private float ghostFrightSpeed;
-            private float playerFrightSpeed;
-            private float dotEatingFrightSpeed;
+            private double ghostSpeed;
+            private double ghostTunnelSpeed;
+            private double playerSpeed;
+            private double dotEatingSpeed;
+            private double ghostFrightSpeed;
+            private double playerFrightSpeed;
+            private double dotEatingFrightSpeed;
             private int elroyDotsLeftPart1;
-            private float elroySpeedPart1;
+            private double elroySpeedPart1;
             private int elroyDotsLeftPart2;
-            private float elroySpeedPart2;
+            private double elroySpeedPart2;
             private int frightTime;
             private int frightBlinkCount;
             private int fruit;
             private int fruitScore;
-            private float[] ghostModeSwitchTimes;
+            private double[] ghostModeSwitchTimes;
             private int penForceTime;
-            private float[] penLeavingLimits;
+            private double[] penLeavingLimits;
             private int cutsceneId;
 
-            Builder ghostSpeed(float val) {
+            Builder ghostSpeed(double val) {
                 this.ghostSpeed = val;
                 return this;
             }
 
-            Builder ghostTunnelSpeed(float val) {
+            Builder ghostTunnelSpeed(double val) {
                 this.ghostTunnelSpeed = val;
                 return this;
             }
 
-            Builder playerSpeed(float val) {
+            Builder playerSpeed(double val) {
                 this.playerSpeed = val;
                 return this;
             }
 
-            Builder dotEatingSpeed(float val) {
+            Builder dotEatingSpeed(double val) {
                 this.dotEatingSpeed = val;
                 return this;
             }
 
-            Builder ghostFrightSpeed(float val) {
+            Builder ghostFrightSpeed(double val) {
                 this.ghostFrightSpeed = val;
                 return this;
             }
 
-            Builder playerFrightSpeed(float val) {
+            Builder playerFrightSpeed(double val) {
                 this.playerFrightSpeed = val;
                 return this;
             }
 
-            Builder dotEatingFrightSpeed(float val) {
+            Builder dotEatingFrightSpeed(double val) {
                 this.dotEatingFrightSpeed = val;
                 return this;
             }
@@ -151,7 +150,7 @@ public class PacmanGame {
                 return this;
             }
 
-            Builder elroySpeedPart1(float val) {
+            Builder elroySpeedPart1(double val) {
                 this.elroySpeedPart1 = val;
                 return this;
             }
@@ -161,7 +160,7 @@ public class PacmanGame {
                 return this;
             }
 
-            Builder elroySpeedPart2(float val) {
+            Builder elroySpeedPart2(double val) {
                 this.elroySpeedPart2 = val;
                 return this;
             }
@@ -186,7 +185,7 @@ public class PacmanGame {
                 return this;
             }
 
-            Builder ghostModeSwitchTimes(float[] val) {
+            Builder ghostModeSwitchTimes(double[] val) {
                 this.ghostModeSwitchTimes = val;
                 return this;
             }
@@ -196,7 +195,7 @@ public class PacmanGame {
                 return this;
             }
 
-            Builder penLeavingLimits(float[] val) {
+            Builder penLeavingLimits(double[] val) {
                 this.penLeavingLimits = val;
                 return this;
             }
@@ -234,15 +233,15 @@ public class PacmanGame {
             this.frightTime = builder.frightTime * DEFAULT_FPS;
         }
 
-        public float getGhostSpeed() {
+        public double getGhostSpeed() {
             return ghostSpeed;
         }
 
-        public float getGhostTunnelSpeed() {
+        public double getGhostTunnelSpeed() {
             return ghostTunnelSpeed;
         }
 
-        public float getGhostFrightSpeed() {
+        public double getGhostFrightSpeed() {
             return ghostFrightSpeed;
         }
 
@@ -287,9 +286,9 @@ public class PacmanGame {
                 .frightBlinkCount(5)
                 .fruit(1)
                 .fruitScore(100)
-                .ghostModeSwitchTimes(new float[] { 7, 20, 7, 20, 5, 20, 5, 1, })
+                .ghostModeSwitchTimes(new double[] { 7, 20, 7, 20, 5, 20, 5, 1, })
                 .penForceTime(4)
-                .penLeavingLimits(new float[] { 0, 0, 30, 60, })
+                .penLeavingLimits(new double[] { 0, 0, 30, 60, })
                 .build(),
         new LevelConfig.Builder()
                 .ghostSpeed(0.85f)
@@ -307,9 +306,9 @@ public class PacmanGame {
                 .frightBlinkCount(5)
                 .fruit(2)
                 .fruitScore(300)
-                .ghostModeSwitchTimes(new float[] { 7, 20, 7, 20, 5, 1033, 1f / 60, 1, })
+                .ghostModeSwitchTimes(new double[] { 7, 20, 7, 20, 5, 1033, 1f / 60, 1, })
                 .penForceTime(4)
-                .penLeavingLimits(new float[] { 0, 0, 0, 50, })
+                .penLeavingLimits(new double[] { 0, 0, 0, 50, })
                 .cutsceneId(1)
                 .build(),
         new LevelConfig.Builder()
@@ -328,9 +327,9 @@ public class PacmanGame {
                 .frightBlinkCount(5)
                 .fruit(3)
                 .fruitScore(500)
-                .ghostModeSwitchTimes(new float[] { 7, 20, 7, 20, 5, 1033, 1f / 60, 1, })
+                .ghostModeSwitchTimes(new double[] { 7, 20, 7, 20, 5, 1033, 1f / 60, 1, })
                 .penForceTime(4)
-                .penLeavingLimits(new float[] { 0, 0, 0, 0, })
+                .penLeavingLimits(new double[] { 0, 0, 0, 0, })
                 .build(),
         new LevelConfig.Builder()
                 .ghostSpeed(0.85f)
@@ -348,9 +347,9 @@ public class PacmanGame {
                 .frightBlinkCount(5)
                 .fruit(3)
                 .fruitScore(500)
-                .ghostModeSwitchTimes(new float[] { 7, 20, 7, 20, 5, 1033, 1f / 60, 1, })
+                .ghostModeSwitchTimes(new double[] { 7, 20, 7, 20, 5, 1033, 1f / 60, 1, })
                 .penForceTime(4)
-                .penLeavingLimits(new float[] { 0, 0, 0, 0, })
+                .penLeavingLimits(new double[] { 0, 0, 0, 0, })
                 .build(),
         new LevelConfig.Builder()
                 .ghostSpeed(0.95f)
@@ -368,9 +367,9 @@ public class PacmanGame {
                 .frightBlinkCount(5)
                 .fruit(4)
                 .fruitScore(700)
-                .ghostModeSwitchTimes(new float[] { 5, 20, 5, 20, 5, 1037, 1f / 60, 1, })
+                .ghostModeSwitchTimes(new double[] { 5, 20, 5, 20, 5, 1037, 1f / 60, 1, })
                 .penForceTime(3)
-                .penLeavingLimits(new float[] { 0, 0, 0, 0, })
+                .penLeavingLimits(new double[] { 0, 0, 0, 0, })
                 .cutsceneId(2)
                 .build(),
         new LevelConfig.Builder()
@@ -389,9 +388,9 @@ public class PacmanGame {
                 .frightBlinkCount(5)
                 .fruit(4)
                 .fruitScore(700)
-                .ghostModeSwitchTimes(new float[] { 5, 20, 5, 20, 5, 1037, 1f / 60, 1, })
+                .ghostModeSwitchTimes(new double[] { 5, 20, 5, 20, 5, 1037, 1f / 60, 1, })
                 .penForceTime(3)
-                .penLeavingLimits(new float[] { 0, 0, 0, 0, })
+                .penLeavingLimits(new double[] { 0, 0, 0, 0, })
                 .build(),
         new LevelConfig.Builder()
                 .ghostSpeed(0.95f)
@@ -409,9 +408,9 @@ public class PacmanGame {
                 .frightBlinkCount(5)
                 .fruit(5)
                 .fruitScore(1000)
-                .ghostModeSwitchTimes(new float[] { 5, 20, 5, 20, 5, 1037, 1f / 60, 1, })
+                .ghostModeSwitchTimes(new double[] { 5, 20, 5, 20, 5, 1037, 1f / 60, 1, })
                 .penForceTime(3)
-                .penLeavingLimits(new float[] { 0, 0, 0, 0, })
+                .penLeavingLimits(new double[] { 0, 0, 0, 0, })
                 .build(),
         new LevelConfig.Builder()
                 .ghostSpeed(0.95f)
@@ -429,9 +428,9 @@ public class PacmanGame {
                 .frightBlinkCount(5)
                 .fruit(5)
                 .fruitScore(1000)
-                .ghostModeSwitchTimes(new float[] { 5, 20, 5, 20, 5, 1037, 1f / 60, 1, })
+                .ghostModeSwitchTimes(new double[] { 5, 20, 5, 20, 5, 1037, 1f / 60, 1, })
                 .penForceTime(3)
-                .penLeavingLimits(new float[] { 0, 0, 0, 0, })
+                .penLeavingLimits(new double[] { 0, 0, 0, 0, })
                 .build(),
         new LevelConfig.Builder()
                 .ghostSpeed(0.95f)
@@ -449,9 +448,9 @@ public class PacmanGame {
                 .frightBlinkCount(3)
                 .fruit(6)
                 .fruitScore(2000)
-                .ghostModeSwitchTimes(new float[] { 5, 20, 5, 20, 5, 1037, 1f / 60, 1, })
+                .ghostModeSwitchTimes(new double[] { 5, 20, 5, 20, 5, 1037, 1f / 60, 1, })
                 .penForceTime(3)
-                .penLeavingLimits(new float[] { 0, 0, 0, 0, })
+                .penLeavingLimits(new double[] { 0, 0, 0, 0, })
                 .cutsceneId(3)
                 .build(),
         new LevelConfig.Builder()
@@ -470,9 +469,9 @@ public class PacmanGame {
                 .frightBlinkCount(5)
                 .fruit(6)
                 .fruitScore(2000)
-                .ghostModeSwitchTimes(new float[] { 5, 20, 5, 20, 5, 1037, 1f / 60, 1, })
+                .ghostModeSwitchTimes(new double[] { 5, 20, 5, 20, 5, 1037, 1f / 60, 1, })
                 .penForceTime(3)
-                .penLeavingLimits(new float[] { 0, 0, 0, 0, })
+                .penLeavingLimits(new double[] { 0, 0, 0, 0, })
                 .build(),
         new LevelConfig.Builder()
                 .ghostSpeed(0.95f)
@@ -490,9 +489,9 @@ public class PacmanGame {
                 .frightBlinkCount(5)
                 .fruit(7)
                 .fruitScore(3000)
-                .ghostModeSwitchTimes(new float[] { 5, 20, 5, 20, 5, 1037, 1f / 60, 1, })
+                .ghostModeSwitchTimes(new double[] { 5, 20, 5, 20, 5, 1037, 1f / 60, 1, })
                 .penForceTime(3)
-                .penLeavingLimits(new float[] { 0, 0, 0, 0, })
+                .penLeavingLimits(new double[] { 0, 0, 0, 0, })
                 .build(),
         new LevelConfig.Builder()
                 .ghostSpeed(0.95f)
@@ -510,9 +509,9 @@ public class PacmanGame {
                 .frightBlinkCount(3)
                 .fruit(7)
                 .fruitScore(3000)
-                .ghostModeSwitchTimes(new float[] { 5, 20, 5, 20, 5, 1037, 1f / 60, 1, })
+                .ghostModeSwitchTimes(new double[] { 5, 20, 5, 20, 5, 1037, 1f / 60, 1, })
                 .penForceTime(3)
-                .penLeavingLimits(new float[] { 0, 0, 0, 0, })
+                .penLeavingLimits(new double[] { 0, 0, 0, 0, })
                 .build(),
         new LevelConfig.Builder()
                 .ghostSpeed(0.95f)
@@ -530,9 +529,9 @@ public class PacmanGame {
                 .frightBlinkCount(3)
                 .fruit(8)
                 .fruitScore(5000)
-                .ghostModeSwitchTimes(new float[] { 5, 20, 5, 20, 5, 1037, 1f / 60, 1, })
+                .ghostModeSwitchTimes(new double[] { 5, 20, 5, 20, 5, 1037, 1f / 60, 1, })
                 .penForceTime(3)
-                .penLeavingLimits(new float[] { 0, 0, 0, 0, })
+                .penLeavingLimits(new double[] { 0, 0, 0, 0, })
                 .cutsceneId(3)
                 .build(),
         new LevelConfig.Builder()
@@ -551,9 +550,9 @@ public class PacmanGame {
                 .frightBlinkCount(5)
                 .fruit(8)
                 .fruitScore(5000)
-                .ghostModeSwitchTimes(new float[] { 5, 20, 5, 20, 5, 1037, 1f / 60, 1, })
+                .ghostModeSwitchTimes(new double[] { 5, 20, 5, 20, 5, 1037, 1f / 60, 1, })
                 .penForceTime(3)
-                .penLeavingLimits(new float[] { 0, 0, 0, 0, })
+                .penLeavingLimits(new double[] { 0, 0, 0, 0, })
                 .build(),
         new LevelConfig.Builder()
                 .ghostSpeed(0.95f)
@@ -571,9 +570,9 @@ public class PacmanGame {
                 .frightBlinkCount(3)
                 .fruit(8)
                 .fruitScore(5000)
-                .ghostModeSwitchTimes(new float[] { 5, 20, 5, 20, 5, 1037, 1f / 60, 1, })
+                .ghostModeSwitchTimes(new double[] { 5, 20, 5, 20, 5, 1037, 1f / 60, 1, })
                 .penForceTime(3)
-                .penLeavingLimits(new float[] { 0, 0, 0, 0, })
+                .penLeavingLimits(new double[] { 0, 0, 0, 0, })
                 .build(),
         new LevelConfig.Builder()
                 .ghostSpeed(0.95f)
@@ -591,9 +590,9 @@ public class PacmanGame {
                 .frightBlinkCount(3)
                 .fruit(8)
                 .fruitScore(5000)
-                .ghostModeSwitchTimes(new float[] { 5, 20, 5, 20, 5, 1037, 1f / 60, 1, })
+                .ghostModeSwitchTimes(new double[] { 5, 20, 5, 20, 5, 1037, 1f / 60, 1, })
                 .penForceTime(3)
-                .penLeavingLimits(new float[] { 0, 0, 0, 0, })
+                .penLeavingLimits(new double[] { 0, 0, 0, 0, })
                 .build(),
         new LevelConfig.Builder()
                 .ghostSpeed(0.95f)
@@ -611,9 +610,9 @@ public class PacmanGame {
                 .frightBlinkCount(0)
                 .fruit(8)
                 .fruitScore(5000)
-                .ghostModeSwitchTimes(new float[] { 5, 20, 5, 20, 5, 1037, 1f / 60, 1, })
+                .ghostModeSwitchTimes(new double[] { 5, 20, 5, 20, 5, 1037, 1f / 60, 1, })
                 .penForceTime(3)
-                .penLeavingLimits(new float[] { 0, 0, 0, 0, })
+                .penLeavingLimits(new double[] { 0, 0, 0, 0, })
                 .cutsceneId(3)
                 .build(),
         new LevelConfig.Builder()
@@ -632,9 +631,9 @@ public class PacmanGame {
                 .frightBlinkCount(3)
                 .fruit(8)
                 .fruitScore(5000)
-                .ghostModeSwitchTimes(new float[] { 5, 20, 5, 20, 5, 1037, 1f / 60, 1, })
+                .ghostModeSwitchTimes(new double[] { 5, 20, 5, 20, 5, 1037, 1f / 60, 1, })
                 .penForceTime(3)
-                .penLeavingLimits(new float[] { 0, 0, 0, 0, })
+                .penLeavingLimits(new double[] { 0, 0, 0, 0, })
                 .build(),
         new LevelConfig.Builder()
                 .ghostSpeed(0.95f)
@@ -652,9 +651,9 @@ public class PacmanGame {
                 .frightBlinkCount(0)
                 .fruit(8)
                 .fruitScore(5000)
-                .ghostModeSwitchTimes(new float[] { 5, 20, 5, 20, 5, 1037, 1f / 60, 1, })
+                .ghostModeSwitchTimes(new double[] { 5, 20, 5, 20, 5, 1037, 1f / 60, 1, })
                 .penForceTime(3)
-                .penLeavingLimits(new float[] { 0, 0, 0, 0, })
+                .penLeavingLimits(new double[] { 0, 0, 0, 0, })
                 .build(),
         new LevelConfig.Builder()
                 .ghostSpeed(0.95f)
@@ -672,9 +671,9 @@ public class PacmanGame {
                 .frightBlinkCount(0)
                 .fruit(8)
                 .fruitScore(5000)
-                .ghostModeSwitchTimes(new float[] { 5, 20, 5, 20, 5, 1037, 1f / 60, 1, })
+                .ghostModeSwitchTimes(new double[] { 5, 20, 5, 20, 5, 1037, 1f / 60, 1, })
                 .penForceTime(3)
-                .penLeavingLimits(new float[] { 0, 0, 0, 0, })
+                .penLeavingLimits(new double[] { 0, 0, 0, 0, })
                 .build(),
         new LevelConfig.Builder()
                 .ghostSpeed(0.95f)
@@ -692,9 +691,9 @@ public class PacmanGame {
                 .frightBlinkCount(0)
                 .fruit(8)
                 .fruitScore(5000)
-                .ghostModeSwitchTimes(new float[] { 5, 20, 5, 20, 5, 1037, 1f / 60, 1, })
+                .ghostModeSwitchTimes(new double[] { 5, 20, 5, 20, 5, 1037, 1f / 60, 1, })
                 .penForceTime(3)
-                .penLeavingLimits(new float[] { 0, 0, 0, 0, })
+                .penLeavingLimits(new double[] { 0, 0, 0, 0, })
                 .build(),
     };
     
@@ -702,9 +701,9 @@ public class PacmanGame {
     // Cutscene Animation
     private static class Cutscene {
         private final Class<?>[] actors;
-        private final float[] sequenceTimes;
+        private final double[] sequenceTimes;
 
-        Cutscene(Class<?>[] actors, float[] sequenceTimes) {
+        Cutscene(Class<?>[] actors, double[] sequenceTimes) {
             this.actors = actors;
             this.sequenceTimes = sequenceTimes;
         }
@@ -717,7 +716,7 @@ public class PacmanGame {
             Integer.valueOf(1),
             new Cutscene(
                 new Class<?>[] { CutscenePacman.class, CutsceneBlinky.class },
-                new float[] { 5.5f, 0.1f, 9 }));
+                new double[] { 5.5f, 0.1f, 9 }));
         css.put(
             Integer.valueOf(2),
             new Cutscene(
@@ -726,12 +725,12 @@ public class PacmanGame {
                     CutsceneBlinky.class,
                     CutsceneSteak.class
                 },
-                new float[] { 2.7f, 1, 1.3f, 1, 2.5f }));
+                new double[] { 2.7f, 1, 1.3f, 1, 2.5f }));
         css.put(
             Integer.valueOf(3),
             new Cutscene(
                 new Class<?>[] { CutscenePacman.class, CutsceneBlinky.class },
-                new float[] { 5.3f, 5.3f }));
+                new double[] { 5.3f, 5.3f }));
         CUTSCENES = Collections.unmodifiableMap(css);
     }
     
@@ -764,10 +763,10 @@ public class PacmanGame {
 
     private PacmanCanvas canvasEl;
 
-    private float touchDX;
-    private float touchDY;
-    private float touchStartX;
-    private float touchStartY;
+    private double touchDX;
+    private double touchDY;
+    private double touchStartX;
+    private double touchStartY;
     private boolean touchCanceld = true;
 
     private long score;
@@ -780,18 +779,18 @@ public class PacmanGame {
 
     private int frightModeTime = 0;
     private int intervalTime = 0;
-    private float gameplayModeTime = 0;
+    private double gameplayModeTime = 0;
     private int fruitTime = 0;
     private int forcePenLeaveTime;
     private int ghostModeSwitchPos = 0;
-    private float ghostModeTime;
+    private double ghostModeTime;
     private boolean ghostExitingPenNow = false;
     private int ghostEyesCount = 0;
     private boolean tilesChanged = false;
     private int dotEatingChannel;
     private int dotEatingSoundPart;
     private GameplayMode gameplayMode;
-    private float[] timing;
+    private double[] timing;
     private boolean alternatePenLeavingScheme;
     private int alternateDotCount;
     private boolean lostLifeOnThisLevel;
@@ -799,10 +798,10 @@ public class PacmanGame {
     private GhostMode lastMainGhostMode;
     private GhostMode mainGhostMode;
 
-    private float currentPlayerSpeed;
-    private float currentDotEatingSpeed;
-    private float cruiseElroySpeed;
-    private Map<Float, Boolean[]> speedIntervals;
+    private double currentPlayerSpeed;
+    private double currentDotEatingSpeed;
+    private double cruiseElroySpeed;
+    private Map<Double, Boolean[]> speedIntervals;
 
     private int modeScoreMultiplier;
     private boolean fruitShown;
@@ -813,10 +812,10 @@ public class PacmanGame {
     private Cutscene cutscene;
     private int cutsceneId;
     private int cutsceneSequenceId;
-    private float cutsceneTime;
+    private double cutsceneTime;
 
-    private float tickInterval;
-    private float lastTimeDelta;
+    private double tickInterval;
+    private double lastTimeDelta;
     private long lastTime;
     private long pausedTime;
     private int fpsChoice;
@@ -829,11 +828,11 @@ public class PacmanGame {
         this.context = context;
     }
 
-    public float rand() {
+    public double rand() {
         long b = 4294967296L;
         long c = 134775813L;
         c = c * randSeed + 1;
-        return (randSeed = c % b) / (float) b;
+        return (randSeed = c % b) / (double) b;
     }
 
     private void seed(long s) {
@@ -867,20 +866,20 @@ public class PacmanGame {
         getPlayfieldEl().createGameOverElement();
     }
 
-    private void canvasClicked(float x, float y) {
+    private void canvasClicked(double x, double y) {
         if (handleSoundIconClick(x, y)) {
             return;
         }
 
-        float[] offset = canvasEl.getAbsolutePos();
-        float cx = x - offset[1];
-        float cy = y - offset[0];
+        double[] offset = canvasEl.getAbsolutePos();
+        double cx = x - offset[1];
+        double cy = y - offset[0];
         
         Pacman pacman = getPacman();
-        float px = pacman.getFieldX() + 48;
-        float py = pacman.getFieldY() + 32;
-        float xdiff = Math.abs(cx - px);
-        float ydiff = Math.abs(cy - py);
+        double px = pacman.getFieldX() + 48;
+        double py = pacman.getFieldY() + 32;
+        double xdiff = Math.abs(cx - px);
+        double ydiff = Math.abs(cy - py);
         if (xdiff > 8 && ydiff < xdiff) {
             pacman.setRequestedDir(cx > px ? Direction.RIGHT : Direction.LEFT);
         } else if (ydiff > 8 && xdiff < ydiff) {
@@ -888,13 +887,13 @@ public class PacmanGame {
         }
     }
 
-    private boolean handleSoundIconClick(float x, float y) {
+    private boolean handleSoundIconClick(double x, double y) {
         if (!soundPlayer.isAvailable() || !getSoundEl().isVisible()) {
             return false;
         }
 
         Entity soundEl = getSoundEl();
-        float[] pos = soundEl.getAbsolutePos();
+        double[] pos = soundEl.getAbsolutePos();
         if (pos[1] <= x && x <= pos[1] + soundEl.getWidth()) {
             if (pos[0] <= y && y <= pos[0] + soundEl.getHeight()) {
                 toggleSound();
@@ -933,8 +932,8 @@ public class PacmanGame {
             return;
         }
 
-        float absDx = Math.abs(touchDX);
-        float absDy = Math.abs(touchDY);
+        double absDx = Math.abs(touchDX);
+        double absDy = Math.abs(touchDY);
         Pacman pacman = getPacman();
         if (absDx < 8 && absDy < 8) {
             canvasClicked(touchStartX, touchStartY);
@@ -947,8 +946,8 @@ public class PacmanGame {
     }
 
     private void cancelTouch() {
-        touchStartX = Float.NaN;
-        touchStartY = Float.NaN;
+        touchStartX = Double.NaN;
+        touchStartY = Double.NaN;
         touchCanceld = true;
     }
 
@@ -1254,7 +1253,7 @@ public class PacmanGame {
     }
 
     public void updateCruiseElroySpeed() {
-        float speed = levelConfig.ghostSpeed * 0.8f;
+        double speed = levelConfig.ghostSpeed * 0.8f;
         if (!lostLifeOnThisLevel || getClyde().getMode() != GhostMode.IN_PEN) {
             LevelConfig c = levelConfig;
             if (getPlayfieldEl().getDotsRemaining() < c.elroyDotsLeftPart2) {
@@ -1273,15 +1272,15 @@ public class PacmanGame {
     // return value: an array of boolean using intervalTime as its index.
     //               an element of this array represents whether it is necessary to move the character in a intervalTime.
     // ex) speed: 0.64 -> return value: [false, true, false, true, false, true, ...]
-    public Boolean[] getSpeedIntervals(float speed) {
-        Float key = Float.valueOf(speed);
+    public Boolean[] getSpeedIntervals(double speed) {
+        Double key = Double.valueOf(speed);
         if (!speedIntervals.containsKey(key)) {
-            float distance = 0;
-            float lastPos = 0;
+            double distance = 0;
+            double lastPos = 0;
             List<Boolean> movabilityTimeTable = new ArrayList<Boolean>();
             for (int i = 0; i < DEFAULT_FPS; i++) {
                 distance += speed;
-                float pos = FloatMath.floor(distance);
+                double pos = Math.floor(distance);
                 if (pos > lastPos) {
                     movabilityTimeTable.add(true);
                     lastPos = pos;
@@ -1640,7 +1639,7 @@ public class PacmanGame {
         if (lastTimeDelta > tickInterval) {
             // If the total processing delay is greater than tick​​Interval,
             // the total processing delay is cut down to less than tickInterval.
-            latencyMultiplyer = (int) FloatMath.floor(lastTimeDelta / tickInterval);
+            latencyMultiplyer = (int) Math.floor(lastTimeDelta / tickInterval);
             lastTimeDelta -= tickInterval * latencyMultiplyer;
         }
         lastTime = now;
@@ -1810,9 +1809,9 @@ public class PacmanGame {
         fps = FPS_OPTIONS[fpsChoice];
         tickInterval = 1000 / fps;
         tickMultiplier = DEFAULT_FPS / fps;
-        timing = new float[EVENT_TIME_TABLE.length];
+        timing = new double[EVENT_TIME_TABLE.length];
         for (int i = 0; i < EVENT_TIME_TABLE.length; i++) {
-            float sec = !pacManSound && (i == 7 || i == 8) ? 1 : EVENT_TIME_TABLE[i];
+            double sec = !pacManSound && (i == 7 || i == 8) ? 1 : EVENT_TIME_TABLE[i];
             timing[i] = Math.round(sec * DEFAULT_FPS);
         }
         lastTime = new Date().getTime();
@@ -1874,7 +1873,7 @@ public class PacmanGame {
                 context.getResources(),
                 R.drawable.pacman_sprite);
         createCanvasElement();
-        speedIntervals = new HashMap<Float, Boolean[]>();
+        speedIntervals = new HashMap<Double, Boolean[]>();
         fpsChoice = 0;
         canDecreaseFps = true;
         initializeTickTimer();
@@ -2042,11 +2041,11 @@ public class PacmanGame {
         return intervalTime;
     }
 
-    public float getGameplayModeTime() {
+    public double getGameplayModeTime() {
         return gameplayModeTime;
     }
 
-    public float[] getTiming() {
+    public double[] getTiming() {
         return timing;
     }
 
@@ -2106,7 +2105,7 @@ public class PacmanGame {
         return cutsceneSequenceId;
     }
 
-    public float getCutsceneTime() {
+    public double getCutsceneTime() {
         return cutsceneTime;
     }
 
@@ -2114,15 +2113,15 @@ public class PacmanGame {
         this.tilesChanged = tilesChanged;
     }
 
-    public float getCruiseElroySpeed() {
+    public double getCruiseElroySpeed() {
         return cruiseElroySpeed;
     }
     
-    public static float getFieldX(float x) {
+    public static double getFieldX(double x) {
         return x + -32;
     }
 
-    public static float getFieldY(float y) {
+    public static double getFieldY(double y) {
         return y + 0;
     }
 }

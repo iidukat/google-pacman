@@ -10,8 +10,8 @@ public abstract class Actor extends BaseEntity {
     static final int DEFAULT_DISPLAY_ORDER = 110;
 
     final PacmanGame game;
-    float[] pos;
-    private float[] elPos;
+    double[] pos;
+    private double[] elPos;
     private int[] elBackgroundPos;
     Direction dir = Direction.NONE;
 
@@ -29,7 +29,7 @@ public abstract class Actor extends BaseEntity {
         a.prepareBkPos(0, 0);
         a.setOrder(DEFAULT_DISPLAY_ORDER);
 
-        this.elPos = new float[] { 0, 0 };
+        this.elPos = new double[] { 0, 0 };
         this.elBackgroundPos = new int[] { 0, 0 };
     }
 
@@ -54,8 +54,8 @@ public abstract class Actor extends BaseEntity {
     
     // update the display position
     public final void updateElPos() {
-        float x = getFieldX();
-        float y = getFieldY();
+        double x = getFieldX();
+        double y = getFieldY();
         if (this.elPos[0] != y || this.elPos[1] != x) {
             this.elPos[0] = y;
             this.elPos[1] = x;
@@ -65,8 +65,8 @@ public abstract class Actor extends BaseEntity {
         }
     }
 
-    public abstract float getFieldX();
-    public abstract float getFieldY();
+    public abstract double getFieldX();
+    public abstract double getFieldY();
     
     @Override
     final void doDraw(Canvas canvas) {

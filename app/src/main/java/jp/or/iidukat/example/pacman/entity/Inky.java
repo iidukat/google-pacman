@@ -66,7 +66,7 @@ public class Inky extends Ghost {
         PlayfieldActor pacman = game.getPacman();
         Move pacmanMove = pacman.dir.getMove();
         PlayfieldActor blinky = game.getBlinky();
-        float[] pacmanDest = new float[] { pacman.tilePos[0], pacman.tilePos[1] };
+        double[] pacmanDest = new double[] { pacman.tilePos[0], pacman.tilePos[1] };
         pacmanDest[pacmanMove.getAxis()] += 16 * pacmanMove.getIncrement();
         if (pacman.dir == Direction.UP) {
             pacmanDest[1] -= 16;

@@ -12,7 +12,6 @@ import jp.or.iidukat.example.pacman.PacmanGame.GameplayMode;
 import jp.or.iidukat.example.pacman.entity.Playfield.PathElement.Dot;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.util.FloatMath;
 
 public class Playfield extends BaseEntity {
 
@@ -561,7 +560,7 @@ public class Playfield extends BaseEntity {
 
     public void blinkEnergizers(GameplayMode gameplayMode,
                                 long globalTime,
-                                float interval) {
+                                double interval) {
         for (Energizer e : energizers) {
             e.update(gameplayMode, globalTime, interval);
         }
@@ -578,8 +577,8 @@ public class Playfield extends BaseEntity {
         for (int x = 280; x <= 472; x += 8) {
             for (int y = 0; y <= 136; y += 8) {
                 if (game.rand() < 0.03) {
-                    killScreenTileX = (int) FloatMath.floor(game.rand() * 25) * 10;
-                    killScreenTileY = (int) FloatMath.floor(game.rand() * 2) * 10;
+                    killScreenTileX = (int) Math.floor(game.rand() * 25) * 10;
+                    killScreenTileY = (int) Math.floor(game.rand() * 2) * 10;
                 }
                 createKillScreenElement(x, y, 8, 8, true);
             }
@@ -604,8 +603,8 @@ public class Playfield extends BaseEntity {
         tile.setParent(this);
     }
     
-    public void blink(float gameplayModeTime, float interval) {
-        if (FloatMath.floor(gameplayModeTime / (interval / 8)) % 2 == 0) {
+    public void blink(double gameplayModeTime, double interval) {
+        if (Math.floor(gameplayModeTime / (interval / 8)) % 2 == 0) {
             getAppearance().changeBkPos(322, 2, false);
         } else {
             getAppearance().changeBkPos(322, 138, false);
@@ -752,7 +751,7 @@ public class Playfield extends BaseEntity {
             a.setOrder(101);
         }
 
-        void update(GameplayMode gameplayMode, long globalTime, float interval) {
+        void update(GameplayMode gameplayMode, long globalTime, double interval) {
             switch (gameplayMode) {
             case NEWGAME_STARTING:
             case NEWGAME_STARTED:
@@ -773,7 +772,7 @@ public class Playfield extends BaseEntity {
             }
         }
 
-        private void blink(long globalTime, float interval) {
+        private void blink(long globalTime, double interval) {
             if (globalTime % (interval * 2) == 0) {
                 setVisibility(true);
             } else if (globalTime % (interval * 2) == interval) {
