@@ -64,18 +64,15 @@ public class GooglePacman extends Activity implements OnClickListener {
 
     @Override
     public void onClick(View v) {
-        switch (v.getId()) {
-        case R.id.new_game_button:
+        int id = v.getId();
+        if (id == R.id.new_game_button) {
             transitionToGameView();
             game.startNewGame();
-            break;
-        case R.id.killscreen_button:
+        } else if (id == R.id.killscreen_button) {
             transitionToGameView();
             game.showKillScreen();
-            break;
-        case R.id.exit_button:
+        } else if (id == R.id.exit_button) {
             finish();
-            break;
         }
         
     }
