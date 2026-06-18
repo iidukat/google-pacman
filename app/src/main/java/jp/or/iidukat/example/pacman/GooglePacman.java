@@ -15,7 +15,7 @@ public class GooglePacman extends Activity implements OnClickListener {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
-        PacmanGame game = initGame();
+        initGame();
         initGameView(game);
         initMainView();
         
