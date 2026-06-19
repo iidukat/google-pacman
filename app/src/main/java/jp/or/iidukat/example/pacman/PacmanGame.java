@@ -1219,10 +1219,13 @@ public class PacmanGame {
         }
     }
 
-    private void moveActors() {
+    private void processDpadInput() {
         if (dpadDir != Direction.NONE) {
             getPacman().setRequestedDir(dpadDir);
         }
+    }
+
+    private void moveActors() {
         getPacman().move();
         Ghost[] ghosts = getGhosts();
         for (PlayfieldActor actor : ghosts) {
@@ -1675,6 +1678,7 @@ public class PacmanGame {
             
             for (int i = 0; i < tickMultiplier + latencyMultiplyer; i++) {
                 // run multiple time depending on the tickMultiplier and latency
+                processDpadInput();
                 moveActors();
                 if (gameplayMode == GameplayMode.ORDINARY_PLAYING) {
                     if (tilesChanged) {
