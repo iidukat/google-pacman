@@ -816,6 +816,7 @@ public class PacmanGame {
     private int debugCutsceneId;
     private boolean debugCutsceneMode;
     private Runnable onDebugCutsceneFinished;
+    private Direction dpadDir = Direction.NONE;
 
     private double tickInterval;
     private double lastTimeDelta;
@@ -1219,6 +1220,9 @@ public class PacmanGame {
     }
 
     private void moveActors() {
+        if (dpadDir != Direction.NONE) {
+            getPacman().setRequestedDir(dpadDir);
+        }
         getPacman().move();
         Ghost[] ghosts = getGhosts();
         for (PlayfieldActor actor : ghosts) {
@@ -1877,6 +1881,10 @@ public class PacmanGame {
 
     void setOnDebugCutsceneFinished(Runnable callback) {
         this.onDebugCutsceneFinished = callback;
+    }
+
+    void setDpadDir(Direction dir) {
+        this.dpadDir = dir;
     }
 
     private void prepareSound() {

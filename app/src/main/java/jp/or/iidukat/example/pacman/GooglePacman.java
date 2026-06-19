@@ -5,6 +5,7 @@ import android.media.AudioManager;
 import android.os.Bundle;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.FrameLayout;
 
 public class GooglePacman extends Activity implements OnClickListener {
 
@@ -73,8 +74,21 @@ public class GooglePacman extends Activity implements OnClickListener {
 
     private void transitionToGameView() {
         inGameView = true;
-        setContentView(gameView);
+        setContentView(buildGameLayout());
         gameView.setFocusable(true);
+    }
+
+    private FrameLayout buildGameLayout() {
+        FrameLayout frame = new FrameLayout(this);
+        frame.addView(gameView, new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.MATCH_PARENT));
+        DpadView dpadView = new DpadView(this);
+        dpadView.game = game;
+        frame.addView(dpadView, new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.MATCH_PARENT));
+        return frame;
     }
 
     private void returnToMenu() {
