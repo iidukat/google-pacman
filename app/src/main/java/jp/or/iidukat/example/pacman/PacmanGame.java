@@ -813,6 +813,9 @@ public class PacmanGame {
     private int cutsceneId;
     private int cutsceneSequenceId;
     private double cutsceneTime;
+    private int debugCutsceneId;
+    private boolean debugCutsceneMode;
+    private Runnable onDebugCutsceneFinished;
 
     private double tickInterval;
     private double lastTimeDelta;
@@ -983,7 +986,11 @@ public class PacmanGame {
         dotEatingChannel = 0;
         dotEatingSoundPart = 1;
 
-        if (newGame) {
+        if (newGame && debugCutsceneId != 0) {
+            cutsceneId = debugCutsceneId;
+            debugCutsceneId = 0;
+            changeGameplayMode(GameplayMode.CUTSCENE);
+        } else if (newGame) {
             changeGameplayMode(GameplayMode.NEWGAME_STARTING);
         } else {
             changeGameplayMode(GameplayMode.GAME_RESTARTING);
@@ -1421,7 +1428,14 @@ public class PacmanGame {
         getPlayfieldEl().setVisibility(true);
         canvasEl.removeCutsceneField();
         canvasEl.showChrome(true);
-        newLevel(false);
+        if (debugCutsceneMode) {
+            debugCutsceneMode = false;
+            if (onDebugCutsceneFinished != null) {
+                onDebugCutsceneFinished.run();
+            }
+        } else {
+            newLevel(false);
+        }
     }
 
     private void cutsceneNextSequence() {
@@ -1852,6 +1866,17 @@ public class PacmanGame {
     void showKillScreen() {
         setKillScreenLevel(1);
         start();
+    }
+
+    void showCutscene(int id) {
+        debugCutsceneId = id;
+        debugCutsceneMode = true;
+        setDefaultKillScreenLevel();
+        start();
+    }
+
+    void setOnDebugCutsceneFinished(Runnable callback) {
+        this.onDebugCutsceneFinished = callback;
     }
 
     private void prepareSound() {
