@@ -816,6 +816,7 @@ public class PacmanGame {
     private int debugCutsceneId;
     private boolean debugCutsceneMode;
     private Runnable onDebugCutsceneFinished;
+    private Direction dpadDir = Direction.NONE;
 
     private double tickInterval;
     private double lastTimeDelta;
@@ -1215,6 +1216,12 @@ public class PacmanGame {
         Ghost[] ghosts = getGhosts();
         for (Ghost ghost : ghosts) {
             ghost.updateTargetPos();
+        }
+    }
+
+    private void processDpadInput() {
+        if (dpadDir != Direction.NONE) {
+            getPacman().setRequestedDir(dpadDir);
         }
     }
 
@@ -1671,6 +1678,7 @@ public class PacmanGame {
             
             for (int i = 0; i < tickMultiplier + latencyMultiplyer; i++) {
                 // run multiple time depending on the tickMultiplier and latency
+                processDpadInput();
                 moveActors();
                 if (gameplayMode == GameplayMode.ORDINARY_PLAYING) {
                     if (tilesChanged) {
@@ -1877,6 +1885,10 @@ public class PacmanGame {
 
     void setOnDebugCutsceneFinished(Runnable callback) {
         this.onDebugCutsceneFinished = callback;
+    }
+
+    void setDpadDir(Direction dir) {
+        this.dpadDir = dir;
     }
 
     private void prepareSound() {
