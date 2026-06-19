@@ -81,6 +81,7 @@ public class GooglePacman extends Activity implements OnClickListener {
         inGameView = false;
         game.pause();
         initGame();
+        game.resume();
         initGameView(game);
         initMainView();
     }
