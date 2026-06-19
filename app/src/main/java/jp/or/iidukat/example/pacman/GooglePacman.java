@@ -13,6 +13,7 @@ public class GooglePacman extends Activity implements OnClickListener {
     private PacmanGame game;
     private GameView gameView;
     private int nextCutsceneId = 1;
+    private boolean inGameView = false;
     
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -64,12 +65,33 @@ public class GooglePacman extends Activity implements OnClickListener {
     private PacmanGame initGame() {
         game = new PacmanGame(this);
         game.init();
+        if (BuildConfig.DEBUG) {
+            game.setOnDebugCutsceneFinished(this::returnToMenu);
+        }
         return game;
     }
-    
+
     private void transitionToGameView() {
+        inGameView = true;
         setContentView(gameView);
         gameView.setFocusable(true);
+    }
+
+    private void returnToMenu() {
+        inGameView = false;
+        game.pause();
+        initGame();
+        initGameView(game);
+        initMainView();
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (inGameView) {
+            returnToMenu();
+        } else {
+            super.onBackPressed();
+        }
     }
 
     @Override
