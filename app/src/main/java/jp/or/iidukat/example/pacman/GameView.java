@@ -14,6 +14,7 @@ class GameView extends View {
 
     private static final int GAME_WIDTH = 464;
     private static final int GAME_HEIGHT = 168;
+    private static final float MARGIN = 0.9f;
 
     private float scale = 1f;
     private float offsetX = 0f;
@@ -48,7 +49,7 @@ class GameView extends View {
 
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
-        scale = Math.min((float) w / GAME_WIDTH, (float) h / GAME_HEIGHT);
+        scale = Math.min((float) w / GAME_WIDTH, (float) h / GAME_HEIGHT) * MARGIN;
         offsetX = (w - GAME_WIDTH * scale) / 2f;
         offsetY = (h - GAME_HEIGHT * scale) / 2f;
         touchTransform.setTranslate(-offsetX, -offsetY);
