@@ -17,8 +17,8 @@
     </application>
     <supports-screens android:smallScreens="false"
                       android:normalScreens="true"
-                      android:largeScreens="false"
-                      android:xlargeScreens="false"
-                      android:anyDensity="false" />
+                      android:largeScreens="true"
+                      android:xlargeScreens="true"
+                      android:anyDensity="true" />
     <uses-configuration android:reqTouchScreen="finger" />
 </manifest>
