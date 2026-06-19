@@ -3,6 +3,7 @@ package jp.or.iidukat.example.pacman;
 import jp.or.iidukat.example.pacman.entity.PacmanCanvas;
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Matrix;
 import android.os.Handler;
 import android.os.Message;
 import android.util.AttributeSet;
@@ -11,11 +12,13 @@ import android.view.View;
 
 class GameView extends View {
 
-    private static final int CANVAS_WIDTH = 464;
-    private static final int CANVAS_HEIGHT = 168;
-    
-    private int canvasHeight = -1;
-    private int canvasWidth = -1;
+    private static final int GAME_WIDTH = 464;
+    private static final int GAME_HEIGHT = 168;
+
+    private float scale = 1f;
+    private float offsetX = 0f;
+    private float offsetY = 0f;
+    private final Matrix touchTransform = new Matrix();
 
     PacmanGame game;
 
@@ -42,36 +45,45 @@ class GameView extends View {
     public GameView(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
-    
+
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
-        canvasWidth = w > CANVAS_WIDTH ? w : CANVAS_WIDTH;
-        canvasHeight = h > CANVAS_HEIGHT ? h : CANVAS_HEIGHT;
+        scale = Math.min((float) w / GAME_WIDTH, (float) h / GAME_HEIGHT);
+        offsetX = (w - GAME_WIDTH * scale) / 2f;
+        offsetY = (h - GAME_HEIGHT * scale) / 2f;
+        touchTransform.setTranslate(-offsetX, -offsetY);
+        touchTransform.postScale(1f / scale, 1f / scale);
     }
 
     @Override
     public void onDraw(Canvas canvas) {
+        canvas.save();
+        canvas.translate(offsetX, offsetY);
+        canvas.scale(scale, scale);
         PacmanCanvas canvasEl = game.getCanvasEl();
-        canvasEl.setLeft((canvasWidth - CANVAS_WIDTH) / 2);
-        canvasEl.setTop((canvasHeight - CANVAS_HEIGHT) / 2);
+        canvasEl.setLeft(0);
+        canvasEl.setTop(0);
         canvasEl.draw(canvas);
+        canvas.restore();
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+        MotionEvent transformed = MotionEvent.obtain(event);
+        transformed.transform(touchTransform);
 
         switch (event.getAction() & MotionEvent.ACTION_MASK) {
         case MotionEvent.ACTION_DOWN:
-            game.handleTouchStart(event);
+            game.handleTouchStart(transformed);
             break;
         case MotionEvent.ACTION_UP:
-            game.handleTouchEnd(event);
+            game.handleTouchEnd(transformed);
             break;
         case MotionEvent.ACTION_MOVE:
-            game.handleTouchMove(event);
+            game.handleTouchMove(transformed);
             break;
         }
-
+        transformed.recycle();
         return true;
     }
 }
