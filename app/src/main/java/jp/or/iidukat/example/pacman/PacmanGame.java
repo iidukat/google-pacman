@@ -813,6 +813,7 @@ public class PacmanGame {
     private int cutsceneId;
     private int cutsceneSequenceId;
     private double cutsceneTime;
+    private int debugCutsceneId;
 
     private double tickInterval;
     private double lastTimeDelta;
@@ -983,7 +984,11 @@ public class PacmanGame {
         dotEatingChannel = 0;
         dotEatingSoundPart = 1;
 
-        if (newGame) {
+        if (newGame && debugCutsceneId != 0) {
+            cutsceneId = debugCutsceneId;
+            debugCutsceneId = 0;
+            changeGameplayMode(GameplayMode.CUTSCENE);
+        } else if (newGame) {
             changeGameplayMode(GameplayMode.NEWGAME_STARTING);
         } else {
             changeGameplayMode(GameplayMode.GAME_RESTARTING);
@@ -1851,6 +1856,12 @@ public class PacmanGame {
 
     void showKillScreen() {
         setKillScreenLevel(1);
+        start();
+    }
+
+    void showCutscene(int id) {
+        debugCutsceneId = id;
+        setDefaultKillScreenLevel();
         start();
     }
 

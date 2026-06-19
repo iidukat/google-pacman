@@ -24,6 +24,11 @@
             android:layout_height="wrap_content"
             android:text="@string/killscreen_label" />
         <Button
+            android:id="@+id/cutscene_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/cutscene_label" />
+        <Button
             android:id="@+id/exit_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

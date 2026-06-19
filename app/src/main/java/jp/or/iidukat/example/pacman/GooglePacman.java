@@ -8,8 +8,11 @@ import android.view.View.OnClickListener;
 
 public class GooglePacman extends Activity implements OnClickListener {
 
+    private static final int CUTSCENE_COUNT = 3;
+
     private PacmanGame game;
     private GameView gameView;
+    private int nextCutsceneId = 1;
     
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -36,13 +39,20 @@ public class GooglePacman extends Activity implements OnClickListener {
     
     private void initMainView() {
         setContentView(R.layout.main);
-        
+
         View newGameButton = findViewById(R.id.new_game_button);
         newGameButton.setOnClickListener(this);
         View killScreenButton = findViewById(R.id.killscreen_button);
         killScreenButton.setOnClickListener(this);
+        View cutsceneButton = findViewById(R.id.cutscene_button);
+        cutsceneButton.setOnClickListener(this);
         View exitButton = findViewById(R.id.exit_button);
         exitButton.setOnClickListener(this);
+
+        if (!BuildConfig.DEBUG) {
+            killScreenButton.setVisibility(View.GONE);
+            cutsceneButton.setVisibility(View.GONE);
+        }
     }
     
     private void initGameView(PacmanGame game) {
@@ -71,6 +81,10 @@ public class GooglePacman extends Activity implements OnClickListener {
         } else if (id == R.id.killscreen_button) {
             transitionToGameView();
             game.showKillScreen();
+        } else if (id == R.id.cutscene_button) {
+            transitionToGameView();
+            game.showCutscene(nextCutsceneId);
+            nextCutsceneId = nextCutsceneId % CUTSCENE_COUNT + 1;
         } else if (id == R.id.exit_button) {
             finish();
         }
