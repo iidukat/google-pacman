@@ -13,8 +13,8 @@ class DpadView extends View {
 
     PacmanGame game;
 
-    private static final float BTN_SIZE_DP = 36f;
-    private static final float BTN_GAP_DP = 4f;
+    private static final float BTN_SIZE_DP = 52f;
+    private static final float BTN_GAP_DP = 6f;
     private static final float EDGE_MARGIN_DP = 20f;
     private static final float CORNER_RADIUS_DP = 10f;
 
