@@ -127,19 +127,14 @@ public class PacmanGame {
     private final Context context;
     GameView view;
     private Bitmap sourceImage;
-    private SoundManager soundManager;
+    SoundManager soundManager;
+    private InputHandler inputHandler;
 
     private boolean paused;
     private boolean started;
     private long randSeed;
 
     private PacmanCanvas canvasEl;
-
-    private double touchDX;
-    private double touchDY;
-    private double touchStartX;
-    private double touchStartY;
-    private boolean touchCanceld = true;
 
     private long score;
     private boolean extraLifeAwarded;
@@ -184,8 +179,6 @@ public class PacmanGame {
     private int debugCutsceneId;
     private boolean debugCutsceneMode;
     private Runnable onDebugCutsceneFinished;
-    private Direction dpadDir = Direction.NONE;
-
     private double tickInterval;
     private double lastTimeDelta;
     private long lastTime;
@@ -238,89 +231,20 @@ public class PacmanGame {
         getPlayfieldEl().createGameOverElement();
     }
 
-    private void canvasClicked(double x, double y) {
-        if (handleSoundIconClick(x, y)) {
-            return;
-        }
-
-        double[] offset = canvasEl.getAbsolutePos();
-        double cx = x - offset[1];
-        double cy = y - offset[0];
-        
-        Pacman pacman = getPacman();
-        double px = pacman.getFieldX() + 48;
-        double py = pacman.getFieldY() + 32;
-        double xdiff = Math.abs(cx - px);
-        double ydiff = Math.abs(cy - py);
-        if (xdiff > 8 && ydiff < xdiff) {
-            pacman.setRequestedDir(cx > px ? Direction.RIGHT : Direction.LEFT);
-        } else if (ydiff > 8 && xdiff < ydiff) {
-            pacman.setRequestedDir(cy > py ? Direction.DOWN : Direction.UP);
-        }
-    }
-
-    private boolean handleSoundIconClick(double x, double y) {
-        if (!soundManager.isAvailable() || !getSoundEl().isVisible()) {
-            return false;
-        }
-
-        Entity soundEl = getSoundEl();
-        double[] pos = soundEl.getAbsolutePos();
-        if (pos[1] <= x && x <= pos[1] + soundEl.getWidth()) {
-            if (pos[0] <= y && y <= pos[0] + soundEl.getHeight()) {
-                toggleSound();
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     void handleTouchStart(MotionEvent e) {
-        touchDX = 0;
-        touchDY = 0;
-        if (e.getPointerCount() == 1) {
-            touchCanceld = false;
-            touchStartX = e.getX(0);
-            touchStartY = e.getY(0);
-        }
+        inputHandler.onTouchStart(e);
     }
 
     void handleTouchMove(MotionEvent e) {
-        if (touchCanceld) {
-            return;
-        }
-
-        if (e.getPointerCount() > 1) {
-            cancelTouch();
-        } else {
-            touchDX = e.getX(0) - touchStartX;
-            touchDY = e.getY(0) - touchStartY;
-        }
+        inputHandler.onTouchMove(e);
     }
 
     void handleTouchEnd(MotionEvent e) {
-        if (touchCanceld) {
-            return;
-        }
-
-        double absDx = Math.abs(touchDX);
-        double absDy = Math.abs(touchDY);
-        Pacman pacman = getPacman();
-        if (absDx < 8 && absDy < 8) {
-            canvasClicked(touchStartX, touchStartY);
-        } else if (absDx > 15 && absDy < absDx * 2 / 3) {
-            pacman.setRequestedDir(touchDX > 0 ? Direction.RIGHT : Direction.LEFT);
-        } else if (absDy > 15 && absDx < absDy * 2 / 3) {
-            pacman.setRequestedDir(touchDY > 0 ? Direction.DOWN : Direction.UP);
-        }
-        cancelTouch();
+        inputHandler.onTouchEnd(e);
     }
 
-    private void cancelTouch() {
-        touchStartX = Double.NaN;
-        touchStartY = Double.NaN;
-        touchCanceld = true;
+    void setDpadDir(Direction dir) {
+        inputHandler.setDpadDir(dir);
     }
 
     private void startGameplay() {
@@ -584,12 +508,6 @@ public class PacmanGame {
         }
     }
 
-    private void processDpadInput() {
-        if (dpadDir != Direction.NONE) {
-            getPacman().setRequestedDir(dpadDir);
-        }
-    }
-
     private void moveActors() {
         getPacman().move();
         Ghost[] ghosts = getGhosts();
@@ -750,7 +668,7 @@ public class PacmanGame {
         }
     }
 
-    private void toggleSound() {
+    void toggleSound() {
         if (soundManager.isPacManSound()) {
             soundManager.stopAll();
             soundManager.setPacManSound(false);
@@ -1043,7 +961,7 @@ public class PacmanGame {
             
             for (int i = 0; i < tickMultiplier + latencyMultiplyer; i++) {
                 // run multiple time depending on the tickMultiplier and latency
-                processDpadInput();
+                inputHandler.processDpadInput();
                 moveActors();
                 if (gameplayMode == GameplayMode.ORDINARY_PLAYING) {
                     if (tilesChanged) {
@@ -1187,10 +1105,6 @@ public class PacmanGame {
         this.onDebugCutsceneFinished = callback;
     }
 
-    void setDpadDir(Direction dir) {
-        this.dpadDir = dir;
-    }
-
     private void setKillScreenLevel(int level) {
         this.killScreenLevel = level;
     }
@@ -1207,6 +1121,7 @@ public class PacmanGame {
         createCanvasElement();
         speedIntervals = new HashMap<Double, Boolean[]>();
         soundManager = new SoundManager(context);
+        inputHandler = new InputHandler(this);
         fpsChoice = 0;
         canDecreaseFps = true;
         initializeTickTimer();
@@ -1245,7 +1160,7 @@ public class PacmanGame {
         return canvasEl.getScore();
     }
 
-    private Sound getSoundEl() {
+    Sound getSoundEl() {
         if (canvasEl == null) {
             return null;
         }
