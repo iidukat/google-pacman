@@ -64,8 +64,8 @@ public class PacmanGame {
         0.26f
     };
 
-    private static final int[] FPS_OPTIONS = { 90, 45, 30, }; // fps option
-    private static final int DEFAULT_FPS = FPS_OPTIONS[0]; // default fps
+    private static final int[] FPS_OPTIONS = { 90, 45, 30, };
+    private static final int DEFAULT_FPS = LevelConfig.DEFAULT_FPS;
 
 
     
@@ -390,7 +390,6 @@ public class PacmanGame {
             level >= LevelConfig.LEVEL_CONFIGS.length
                 ? LevelConfig.LEVEL_CONFIGS[LevelConfig.LEVEL_CONFIGS.length - 1]
                 : LevelConfig.LEVEL_CONFIGS[level];
-        levelConfig.initFrightTotalTime((int) timing[1]);
         alternatePenLeavingScheme = false;
         lostLifeOnThisLevel = false;
         updateChrome();
@@ -1432,7 +1431,7 @@ public class PacmanGame {
         this.pacManSound = pacManSound;
     }
 
-    public LevelConfig getLevels() {
+    public LevelConfig getLevelConfig() {
         return levelConfig;
     }
 

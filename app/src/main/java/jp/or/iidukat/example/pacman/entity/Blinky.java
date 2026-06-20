@@ -41,7 +41,7 @@ public class Blinky extends Ghost {
     public void updateTargetPos() {
         // chase the player
         PlayfieldActor pacman = game.getPacman();
-        if (game.getDotsRemaining() < game.getLevels().getElroyDotsLeftPart1()
+        if (game.getDotsRemaining() < game.getLevelConfig().getElroyDotsLeftPart1()
                 && this.mode == GhostMode.SCATTER
                 && (!game.isLostLifeOnThisLevel() || game.getClyde().mode != GhostMode.IN_PEN)) {
             this.targetPos = new double[] { pacman.tilePos[0], pacman.tilePos[1] };

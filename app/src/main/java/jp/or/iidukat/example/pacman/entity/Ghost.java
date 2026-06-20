@@ -92,19 +92,19 @@ public abstract class Ghost extends PlayfieldActor {
         }
         switch (mode) {
         case FRIGHTENED:
-            this.fullSpeed = game.getLevels().getGhostFrightSpeed() * 0.8f;
-            this.tunnelSpeed = game.getLevels().getGhostTunnelSpeed() * 0.8f;
+            this.fullSpeed = game.getLevelConfig().getGhostFrightSpeed() * 0.8f;
+            this.tunnelSpeed = game.getLevelConfig().getGhostTunnelSpeed() * 0.8f;
             this.followingRoutine = false;
             break;
         case CHASE:
-            this.fullSpeed = game.getLevels().getGhostSpeed() * 0.8f;
-            this.tunnelSpeed = game.getLevels().getGhostTunnelSpeed() * 0.8f;
+            this.fullSpeed = game.getLevelConfig().getGhostSpeed() * 0.8f;
+            this.tunnelSpeed = game.getLevelConfig().getGhostTunnelSpeed() * 0.8f;
             this.followingRoutine = false;
             break;
         case SCATTER:
             this.targetPos = this.scatterPos;
-            this.fullSpeed = game.getLevels().getGhostSpeed() * 0.8f;
-            this.tunnelSpeed = game.getLevels().getGhostTunnelSpeed() * 0.8f;
+            this.fullSpeed = game.getLevelConfig().getGhostSpeed() * 0.8f;
+            this.tunnelSpeed = game.getLevelConfig().getGhostTunnelSpeed() * 0.8f;
             this.followingRoutine = false;
             break;
         case EATEN:
@@ -408,7 +408,7 @@ public abstract class Ghost extends PlayfieldActor {
             x = 0;
             y = 8;
             // blinking before the end of the frighten mode
-            if (game.getFrightModeTime() < game.getLevels().getFrightTotalTime() - game.getLevels().getFrightTime()
+            if (game.getFrightModeTime() < game.getLevelConfig().getFrightTotalTime() - game.getLevelConfig().getFrightTime()
                     && Math.floor(game.getFrightModeTime() / game.getTiming()[1]) % 2 == 0) {
                 x += 2;
             }

@@ -2,7 +2,9 @@ package jp.or.iidukat.example.pacman;
 
 public class LevelConfig {
 
-    static final int DEFAULT_FPS = 90;
+    public static final int DEFAULT_FPS = 90;
+    // Duration of one fright-mode blink cycle in frames (0.23 sec × 90 fps)
+    private static final int FRIGHT_BLINK_DURATION = (int) Math.round(0.23 * DEFAULT_FPS);
 
     private final double ghostSpeed;
     private final double ghostTunnelSpeed;
@@ -16,13 +18,13 @@ public class LevelConfig {
     private final int elroyDotsLeftPart2;
     private final double elroySpeedPart2;
     private final int frightTime;
-    private int frightTotalTime;
+    private final int frightTotalTime;
     private final int frightBlinkCount;
     private final int fruit;
     private final int fruitScore;
     private final double[] ghostModeSwitchTimes;
     private final int penForceTime;
-    private final double[] penLeavingLimits;
+    private final int[] penLeavingLimits;
     private final int cutsceneId;
 
     static class Builder {
@@ -43,7 +45,7 @@ public class LevelConfig {
         private int fruitScore;
         private double[] ghostModeSwitchTimes;
         private int penForceTime;
-        private double[] penLeavingLimits;
+        private int[] penLeavingLimits;
         private int cutsceneId;
 
         Builder ghostSpeed(double val) { this.ghostSpeed = val; return this; }
@@ -63,7 +65,7 @@ public class LevelConfig {
         Builder fruitScore(int val) { this.fruitScore = val; return this; }
         Builder ghostModeSwitchTimes(double[] val) { this.ghostModeSwitchTimes = val; return this; }
         Builder penForceTime(int val) { this.penForceTime = val; return this; }
-        Builder penLeavingLimits(double[] val) { this.penLeavingLimits = val; return this; }
+        Builder penLeavingLimits(int[] val) { this.penLeavingLimits = val; return this; }
         Builder cutsceneId(int val) { this.cutsceneId = val; return this; }
 
         LevelConfig build() { return new LevelConfig(this); }
@@ -89,6 +91,7 @@ public class LevelConfig {
         this.penLeavingLimits = builder.penLeavingLimits;
         this.cutsceneId = builder.cutsceneId;
         this.frightTime = builder.frightTime * DEFAULT_FPS;
+        this.frightTotalTime = this.frightTime + FRIGHT_BLINK_DURATION * (this.frightBlinkCount * 2 - 1);
     }
 
     public double getGhostSpeed() { return ghostSpeed; }
@@ -104,16 +107,12 @@ public class LevelConfig {
     public double getElroySpeedPart2() { return elroySpeedPart2; }
     public int getFrightTime() { return frightTime; }
     public int getFrightTotalTime() { return frightTotalTime; }
-
-    void initFrightTotalTime(int blinkDuration) {
-        this.frightTotalTime = this.frightTime + blinkDuration * (this.frightBlinkCount * 2 - 1);
-    }
     public int getFrightBlinkCount() { return frightBlinkCount; }
     public int getFruit() { return fruit; }
     public int getFruitScore() { return fruitScore; }
     public double[] getGhostModeSwitchTimes() { return ghostModeSwitchTimes; }
     public int getPenForceTime() { return penForceTime; }
-    public double[] getPenLeavingLimits() { return penLeavingLimits; }
+    public int[] getPenLeavingLimits() { return penLeavingLimits; }
     public int getCutsceneId() { return cutsceneId; }
 
     static final LevelConfig[] LEVEL_CONFIGS = {
@@ -127,7 +126,7 @@ public class LevelConfig {
                 .frightTime(6).frightBlinkCount(5)
                 .fruit(1).fruitScore(100)
                 .ghostModeSwitchTimes(new double[] { 7, 20, 7, 20, 5, 20, 5, 1, })
-                .penForceTime(4).penLeavingLimits(new double[] { 0, 0, 30, 60, })
+                .penForceTime(4).penLeavingLimits(new int[] { 0, 0, 30, 60, })
                 .build(),
         new LevelConfig.Builder()
                 .ghostSpeed(0.85f).ghostTunnelSpeed(0.45f)
@@ -138,7 +137,7 @@ public class LevelConfig {
                 .frightTime(5).frightBlinkCount(5)
                 .fruit(2).fruitScore(300)
                 .ghostModeSwitchTimes(new double[] { 7, 20, 7, 20, 5, 1033, 1f / 60, 1, })
-                .penForceTime(4).penLeavingLimits(new double[] { 0, 0, 0, 50, })
+                .penForceTime(4).penLeavingLimits(new int[] { 0, 0, 0, 50, })
                 .cutsceneId(1)
                 .build(),
         new LevelConfig.Builder()
@@ -150,7 +149,7 @@ public class LevelConfig {
                 .frightTime(4).frightBlinkCount(5)
                 .fruit(3).fruitScore(500)
                 .ghostModeSwitchTimes(new double[] { 7, 20, 7, 20, 5, 1033, 1f / 60, 1, })
-                .penForceTime(4).penLeavingLimits(new double[] { 0, 0, 0, 0, })
+                .penForceTime(4).penLeavingLimits(new int[] { 0, 0, 0, 0, })
                 .build(),
         new LevelConfig.Builder()
                 .ghostSpeed(0.85f).ghostTunnelSpeed(0.45f)
@@ -161,7 +160,7 @@ public class LevelConfig {
                 .frightTime(3).frightBlinkCount(5)
                 .fruit(3).fruitScore(500)
                 .ghostModeSwitchTimes(new double[] { 7, 20, 7, 20, 5, 1033, 1f / 60, 1, })
-                .penForceTime(4).penLeavingLimits(new double[] { 0, 0, 0, 0, })
+                .penForceTime(4).penLeavingLimits(new int[] { 0, 0, 0, 0, })
                 .build(),
         new LevelConfig.Builder()
                 .ghostSpeed(0.95f).ghostTunnelSpeed(0.5f)
@@ -172,7 +171,7 @@ public class LevelConfig {
                 .frightTime(2).frightBlinkCount(5)
                 .fruit(4).fruitScore(700)
                 .ghostModeSwitchTimes(new double[] { 5, 20, 5, 20, 5, 1037, 1f / 60, 1, })
-                .penForceTime(3).penLeavingLimits(new double[] { 0, 0, 0, 0, })
+                .penForceTime(3).penLeavingLimits(new int[] { 0, 0, 0, 0, })
                 .cutsceneId(2)
                 .build(),
         new LevelConfig.Builder()
@@ -184,7 +183,7 @@ public class LevelConfig {
                 .frightTime(5).frightBlinkCount(5)
                 .fruit(4).fruitScore(700)
                 .ghostModeSwitchTimes(new double[] { 5, 20, 5, 20, 5, 1037, 1f / 60, 1, })
-                .penForceTime(3).penLeavingLimits(new double[] { 0, 0, 0, 0, })
+                .penForceTime(3).penLeavingLimits(new int[] { 0, 0, 0, 0, })
                 .build(),
         new LevelConfig.Builder()
                 .ghostSpeed(0.95f).ghostTunnelSpeed(0.5f)
@@ -195,7 +194,7 @@ public class LevelConfig {
                 .frightTime(2).frightBlinkCount(5)
                 .fruit(5).fruitScore(1000)
                 .ghostModeSwitchTimes(new double[] { 5, 20, 5, 20, 5, 1037, 1f / 60, 1, })
-                .penForceTime(3).penLeavingLimits(new double[] { 0, 0, 0, 0, })
+                .penForceTime(3).penLeavingLimits(new int[] { 0, 0, 0, 0, })
                 .build(),
         new LevelConfig.Builder()
                 .ghostSpeed(0.95f).ghostTunnelSpeed(0.5f)
@@ -206,7 +205,7 @@ public class LevelConfig {
                 .frightTime(2).frightBlinkCount(5)
                 .fruit(5).fruitScore(1000)
                 .ghostModeSwitchTimes(new double[] { 5, 20, 5, 20, 5, 1037, 1f / 60, 1, })
-                .penForceTime(3).penLeavingLimits(new double[] { 0, 0, 0, 0, })
+                .penForceTime(3).penLeavingLimits(new int[] { 0, 0, 0, 0, })
                 .build(),
         new LevelConfig.Builder()
                 .ghostSpeed(0.95f).ghostTunnelSpeed(0.5f)
@@ -217,7 +216,7 @@ public class LevelConfig {
                 .frightTime(1).frightBlinkCount(3)
                 .fruit(6).fruitScore(2000)
                 .ghostModeSwitchTimes(new double[] { 5, 20, 5, 20, 5, 1037, 1f / 60, 1, })
-                .penForceTime(3).penLeavingLimits(new double[] { 0, 0, 0, 0, })
+                .penForceTime(3).penLeavingLimits(new int[] { 0, 0, 0, 0, })
                 .cutsceneId(3)
                 .build(),
         new LevelConfig.Builder()
@@ -229,7 +228,7 @@ public class LevelConfig {
                 .frightTime(5).frightBlinkCount(5)
                 .fruit(6).fruitScore(2000)
                 .ghostModeSwitchTimes(new double[] { 5, 20, 5, 20, 5, 1037, 1f / 60, 1, })
-                .penForceTime(3).penLeavingLimits(new double[] { 0, 0, 0, 0, })
+                .penForceTime(3).penLeavingLimits(new int[] { 0, 0, 0, 0, })
                 .build(),
         new LevelConfig.Builder()
                 .ghostSpeed(0.95f).ghostTunnelSpeed(0.5f)
@@ -240,7 +239,7 @@ public class LevelConfig {
                 .frightTime(2).frightBlinkCount(5)
                 .fruit(7).fruitScore(3000)
                 .ghostModeSwitchTimes(new double[] { 5, 20, 5, 20, 5, 1037, 1f / 60, 1, })
-                .penForceTime(3).penLeavingLimits(new double[] { 0, 0, 0, 0, })
+                .penForceTime(3).penLeavingLimits(new int[] { 0, 0, 0, 0, })
                 .build(),
         new LevelConfig.Builder()
                 .ghostSpeed(0.95f).ghostTunnelSpeed(0.5f)
@@ -251,7 +250,7 @@ public class LevelConfig {
                 .frightTime(1).frightBlinkCount(3)
                 .fruit(7).fruitScore(3000)
                 .ghostModeSwitchTimes(new double[] { 5, 20, 5, 20, 5, 1037, 1f / 60, 1, })
-                .penForceTime(3).penLeavingLimits(new double[] { 0, 0, 0, 0, })
+                .penForceTime(3).penLeavingLimits(new int[] { 0, 0, 0, 0, })
                 .build(),
         new LevelConfig.Builder()
                 .ghostSpeed(0.95f).ghostTunnelSpeed(0.5f)
@@ -262,7 +261,7 @@ public class LevelConfig {
                 .frightTime(1).frightBlinkCount(3)
                 .fruit(8).fruitScore(5000)
                 .ghostModeSwitchTimes(new double[] { 5, 20, 5, 20, 5, 1037, 1f / 60, 1, })
-                .penForceTime(3).penLeavingLimits(new double[] { 0, 0, 0, 0, })
+                .penForceTime(3).penLeavingLimits(new int[] { 0, 0, 0, 0, })
                 .cutsceneId(3)
                 .build(),
         new LevelConfig.Builder()
@@ -274,7 +273,7 @@ public class LevelConfig {
                 .frightTime(3).frightBlinkCount(5)
                 .fruit(8).fruitScore(5000)
                 .ghostModeSwitchTimes(new double[] { 5, 20, 5, 20, 5, 1037, 1f / 60, 1, })
-                .penForceTime(3).penLeavingLimits(new double[] { 0, 0, 0, 0, })
+                .penForceTime(3).penLeavingLimits(new int[] { 0, 0, 0, 0, })
                 .build(),
         new LevelConfig.Builder()
                 .ghostSpeed(0.95f).ghostTunnelSpeed(0.5f)
@@ -285,7 +284,7 @@ public class LevelConfig {
                 .frightTime(1).frightBlinkCount(3)
                 .fruit(8).fruitScore(5000)
                 .ghostModeSwitchTimes(new double[] { 5, 20, 5, 20, 5, 1037, 1f / 60, 1, })
-                .penForceTime(3).penLeavingLimits(new double[] { 0, 0, 0, 0, })
+                .penForceTime(3).penLeavingLimits(new int[] { 0, 0, 0, 0, })
                 .build(),
         new LevelConfig.Builder()
                 .ghostSpeed(0.95f).ghostTunnelSpeed(0.5f)
@@ -296,7 +295,7 @@ public class LevelConfig {
                 .frightTime(1).frightBlinkCount(3)
                 .fruit(8).fruitScore(5000)
                 .ghostModeSwitchTimes(new double[] { 5, 20, 5, 20, 5, 1037, 1f / 60, 1, })
-                .penForceTime(3).penLeavingLimits(new double[] { 0, 0, 0, 0, })
+                .penForceTime(3).penLeavingLimits(new int[] { 0, 0, 0, 0, })
                 .build(),
         new LevelConfig.Builder()
                 .ghostSpeed(0.95f).ghostTunnelSpeed(0.5f)
@@ -307,7 +306,7 @@ public class LevelConfig {
                 .frightTime(0).frightBlinkCount(0)
                 .fruit(8).fruitScore(5000)
                 .ghostModeSwitchTimes(new double[] { 5, 20, 5, 20, 5, 1037, 1f / 60, 1, })
-                .penForceTime(3).penLeavingLimits(new double[] { 0, 0, 0, 0, })
+                .penForceTime(3).penLeavingLimits(new int[] { 0, 0, 0, 0, })
                 .cutsceneId(3)
                 .build(),
         new LevelConfig.Builder()
@@ -319,7 +318,7 @@ public class LevelConfig {
                 .frightTime(1).frightBlinkCount(3)
                 .fruit(8).fruitScore(5000)
                 .ghostModeSwitchTimes(new double[] { 5, 20, 5, 20, 5, 1037, 1f / 60, 1, })
-                .penForceTime(3).penLeavingLimits(new double[] { 0, 0, 0, 0, })
+                .penForceTime(3).penLeavingLimits(new int[] { 0, 0, 0, 0, })
                 .build(),
         new LevelConfig.Builder()
                 .ghostSpeed(0.95f).ghostTunnelSpeed(0.5f)
@@ -330,7 +329,7 @@ public class LevelConfig {
                 .frightTime(0).frightBlinkCount(0)
                 .fruit(8).fruitScore(5000)
                 .ghostModeSwitchTimes(new double[] { 5, 20, 5, 20, 5, 1037, 1f / 60, 1, })
-                .penForceTime(3).penLeavingLimits(new double[] { 0, 0, 0, 0, })
+                .penForceTime(3).penLeavingLimits(new int[] { 0, 0, 0, 0, })
                 .build(),
         new LevelConfig.Builder()
                 .ghostSpeed(0.95f).ghostTunnelSpeed(0.5f)
@@ -341,7 +340,7 @@ public class LevelConfig {
                 .frightTime(0).frightBlinkCount(0)
                 .fruit(8).fruitScore(5000)
                 .ghostModeSwitchTimes(new double[] { 5, 20, 5, 20, 5, 1037, 1f / 60, 1, })
-                .penForceTime(3).penLeavingLimits(new double[] { 0, 0, 0, 0, })
+                .penForceTime(3).penLeavingLimits(new int[] { 0, 0, 0, 0, })
                 .build(),
         new LevelConfig.Builder()
                 .ghostSpeed(0.95f).ghostTunnelSpeed(0.5f)
@@ -352,7 +351,7 @@ public class LevelConfig {
                 .frightTime(0).frightBlinkCount(0)
                 .fruit(8).fruitScore(5000)
                 .ghostModeSwitchTimes(new double[] { 5, 20, 5, 20, 5, 1037, 1f / 60, 1, })
-                .penForceTime(3).penLeavingLimits(new double[] { 0, 0, 0, 0, })
+                .penForceTime(3).penLeavingLimits(new int[] { 0, 0, 0, 0, })
                 .build(),
     };
 }

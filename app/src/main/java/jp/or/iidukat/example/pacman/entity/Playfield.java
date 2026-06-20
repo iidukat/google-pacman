@@ -463,7 +463,7 @@ public class Playfield extends BaseEntity {
 
     private void createFruitElement() {
         fruit = new Fruit(getAppearance().getSourceImage(),
-                            game.getLevels().getFruit());
+                            game.getLevelConfig().getFruit());
         fruit.initOnPlayfield(FRUIT_POSITION[1], FRUIT_POSITION[0]);
         fruit.setParent(this);
     }
