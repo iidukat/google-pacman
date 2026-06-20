@@ -390,6 +390,7 @@ public class PacmanGame {
             level >= LevelConfig.LEVEL_CONFIGS.length
                 ? LevelConfig.LEVEL_CONFIGS[LevelConfig.LEVEL_CONFIGS.length - 1]
                 : LevelConfig.LEVEL_CONFIGS[level];
+        levelConfig.initFrightTotalTime((int) timing[1]);
         alternatePenLeavingScheme = false;
         lostLifeOnThisLevel = false;
         updateChrome();

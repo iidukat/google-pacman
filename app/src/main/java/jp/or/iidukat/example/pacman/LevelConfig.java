@@ -3,8 +3,6 @@ package jp.or.iidukat.example.pacman;
 public class LevelConfig {
 
     public static final int DEFAULT_FPS = 90;
-    // Duration of one fright-mode blink cycle in frames (0.23 sec × 90 fps)
-    private static final int FRIGHT_BLINK_DURATION = (int) Math.round(0.23 * DEFAULT_FPS);
 
     private final double ghostSpeed;
     private final double ghostTunnelSpeed;
@@ -18,7 +16,7 @@ public class LevelConfig {
     private final int elroyDotsLeftPart2;
     private final double elroySpeedPart2;
     private final int frightTime;
-    private final int frightTotalTime;
+    private int frightTotalTime;
     private final int frightBlinkCount;
     private final int fruit;
     private final int fruitScore;
@@ -91,7 +89,6 @@ public class LevelConfig {
         this.penLeavingLimits = builder.penLeavingLimits;
         this.cutsceneId = builder.cutsceneId;
         this.frightTime = builder.frightTime * DEFAULT_FPS;
-        this.frightTotalTime = this.frightTime + FRIGHT_BLINK_DURATION * (this.frightBlinkCount * 2 - 1);
     }
 
     public double getGhostSpeed() { return ghostSpeed; }
@@ -107,6 +104,11 @@ public class LevelConfig {
     public double getElroySpeedPart2() { return elroySpeedPart2; }
     public int getFrightTime() { return frightTime; }
     public int getFrightTotalTime() { return frightTotalTime; }
+
+    void initFrightTotalTime(int blinkDuration) {
+        this.frightTotalTime = this.frightTime + blinkDuration * (this.frightBlinkCount * 2 - 1);
+    }
+
     public int getFrightBlinkCount() { return frightBlinkCount; }
     public int getFruit() { return fruit; }
     public int getFruitScore() { return fruitScore; }
