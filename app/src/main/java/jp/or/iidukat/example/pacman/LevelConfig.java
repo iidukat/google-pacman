@@ -2,7 +2,7 @@ package jp.or.iidukat.example.pacman;
 
 public class LevelConfig {
 
-    public static final int DEFAULT_FPS = 90;
+    static final int DEFAULT_FPS = 90;
 
     private final double ghostSpeed;
     private final double ghostTunnelSpeed;

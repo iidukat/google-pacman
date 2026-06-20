@@ -65,7 +65,7 @@ public class PacmanGame {
     };
 
     private static final int[] FPS_OPTIONS = { 90, 45, 30, };
-    private static final int DEFAULT_FPS = LevelConfig.DEFAULT_FPS;
+    private static final int DEFAULT_FPS = FPS_OPTIONS[0];
 
 
     
