@@ -43,33 +43,6 @@ public class PacmanGame {
     // This is the thresholds of each ghost.
     private static final int[] PEN_LEAVING_FOOD_LIMITS = { 0, 7, 17, 32 };
 
-    private static final double[] EVENT_TIME_TABLE = {
-        0.16f,
-        0.23f,
-        1,
-        1,
-        2.23f,
-        0.3f,
-        1.9f,
-        2.23f,
-        1.9f,
-        5,
-        1.9f,
-        1.18f,
-        0.3f,
-        0.5f,
-        1.9f,
-        9,
-        10,
-        0.26f
-    };
-
-    private static final int[] FPS_OPTIONS = { 90, 45, 30, };
-    private static final int DEFAULT_FPS = FPS_OPTIONS[0];
-
-
-    
-
     // Cutscene Animation
     private static class Cutscene {
         private final Class<?>[] actors;
@@ -179,15 +152,7 @@ public class PacmanGame {
     private int debugCutsceneId;
     private boolean debugCutsceneMode;
     private Runnable onDebugCutsceneFinished;
-    private double tickInterval;
-    private double lastTimeDelta;
-    private long lastTime;
-    private long pausedTime;
-    private int fpsChoice;
-    private int fps;
-    private boolean canDecreaseFps;
-    private int lastTimeSlownessCount;
-    private int tickMultiplier;
+    private TickClock tickClock;
 
     PacmanGame(Context context) {
         this.context = context;
@@ -263,7 +228,7 @@ public class PacmanGame {
         gameplayModeTime = 0;
         fruitTime = 0;
         ghostModeSwitchPos = 0;
-        ghostModeTime = levelConfig.getGhostModeSwitchTimes()[0] * DEFAULT_FPS;
+        ghostModeTime = levelConfig.getGhostModeSwitchTimes()[0] * GameConstants.DEFAULT_FPS;
         ghostExitingPenNow = false;
         ghostEyesCount = 0;
         tilesChanged = false;
@@ -309,7 +274,6 @@ public class PacmanGame {
             level >= LevelConfig.LEVEL_CONFIGS.length
                 ? LevelConfig.LEVEL_CONFIGS[LevelConfig.LEVEL_CONFIGS.length - 1]
                 : LevelConfig.LEVEL_CONFIGS[level];
-        levelConfig.initFrightTotalTime((int) timing[1]);
         alternatePenLeavingScheme = false;
         lostLifeOnThisLevel = false;
         updateChrome();
@@ -441,7 +405,7 @@ public class PacmanGame {
     }
 
     private void resetForcePenLeaveTime() {
-        forcePenLeaveTime = levelConfig.getPenForceTime() * DEFAULT_FPS;
+        forcePenLeaveTime = levelConfig.getPenForceTime() * GameConstants.DEFAULT_FPS;
     }
 
     public void dotEaten(int[] dotPos) {
@@ -575,7 +539,7 @@ public class PacmanGame {
             double distance = 0;
             double lastPos = 0;
             List<Boolean> movabilityTimeTable = new ArrayList<Boolean>();
-            for (int i = 0; i < DEFAULT_FPS; i++) {
+            for (int i = 0; i < GameConstants.DEFAULT_FPS; i++) {
                 distance += speed;
                 double pos = Math.floor(distance);
                 if (pos > lastPos) {
@@ -733,7 +697,7 @@ public class PacmanGame {
         if (cutscene.sequenceTimes.length == cutsceneSequenceId) {
             stopCutscene();
         } else {
-            cutsceneTime = cutscene.sequenceTimes[cutsceneSequenceId] * DEFAULT_FPS;
+            cutsceneTime = cutscene.sequenceTimes[cutsceneSequenceId] * GameConstants.DEFAULT_FPS;
             CutsceneActor[] cutsceneActors = getCutsceneActors();
             for (int i = 0; i < cutsceneActors.length; i++) {
                 CutsceneActor actor = cutsceneActors[i];
@@ -881,7 +845,7 @@ public class PacmanGame {
                 ghostModeTime = 0;
                 ghostModeSwitchPos++;
                 if (ghostModeSwitchPos < levelConfig.getGhostModeSwitchTimes().length) {
-                    ghostModeTime = levelConfig.getGhostModeSwitchTimes()[ghostModeSwitchPos] * DEFAULT_FPS;
+                    ghostModeTime = levelConfig.getGhostModeSwitchTimes()[ghostModeSwitchPos] * GameConstants.DEFAULT_FPS;
                     switch (mainGhostMode) {
                     case SCATTER:
                         switchMainGhostMode(GhostMode.CHASE, false);
@@ -924,42 +888,24 @@ public class PacmanGame {
     void tick() {
         long now = new Date().getTime();
         if (paused) {
-            pausedTime = now;
+            tickClock.onPaused(now);
             return;
         }
 
-        lastTimeDelta += now - lastTime - tickInterval; // total processing delay
-        if (lastTimeDelta > 100) {
-            lastTimeDelta = 100;
-        }
-        if (canDecreaseFps && lastTimeDelta > 50) {
-            // If the fps can be reduced, count the number of process which latency is over 50 ms.
-            lastTimeSlownessCount++;
-            if (lastTimeSlownessCount == 20) {
-                decreaseFps(); // reduce the fps when the number of process, which latency is over 50 ms, becomes 20.
-            }
-        }
-        int latencyMultiplyer = 0;
-        if (lastTimeDelta > tickInterval) {
-            // If the total processing delay is greater than tick​​Interval,
-            // the total processing delay is cut down to less than tickInterval.
-            latencyMultiplyer = (int) Math.floor(lastTimeDelta / tickInterval);
-            lastTimeDelta -= tickInterval * latencyMultiplyer;
-        }
-        lastTime = now;
+        int latencyMultiplyer = tickClock.advance(now);
         if (gameplayMode == GameplayMode.CUTSCENE) { // Cutscene
-            for (int i = 0; i < tickMultiplier + latencyMultiplyer; i++) {
+            for (int i = 0; i < tickClock.tickMultiplier + latencyMultiplyer; i++) {
                 // run multiple time depending on the tickMultiplier and latency
                 advanceCutscene();
-                intervalTime = (intervalTime + 1) % DEFAULT_FPS;
+                intervalTime = (intervalTime + 1) % GameConstants.DEFAULT_FPS;
                 globalTime++;
             }
             checkCutscene();
             blinkScoreLabels();
         } else {
             updateSoundIcon();
-            
-            for (int i = 0; i < tickMultiplier + latencyMultiplyer; i++) {
+
+            for (int i = 0; i < tickClock.tickMultiplier + latencyMultiplyer; i++) {
                 // run multiple time depending on the tickMultiplier and latency
                 inputHandler.processDpadInput();
                 moveActors();
@@ -971,7 +917,7 @@ public class PacmanGame {
                 }
 
                 globalTime++;
-                intervalTime = (intervalTime + 1) % DEFAULT_FPS;
+                intervalTime = (intervalTime + 1) % GameConstants.DEFAULT_FPS;
                 blinkEnergizers();
                 blinkScoreLabels();
                 handleTimers();
@@ -1045,32 +991,17 @@ public class PacmanGame {
         soundManager.playAmbient(ambient);
     }
 
-    private void initializeTickTimer() {
-        fps = FPS_OPTIONS[fpsChoice];
-        tickInterval = 1000 / fps;
-        tickMultiplier = DEFAULT_FPS / fps;
-        timing = new double[EVENT_TIME_TABLE.length];
-        for (int i = 0; i < EVENT_TIME_TABLE.length; i++) {
-            double sec = !soundManager.isPacManSound() && (i == 7 || i == 8) ? 1 : EVENT_TIME_TABLE[i];
-            timing[i] = Math.round(sec * DEFAULT_FPS);
+    private void initTiming() {
+        timing = new double[GameConstants.EVENT_TIME_TABLE.length];
+        for (int i = 0; i < GameConstants.EVENT_TIME_TABLE.length; i++) {
+            double sec = !soundManager.isPacManSound() && (i == 7 || i == 8)
+                    ? 1 : GameConstants.EVENT_TIME_TABLE[i];
+            timing[i] = Math.round(sec * GameConstants.DEFAULT_FPS);
         }
-        lastTime = new Date().getTime();
-        lastTimeDelta = 0;
-        lastTimeSlownessCount = 0;
     }
 
     private void setTimeout() {
-        view.redrawHandler.sleep(Math.round(tickInterval));
-    }
-
-    private void decreaseFps() {
-        if (fpsChoice < FPS_OPTIONS.length - 1) {
-            fpsChoice++;
-            initializeTickTimer();
-            if (fpsChoice == FPS_OPTIONS.length - 1) {
-                canDecreaseFps = false;
-            }
-        }
+        view.redrawHandler.sleep(tickClock.getTickIntervalMs());
     }
 
     private void createCanvasElement() {
@@ -1122,15 +1053,15 @@ public class PacmanGame {
         speedIntervals = new HashMap<Double, Boolean[]>();
         soundManager = new SoundManager(context);
         inputHandler = new InputHandler(this);
-        fpsChoice = 0;
-        canDecreaseFps = true;
-        initializeTickTimer();
+        tickClock = new TickClock();
+        tickClock.init();
+        initTiming();
     }
 
     void resume() {
         soundManager.reinit();
         if (started && paused) {
-            lastTime += new Date().getTime() - pausedTime;
+            tickClock.onResumed();
             paused = false;
             soundManager.resumeAmbient();
             tick();
