@@ -64,8 +64,8 @@ public class PacmanGame {
         0.26f
     };
 
-    private static final int[] FPS_OPTIONS = { 90, 45, 30, }; // fps option
-    private static final int DEFAULT_FPS = FPS_OPTIONS[0]; // default fps
+    private static final int[] FPS_OPTIONS = { 90, 45, 30, };
+    private static final int DEFAULT_FPS = FPS_OPTIONS[0];
 
 
     
@@ -1432,7 +1432,7 @@ public class PacmanGame {
         this.pacManSound = pacManSound;
     }
 
-    public LevelConfig getLevels() {
+    public LevelConfig getLevelConfig() {
         return levelConfig;
     }
 
