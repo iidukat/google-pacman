@@ -127,8 +127,8 @@ public class PacmanGame {
     private final Context context;
     GameView view;
     private Bitmap sourceImage;
-    private SoundPlayer soundPlayer;
-    
+    private SoundManager soundManager;
+
     private boolean paused;
     private boolean started;
     private long randSeed;
@@ -159,8 +159,6 @@ public class PacmanGame {
     private boolean ghostExitingPenNow = false;
     private int ghostEyesCount = 0;
     private boolean tilesChanged = false;
-    private int dotEatingChannel;
-    private int dotEatingSoundPart;
     private GameplayMode gameplayMode;
     private double[] timing;
     private boolean alternatePenLeavingScheme;
@@ -178,8 +176,6 @@ public class PacmanGame {
     private int modeScoreMultiplier;
     private boolean fruitShown;
     private Ghost ghostBeingEaten;
-
-    private boolean pacManSound = true;
 
     private Cutscene cutscene;
     private int cutsceneId;
@@ -264,7 +260,7 @@ public class PacmanGame {
     }
 
     private boolean handleSoundIconClick(double x, double y) {
-        if (!soundPlayer.isAvailable() || !getSoundEl().isVisible()) {
+        if (!soundManager.isAvailable() || !getSoundEl().isVisible()) {
             return false;
         }
 
@@ -356,8 +352,7 @@ public class PacmanGame {
         for (int i = 1; i < 4; i++) {
             getGhosts()[i].switchGhostMode(GhostMode.IN_PEN);
         }
-        dotEatingChannel = 0;
-        dotEatingSoundPart = 1;
+        soundManager.resetDotEatingSound();
 
         if (newGame && debugCutsceneId != 0) {
             cutsceneId = debugCutsceneId;
@@ -529,7 +524,7 @@ public class PacmanGame {
         getPlayfieldEl().decrementDotsRemaining();
         getPlayfieldEl().incrementDotsEaten();
         getPacman().changeSpeed(CurrentSpeed.PACMAN_EATING_DOT);
-        playDotEatingSound();
+        soundManager.playDotEatingSound(gameplayMode == GameplayMode.ORDINARY_PLAYING);
         if (getPathElement(dotPos[1], dotPos[0]).getDot() == Dot.ENERGIZER) { // when eating an energizer
             switchMainGhostMode(GhostMode.FRIGHTENED, false);
             addToScore(50);
@@ -574,7 +569,7 @@ public class PacmanGame {
 
     public void eatFruit() {
         if (fruitShown) {
-            playSound("fruit", 0);
+            soundManager.playTrack("fruit", 0);
             fruitShown = false;
             getFruitEl().eaten();
             fruitTime = (int) timing[14];
@@ -604,7 +599,7 @@ public class PacmanGame {
     }
 
     private void ghostDies(int index) {
-        playSound("eating_ghost", 0);
+        soundManager.playTrack("eating_ghost", 0);
         addToScore(200 * modeScoreMultiplier);
         modeScoreMultiplier *= 2;
         ghostBeingEaten = getPlayfieldEl().getGhosts()[index];
@@ -697,11 +692,11 @@ public class PacmanGame {
             playAmbientSound();
             break;
         case PLAYER_DYING:
-            stopAllAudio();
+            soundManager.stopAll();
             gameplayModeTime = timing[3];
             break;
         case PLAYER_DIED:
-            playSound("death", 0);
+            soundManager.playTrack("death", 0);
             gameplayModeTime = timing[4];
             break;
         case GAME_RESTARTING:
@@ -709,7 +704,7 @@ public class PacmanGame {
             gameplayModeTime = timing[5];
             break;
         case GAME_RESTARTED:
-            stopAllAudio();
+            soundManager.stopAll();
             canvasEl.setVisibility(true);
             getDoorEl().setVisibility(true);
             createReadyElement();
@@ -719,8 +714,8 @@ public class PacmanGame {
             getDoorEl().setVisibility(true);
             createReadyElement();
             gameplayModeTime = timing[7];
-            stopAllAudio();
-            playSound("start_music", 0, true);
+            soundManager.stopAll();
+            soundManager.playTrack("start_music", 0, true);
             break;
         case NEWGAME_STARTED:
             lives--;
@@ -730,12 +725,12 @@ public class PacmanGame {
         case GAMEOVER:
         case KILL_SCREEN:
             removeReadyElement();
-            stopAllAudio();
+            soundManager.stopAll();
             createGameOverElement();
             gameplayModeTime = timing[9];
             break;
         case LEVEL_BEING_COMPLETED:
-            stopAllAudio();
+            soundManager.stopAll();
             gameplayModeTime = timing[10];
             break;
         case LEVEL_COMPLETED:
@@ -756,20 +751,20 @@ public class PacmanGame {
     }
 
     private void toggleSound() {
-        if (pacManSound) {
-            stopAllAudio();
-            pacManSound = false;
+        if (soundManager.isPacManSound()) {
+            soundManager.stopAll();
+            soundManager.setPacManSound(false);
         } else {
-            pacManSound = true;
+            soundManager.setPacManSound(true);
             playAmbientSound();
         }
     }
 
     private void updateSoundIcon() {
         Sound soundEl = getSoundEl();
-        if (soundPlayer.isAvailable()) {
+        if (soundManager.isAvailable()) {
             soundEl.setVisibility(true);
-            if (pacManSound) {
+            if (soundManager.isPacManSound()) {
                 soundEl.turnOn();
             } else {
                 soundEl.turnOff();
@@ -792,8 +787,8 @@ public class PacmanGame {
         createCutsceneActors();
         
         cutsceneNextSequence();
-        stopAllAudio();
-        playCutsceneAmbient();
+        soundManager.stopAll();
+        soundManager.playCutsceneAmbient();
     }
     
     private void createCutsceneActors() {
@@ -801,7 +796,7 @@ public class PacmanGame {
     }
 
     private void stopCutscene() {
-        stopCutsceneAmbient();
+        soundManager.stopCutsceneAmbient();
         getPlayfieldEl().setVisibility(true);
         canvasEl.removeCutsceneField();
         canvasEl.showChrome(true);
@@ -1068,7 +1063,7 @@ public class PacmanGame {
     }
 
     private void extraLife() {
-        playSound("extra_life", 0);
+        soundManager.playTrack("extra_life", 0);
         extraLifeAwarded = true;
         lives++;
         if (lives > 5) {
@@ -1113,88 +1108,23 @@ public class PacmanGame {
         updateSoundIcon();
     }
 
-    private String oldAmbient;
-
-    private void playSound(String track, int channel) {
-        playSound(track, channel, false);
-    }
-
-    private void playSound(String track, int channel, boolean noBlank) {
-        if (pacManSound) {
-            if (!noBlank) {
-                stopSoundChannel(channel);
-            }
-            soundPlayer.playTrack(track, channel);
-        }
-    }
-
-    private void stopSoundChannel(int channel) {
-        soundPlayer.stopChannel(channel);
-    }
-    
-    private void stopAmbient() {
-        soundPlayer.stopAmbient();
-        oldAmbient = null;
-    }
-
-    private void stopAllAudio() {
-        stopAmbient();
-        for (int i = 0; i < 5; i++) {
-            stopSoundChannel(i);
-        }
-    }
-
-    private void playDotEatingSound() {
-        if (pacManSound) {
-            if (gameplayMode == GameplayMode.ORDINARY_PLAYING) {
-                String track = dotEatingSoundPart == 1
-                                ? "eating_dot_1"
-                                : "eating_dot_2";
-                playSound(track, 1 + dotEatingChannel, true);
-                dotEatingChannel = (dotEatingChannel + 1) % 2; // switch between 0 and 1
-                dotEatingSoundPart = 3 - dotEatingSoundPart; // switch between 1 and 2
-            }
-        }
-    }
-
     public void playAmbientSound() {
-        if (pacManSound) {
-            String ambient = null;
-            if (gameplayMode == GameplayMode.ORDINARY_PLAYING
-                    || gameplayMode == GameplayMode.GHOST_DIED) {
-                Playfield playfieldEl = getPlayfieldEl();
-                ambient = ghostEyesCount != 0
-                        ? "ambient_eyes"
-                        : mainGhostMode == GhostMode.FRIGHTENED
-                            ? "ambient_fright"
-                            : playfieldEl.getDotsEaten() > 241
-                                ? "ambient_4"
-                                : playfieldEl.getDotsEaten() > 207
-                                    ? "ambient_3"
-                                    : playfieldEl.getDotsEaten() > 138
-                                        ? "ambient_2" : "ambient_1";
-            }
-
-            if (ambient != null) {
-                if (ambient.equals(oldAmbient)) {
-                    return;
-                }
-
-                soundPlayer.playAmbient(ambient);
-                oldAmbient = ambient;
-
-            }
+        String ambient = null;
+        if (gameplayMode == GameplayMode.ORDINARY_PLAYING
+                || gameplayMode == GameplayMode.GHOST_DIED) {
+            Playfield playfieldEl = getPlayfieldEl();
+            ambient = ghostEyesCount != 0
+                    ? "ambient_eyes"
+                    : mainGhostMode == GhostMode.FRIGHTENED
+                        ? "ambient_fright"
+                        : playfieldEl.getDotsEaten() > 241
+                            ? "ambient_4"
+                            : playfieldEl.getDotsEaten() > 207
+                                ? "ambient_3"
+                                : playfieldEl.getDotsEaten() > 138
+                                    ? "ambient_2" : "ambient_1";
         }
-    }
-
-    private void playCutsceneAmbient() {
-        if (pacManSound) {
-            soundPlayer.playCutsceneAmbient();
-        }
-    }
-
-    private void stopCutsceneAmbient() {
-        soundPlayer.stopCutsceneAmbient();
+        soundManager.playAmbient(ambient);
     }
 
     private void initializeTickTimer() {
@@ -1203,7 +1133,7 @@ public class PacmanGame {
         tickMultiplier = DEFAULT_FPS / fps;
         timing = new double[EVENT_TIME_TABLE.length];
         for (int i = 0; i < EVENT_TIME_TABLE.length; i++) {
-            double sec = !pacManSound && (i == 7 || i == 8) ? 1 : EVENT_TIME_TABLE[i];
+            double sec = !soundManager.isPacManSound() && (i == 7 || i == 8) ? 1 : EVENT_TIME_TABLE[i];
             timing[i] = Math.round(sec * DEFAULT_FPS);
         }
         lastTime = new Date().getTime();
@@ -1261,11 +1191,6 @@ public class PacmanGame {
         this.dpadDir = dir;
     }
 
-    private void prepareSound() {
-        soundPlayer = new SoundPlayer(context);
-        soundPlayer.init();
-    }
-
     private void setKillScreenLevel(int level) {
         this.killScreenLevel = level;
     }
@@ -1281,26 +1206,25 @@ public class PacmanGame {
                 R.drawable.pacman_sprite);
         createCanvasElement();
         speedIntervals = new HashMap<Double, Boolean[]>();
+        soundManager = new SoundManager(context);
         fpsChoice = 0;
         canDecreaseFps = true;
         initializeTickTimer();
     }
-    
+
     void resume() {
-        prepareSound();
+        soundManager.reinit();
         if (started && paused) {
             lastTime += new Date().getTime() - pausedTime;
             paused = false;
-            if (oldAmbient != null) {
-                soundPlayer.playAmbient(oldAmbient);
-            }
+            soundManager.resumeAmbient();
             tick();
         }
     }
-    
+
     void pause() {
         paused = true;
-        soundPlayer.destroy();
+        soundManager.destroy();
     }
     
     public PacmanCanvas getCanvasEl() {
@@ -1425,11 +1349,11 @@ public class PacmanGame {
     }
 
     public boolean isPacManSound() {
-        return pacManSound;
+        return soundManager.isPacManSound();
     }
 
-    public void setPacManSound(boolean pacManSound) {
-        this.pacManSound = pacManSound;
+    public void setPacManSound(boolean val) {
+        soundManager.setPacManSound(val);
     }
 
     public LevelConfig getLevelConfig() {
