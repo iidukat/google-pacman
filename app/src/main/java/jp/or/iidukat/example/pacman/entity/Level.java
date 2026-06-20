@@ -3,7 +3,7 @@ package jp.or.iidukat.example.pacman.entity;
 import java.util.ArrayList;
 import java.util.List;
 
-import jp.or.iidukat.example.pacman.PacmanGame.LevelConfig;
+import jp.or.iidukat.example.pacman.LevelConfig;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 
