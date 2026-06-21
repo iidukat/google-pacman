@@ -233,7 +233,7 @@ public class Pacman extends PlayfieldActor {
             x = 2;
             y = 0;
         } else if (game.getGameplayMode() == GameplayMode.PLAYER_DIED) {
-            int t = 20 - (int) Math.floor(game.getGameplayModeTime() / game.getTiming()[4] * 21);
+            int t = 20 - (int) Math.floor(game.getGameplayModeTime() / game.getPlayerDiedTiming() * 21);
             x = t - 1;
             switch (x) {
             case -1:

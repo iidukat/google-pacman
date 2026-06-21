@@ -409,7 +409,7 @@ public abstract class Ghost extends PlayfieldActor {
             y = 8;
             // blinking before the end of the frighten mode
             if (game.getFrightModeTime() < game.getLevelConfig().getFrightTotalTime() - game.getLevelConfig().getFrightTime()
-                    && Math.floor(game.getFrightModeTime() / game.getTiming()[1]) % 2 == 0) {
+                    && Math.floor(game.getFrightModeTime() / game.getFrightBlinkTiming()) % 2 == 0) {
                 x += 2;
             }
     

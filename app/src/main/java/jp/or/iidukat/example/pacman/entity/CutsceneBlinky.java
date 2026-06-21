@@ -115,7 +115,7 @@ public class CutsceneBlinky extends CutsceneActor {
                     < game.getLevelConfig().getFrightTotalTime()
                         - game.getLevelConfig().getFrightTime()
                 && Math.floor(
-                        game.getFrightModeTime() / game.getTiming()[1])
+                        game.getFrightModeTime() / game.getFrightBlinkTiming())
                         % 2 == 0) {
                 x += 2;
             }

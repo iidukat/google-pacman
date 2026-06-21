@@ -128,7 +128,7 @@ public class PacmanGame {
     private int ghostEyesCount = 0;
     private boolean tilesChanged = false;
     private GameplayMode gameplayMode;
-    private double[] timing;
+    private Timing timing;
     private boolean alternatePenLeavingScheme;
     private int alternateDotCount;
     private boolean lostLifeOnThisLevel;
@@ -451,8 +451,8 @@ public class PacmanGame {
         fruitShown = true;
         getFruitEl().show();
         fruitTime =
-            (int) timing[15]
-                + (int) ((timing[16] - timing[15]) * rand());
+            (int) timing.fruitShowMin
+                + (int) ((timing.fruitShowMax - timing.fruitShowMin) * rand());
     }
 
     public void eatFruit() {
@@ -460,7 +460,7 @@ public class PacmanGame {
             soundManager.playTrack("fruit", 0);
             fruitShown = false;
             getFruitEl().eaten();
-            fruitTime = (int) timing[14];
+            fruitTime = (int) timing.fruitScore;
             addToScore(levelConfig.getFruitScore());
         }
     }
@@ -575,56 +575,56 @@ public class PacmanGame {
             break;
         case PLAYER_DYING:
             soundManager.stopAll();
-            gameplayModeTime = timing[3];
+            gameplayModeTime = timing.playerDying;
             break;
         case PLAYER_DIED:
             soundManager.playTrack("death", 0);
-            gameplayModeTime = timing[4];
+            gameplayModeTime = timing.playerDied;
             break;
         case GAME_RESTARTING:
             canvasEl.setVisibility(false);
-            gameplayModeTime = timing[5];
+            gameplayModeTime = timing.gameRestarting;
             break;
         case GAME_RESTARTED:
             soundManager.stopAll();
             canvasEl.setVisibility(true);
             getDoorEl().setVisibility(true);
             createReadyElement();
-            gameplayModeTime = timing[6];
+            gameplayModeTime = timing.gameRestarted;
             break;
         case NEWGAME_STARTING:
             getDoorEl().setVisibility(true);
             createReadyElement();
-            gameplayModeTime = timing[7];
+            gameplayModeTime = timing.newgameStarting;
             soundManager.stopAll();
             soundManager.playTrack("start_music", 0, true);
             break;
         case NEWGAME_STARTED:
             lives--;
             updateChromeLives();
-            gameplayModeTime = timing[8];
+            gameplayModeTime = timing.newgameStarted;
             break;
         case GAMEOVER:
         case KILL_SCREEN:
             removeReadyElement();
             soundManager.stopAll();
             createGameOverElement();
-            gameplayModeTime = timing[9];
+            gameplayModeTime = timing.gameover;
             break;
         case LEVEL_BEING_COMPLETED:
             soundManager.stopAll();
-            gameplayModeTime = timing[10];
+            gameplayModeTime = timing.levelBeingCompleted;
             break;
         case LEVEL_COMPLETED:
             getDoorEl().setVisibility(false);
-            gameplayModeTime = timing[11];
+            gameplayModeTime = timing.levelCompleted;
             break;
         case TRANSITION_INTO_NEXT_SCENE:
             canvasEl.setVisibility(false);
-            gameplayModeTime = timing[12];
+            gameplayModeTime = timing.transition;
             break;
         case GHOST_DIED:
-            gameplayModeTime = timing[2];
+            gameplayModeTime = timing.ghostDied;
             break;
         case CUTSCENE:
             startCutscene();
@@ -730,11 +730,11 @@ public class PacmanGame {
     }
 
     private void blinkEnergizers() {
-        getPlayfieldEl().blinkEnergizers(gameplayMode, globalTime, timing[0]);
+        getPlayfieldEl().blinkEnergizers(gameplayMode, globalTime, timing.energizerBlink);
     }
 
     private void blinkScoreLabels() {
-        getScoreLabelEl().update(gameplayMode, globalTime, timing[17]);
+        getScoreLabelEl().update(gameplayMode, globalTime, timing.scoreLabelBlink);
     }
 
     private void finishFrightMode() {
@@ -754,7 +754,7 @@ public class PacmanGame {
                 }
                 break;
             case LEVEL_COMPLETED:
-                getPlayfieldEl().blink(gameplayModeTime, timing[11]);
+                getPlayfieldEl().blink(gameplayModeTime, timing.levelCompleted);
                 break;
             }
 
@@ -992,12 +992,7 @@ public class PacmanGame {
     }
 
     private void initTiming() {
-        timing = new double[GameConstants.EVENT_TIME_TABLE.length];
-        for (int i = 0; i < GameConstants.EVENT_TIME_TABLE.length; i++) {
-            double sec = !soundManager.isPacManSound() && (i == 7 || i == 8)
-                    ? 1 : GameConstants.EVENT_TIME_TABLE[i];
-            timing[i] = Math.round(sec * GameConstants.DEFAULT_FPS);
-        }
+        timing = new Timing(!soundManager.isPacManSound());
     }
 
     private void setTimeout() {
@@ -1222,8 +1217,16 @@ public class PacmanGame {
         return gameplayModeTime;
     }
 
-    public double[] getTiming() {
+    Timing getTiming() {
         return timing;
+    }
+
+    public double getFrightBlinkTiming() {
+        return timing.frightBlink;
+    }
+
+    public double getPlayerDiedTiming() {
+        return timing.playerDied;
     }
 
     public GameplayMode getGameplayMode() {
