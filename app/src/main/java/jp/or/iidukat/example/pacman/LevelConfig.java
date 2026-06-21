@@ -3,7 +3,7 @@ package jp.or.iidukat.example.pacman;
 public class LevelConfig {
 
     private static final int FRIGHT_BLINK_DURATION =
-            (int) Math.round(GameConstants.FRIGHT_BLINK_SECS * GameConstants.DEFAULT_FPS);
+            (int) Math.round(Timing.FRIGHT_BLINK_SECS * GameConstants.DEFAULT_FPS);
 
     private final double ghostSpeed;
     private final double ghostTunnelSpeed;
