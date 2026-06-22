@@ -102,28 +102,24 @@ public class PacmanGame {
     private Bitmap sourceImage;
     SoundManager soundManager;
     private InputHandler inputHandler;
+    GameTimerManager gameTimerManager;
 
     private boolean paused;
     private boolean started;
     private long randSeed;
 
-    private PacmanCanvas canvasEl;
+    PacmanCanvas canvasEl;
 
     private long score;
     private boolean extraLifeAwarded;
     int lives = 3;
     private int level = 0;
     private int killScreenLevel = DEFAULT_KILL_SCREEN_LEVEL;
-    private LevelConfig levelConfig;
+    LevelConfig levelConfig;
     private long globalTime = 0;
 
-    private int frightModeTime = 0;
     private int intervalTime = 0;
     double gameplayModeTime = 0;
-    private int fruitTime = 0;
-    private int forcePenLeaveTime;
-    private int ghostModeSwitchPos = 0;
-    private double ghostModeTime;
     private boolean ghostExitingPenNow = false;
     private int ghostEyesCount = 0;
     private boolean tilesChanged = false;
@@ -134,7 +130,7 @@ public class PacmanGame {
     private boolean lostLifeOnThisLevel;
 
     private GhostMode lastMainGhostMode;
-    private GhostMode mainGhostMode;
+    GhostMode mainGhostMode;
 
     private double currentPlayerSpeed;
     private double currentDotEatingSpeed;
@@ -146,7 +142,7 @@ public class PacmanGame {
     private Ghost ghostBeingEaten;
 
     private Cutscene cutscene;
-    private int cutsceneId;
+    int cutsceneId;
     private int cutsceneSequenceId;
     private double cutsceneTime;
     private int debugCutsceneId;
@@ -156,6 +152,7 @@ public class PacmanGame {
 
     PacmanGame(Context context) {
         this.context = context;
+        gameTimerManager = new GameTimerManager(this);
     }
 
     public double rand() {
@@ -223,18 +220,14 @@ public class PacmanGame {
 
     private void restartGameplay(boolean newGame) {
         seed(0);
-        frightModeTime = 0;
         intervalTime = 0;
         gameplayModeTime = 0;
-        fruitTime = 0;
-        ghostModeSwitchPos = 0;
-        ghostModeTime = levelConfig.getGhostModeSwitchTimes()[0] * GameConstants.DEFAULT_FPS;
         ghostExitingPenNow = false;
         ghostEyesCount = 0;
         tilesChanged = false;
         updateCruiseElroySpeed();
         hideFruit();
-        resetForcePenLeaveTime();
+        gameTimerManager.restartAll(levelConfig);
         restartActors();
         updateActorPositions();
         switchMainGhostMode(GhostMode.SCATTER, true);
@@ -268,7 +261,7 @@ public class PacmanGame {
         changeGameplayMode(GameplayMode.KILL_SCREEN);
     }
 
-    private void newLevel(boolean newGame) {
+    void newLevel(boolean newGame) {
         level++;
         levelConfig =
             level >= LevelConfig.LEVEL_CONFIGS.length
@@ -284,7 +277,7 @@ public class PacmanGame {
         }
     }
 
-    private void newLife() {
+    void newLife() {
         lostLifeOnThisLevel = true;
         alternatePenLeavingScheme = true;
         alternateDotCount = 0;
@@ -298,7 +291,7 @@ public class PacmanGame {
         }
     }
 
-    private void switchMainGhostMode(GhostMode ghostMode,
+    void switchMainGhostMode(GhostMode ghostMode,
                                     boolean justRestartGame) {
         Ghost[] ghosts = getGhosts();
         if (ghostMode == GhostMode.FRIGHTENED
@@ -326,7 +319,7 @@ public class PacmanGame {
             case FRIGHTENED:
                 currentPlayerSpeed = levelConfig.getPlayerFrightSpeed() * 0.8f;
                 currentDotEatingSpeed = levelConfig.getDotEatingFrightSpeed() * 0.8f;
-                frightModeTime = levelConfig.getFrightTotalTime();
+                gameTimerManager.frightModeTime = levelConfig.getFrightTotalTime();
                 modeScoreMultiplier = 1;
                 break;
             }
@@ -404,10 +397,6 @@ public class PacmanGame {
         }
     }
 
-    private void resetForcePenLeaveTime() {
-        forcePenLeaveTime = levelConfig.getPenForceTime() * GameConstants.DEFAULT_FPS;
-    }
-
     public void dotEaten(int[] dotPos) {
         getPlayfieldEl().decrementDotsRemaining();
         getPlayfieldEl().incrementDotsEaten();
@@ -422,7 +411,7 @@ public class PacmanGame {
 
         getPlayfieldEl().clearDot(dotPos[1], dotPos[0]);
         updateCruiseElroySpeed();
-        resetForcePenLeaveTime();
+        gameTimerManager.resetForcePenLeaveTime();
         figureOutPenLeaving();
         if (getPlayfieldEl().getDotsEaten() == 70
                 || getPlayfieldEl().getDotsEaten() == 170) {
@@ -442,7 +431,7 @@ public class PacmanGame {
         return getPlayfieldEl().getDotsRemaining();
     }
 
-    private void hideFruit() {
+    void hideFruit() {
         fruitShown = false;
         getFruitEl().hide();
     }
@@ -450,7 +439,7 @@ public class PacmanGame {
     private void showFruit() {
         fruitShown = true;
         getFruitEl().show();
-        fruitTime =
+        gameTimerManager.fruitTime =
             (int) timing.fruitShowMin
                 + (int) ((timing.fruitShowMax - timing.fruitShowMin) * rand());
     }
@@ -460,7 +449,7 @@ public class PacmanGame {
             soundManager.playTrack("fruit", 0);
             fruitShown = false;
             getFruitEl().eaten();
-            fruitTime = (int) timing.fruitScore;
+            gameTimerManager.fruitTime = (int) timing.fruitScore;
             addToScore(levelConfig.getFruitScore());
         }
     }
@@ -658,7 +647,7 @@ public class PacmanGame {
         }
     }
 
-    private void changeGameplayMode(GameplayMode mode) {
+    void changeGameplayMode(GameplayMode mode) {
         applyModeState(mode);
         applyModeEffects(mode);
     }
@@ -696,7 +685,7 @@ public class PacmanGame {
         
         cutscene = CUTSCENES.get(Integer.valueOf(cutsceneId));
         cutsceneSequenceId = -1;
-        frightModeTime = levelConfig.getFrightTotalTime();
+        gameTimerManager.frightModeTime = levelConfig.getFrightTotalTime();
         createCutsceneActors();
         
         cutsceneNextSequence();
@@ -768,152 +757,12 @@ public class PacmanGame {
         getScoreLabelEl().update(gameplayMode, globalTime, timing.scoreLabelBlink);
     }
 
-    private void finishFrightMode() {
+    void finishFrightMode() {
         switchMainGhostMode(lastMainGhostMode, false);
     }
 
-    private void handleGameplayModeTimer() {
-        if (gameplayModeTime != 0) {
-            gameplayModeTime--;
-            switch (gameplayMode) {
-            case PLAYER_DYING:
-            case PLAYER_DIED:
-                getPacman().updateAppearance();
-                Ghost[] ghosts = getGhosts();
-                for (PlayfieldActor actor : ghosts) {
-                    actor.updateAppearance();
-                }
-                break;
-            case LEVEL_COMPLETED:
-                getPlayfieldEl().blink(gameplayModeTime, timing.levelCompleted);
-                break;
-            }
-
-            if (gameplayModeTime <= 0) {
-                gameplayModeTime = 0;
-                Ghost[] ghosts = getGhosts();
-                switch (gameplayMode) {
-                case GHOST_DIED:
-                    changeGameplayMode(GameplayMode.ORDINARY_PLAYING);
-                    ghostEyesCount++;
-                    playAmbientSound();
-                    ghostBeingEaten.resetDisplayOrder();
-                    ghostBeingEaten.switchGhostMode(GhostMode.EATEN);
-                    // If there is no ghost frightened, finish fright mode.
-                    boolean frightenedGhostExists = false;
-                    for (Ghost ghost : ghosts) {
-                        if (ghost.getMode() == GhostMode.FRIGHTENED
-                            || (ghost.getMode() == GhostMode.IN_PEN
-                                    || ghost.getMode() == GhostMode.RE_LEAVING_FROM_PEN)
-                                && !ghost.isEatenInThisFrightMode()) {
-                            frightenedGhostExists = true;
-                            break;
-                        }
-                    }
-                    if (!frightenedGhostExists) {
-                        finishFrightMode();
-                    }
-                    break;
-                case PLAYER_DYING:
-                    changeGameplayMode(GameplayMode.PLAYER_DIED);
-                    break;
-                case PLAYER_DIED:
-                    newLife();
-                    break;
-                case NEWGAME_STARTING:
-                    changeGameplayMode(GameplayMode.NEWGAME_STARTED);
-                    break;
-                case GAME_RESTARTING:
-                    changeGameplayMode(GameplayMode.GAME_RESTARTED);
-                    break;
-                case GAME_RESTARTED:
-                case NEWGAME_STARTED:
-                    getPlayfieldEl().removeReady();
-                    changeGameplayMode(GameplayMode.ORDINARY_PLAYING);
-                    break;
-                case GAMEOVER:
-                    getPlayfieldEl().removeGameover();
-                    break;
-                case LEVEL_BEING_COMPLETED:
-                    changeGameplayMode(GameplayMode.LEVEL_COMPLETED);
-                    break;
-                case LEVEL_COMPLETED:
-                    changeGameplayMode(GameplayMode.TRANSITION_INTO_NEXT_SCENE);
-                    break;
-                case TRANSITION_INTO_NEXT_SCENE:
-                    if (levelConfig.getCutsceneId() != 0) {
-                        cutsceneId = levelConfig.getCutsceneId();
-                        changeGameplayMode(GameplayMode.CUTSCENE);
-                    } else {
-                        // canvasEl.style.visibility = "";
-                        canvasEl.setVisibility(true);
-                        newLevel(false);
-                    }
-                    break;
-                }
-            }
-        }
-    }
-
-    private void handleFruitTimer() {
-        if (fruitTime != 0) {
-            fruitTime--;
-            if (fruitTime <= 0)
-                hideFruit();
-        }
-    }
-
-    private void handleGhostModeTimer() {
-        if (frightModeTime != 0) {
-            frightModeTime--;
-            if (frightModeTime <= 0) {
-                frightModeTime = 0;
-                finishFrightMode();
-            }
-        } else if (ghostModeTime > 0) {
-            ghostModeTime--;
-            if (ghostModeTime <= 0) {
-                ghostModeTime = 0;
-                ghostModeSwitchPos++;
-                if (ghostModeSwitchPos < levelConfig.getGhostModeSwitchTimes().length) {
-                    ghostModeTime = levelConfig.getGhostModeSwitchTimes()[ghostModeSwitchPos] * GameConstants.DEFAULT_FPS;
-                    switch (mainGhostMode) {
-                    case SCATTER:
-                        switchMainGhostMode(GhostMode.CHASE, false);
-                        break;
-                    case CHASE:
-                        switchMainGhostMode(GhostMode.SCATTER, false);
-                        break;
-                    }
-                }
-            }
-        }
-    }
-
-    private void handleForcePenLeaveTimer() {
-        if (forcePenLeaveTime != 0) {
-            forcePenLeaveTime--;
-            if (forcePenLeaveTime <= 0) {
-                Ghost[] ghosts = getGhosts();
-                for (int i = 1; i <= 3; i++) {
-                    if (ghosts[i].getMode() == GhostMode.IN_PEN) {
-                        ghosts[i].setFreeToLeavePen(true);
-                        break;
-                    }
-                }
-
-                resetForcePenLeaveTime();
-            }
-        }
-    }
-
     void handleTimers() {
-        if (gameplayMode == GameplayMode.ORDINARY_PLAYING) {
-            handleForcePenLeaveTimer();
-            handleFruitTimer();
-            handleGhostModeTimer();
-        }
-        handleGameplayModeTimer();
+        gameTimerManager.handleTimers();
     }
 
     void tick() {
@@ -1158,7 +1007,7 @@ public class PacmanGame {
         return playfieldEl.getPacman();
     }
 
-    private Ghost[] getGhosts() {
+    Ghost[] getGhosts() {
         if (canvasEl == null) {
             return null;
         }
@@ -1237,7 +1086,7 @@ public class PacmanGame {
     }
 
     public int getFrightModeTime() {
-        return frightModeTime;
+        return gameTimerManager.frightModeTime;
     }
 
     public int getIntervalTime() {

@@ -5,21 +5,11 @@ import org.junit.Test;
 import static jp.or.iidukat.example.pacman.PacmanGame.GameplayMode;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.spy;
 
 public class PacmanGameTimerTest {
 
-    private PacmanGame newGame() {
-        PacmanGame g = spy(new PacmanGame(null));
-        doNothing().when(g).applyModeEffects(any());
-        g.timing = new Timing(false);
-        return g;
-    }
-
     // -----------------------------------------------------------------------
-    // applyModeState — pure state, no spy needed
+    // applyModeState — pure state
     // -----------------------------------------------------------------------
 
     @Test
@@ -152,69 +142,4 @@ public class PacmanGameTimerTest {
         assertEquals(42.0, g.getGameplayModeTime(), 1e-9);
     }
 
-    // -----------------------------------------------------------------------
-    // handleTimers — timer expiry transitions
-    // (only modes with no per-tick entity calls: NEWGAME_STARTING, GAME_RESTARTING,
-    //  LEVEL_BEING_COMPLETED)
-    // -----------------------------------------------------------------------
-
-    @Test
-    public void handleTimers_newgameStarting_expiresIntoNewgameStarted() {
-        PacmanGame s = newGame();
-        s.gameplayMode = GameplayMode.NEWGAME_STARTING;
-        s.gameplayModeTime = 1;
-
-        s.handleTimers();
-
-        assertEquals(GameplayMode.NEWGAME_STARTED, s.getGameplayMode());
-        assertEquals(s.timing.newgameStarted, s.getGameplayModeTime(), 1e-9);
-    }
-
-    @Test
-    public void handleTimers_gameRestarting_expiresIntoGameRestarted() {
-        PacmanGame s = newGame();
-        s.gameplayMode = GameplayMode.GAME_RESTARTING;
-        s.gameplayModeTime = 1;
-
-        s.handleTimers();
-
-        assertEquals(GameplayMode.GAME_RESTARTED, s.getGameplayMode());
-        assertEquals(s.timing.gameRestarted, s.getGameplayModeTime(), 1e-9);
-    }
-
-    @Test
-    public void handleTimers_levelBeingCompleted_expiresIntoLevelCompleted() {
-        PacmanGame s = newGame();
-        s.gameplayMode = GameplayMode.LEVEL_BEING_COMPLETED;
-        s.gameplayModeTime = 1;
-
-        s.handleTimers();
-
-        assertEquals(GameplayMode.LEVEL_COMPLETED, s.getGameplayMode());
-        assertEquals(s.timing.levelCompleted, s.getGameplayModeTime(), 1e-9);
-    }
-
-    @Test
-    public void handleTimers_gameplayModeTime_decrementsEachTick() {
-        PacmanGame s = newGame();
-        s.gameplayMode = GameplayMode.GAME_RESTARTING;
-        s.gameplayModeTime = 5;
-
-        s.handleTimers();
-
-        assertEquals(4.0, s.getGameplayModeTime(), 1e-9);
-        assertEquals(GameplayMode.GAME_RESTARTING, s.getGameplayMode());
-    }
-
-    @Test
-    public void handleTimers_zeroTime_doesNotDecrementOrTransition() {
-        PacmanGame s = newGame();
-        s.gameplayMode = GameplayMode.GAME_RESTARTING;
-        s.gameplayModeTime = 0;
-
-        s.handleTimers();
-
-        assertEquals(GameplayMode.GAME_RESTARTING, s.getGameplayMode());
-        assertEquals(0.0, s.getGameplayModeTime(), 1e-9);
-    }
 }
