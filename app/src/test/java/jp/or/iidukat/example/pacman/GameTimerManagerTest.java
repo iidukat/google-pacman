@@ -7,6 +7,7 @@ import jp.or.iidukat.example.pacman.entity.Ghost.GhostMode;
 
 import static jp.or.iidukat.example.pacman.PacmanGame.GameplayMode;
 import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -14,22 +15,9 @@ import static org.mockito.Mockito.when;
 
 public class GameTimerManagerTest {
 
-    private static class StubGame extends PacmanGame {
-        StubGame() { super(null); }
-
-        @Override
-        void applyModeEffects(GameplayMode mode) {}
-    }
-
-    private StubGame newGame() {
-        StubGame g = new StubGame();
-        g.timing = new Timing(false);
-        return g;
-    }
-
     /**
      * Create a GameTimerManager backed by a mock PacmanGame in ORDINARY_PLAYING mode
-     * with gameplayModeTime=0, so handleGameplayModeTimer is always a no-op in these tests.
+     * with gameplayModeTime=0, so handleGameplayModeTimer is a no-op unless overridden.
      */
     private PacmanGame mockGame;
     private GameTimerManager newManager() {
@@ -40,72 +28,68 @@ public class GameTimerManagerTest {
     }
 
     // -----------------------------------------------------------------------
-    // Gameplay mode timer — expiry transitions
-    // (tested via StubGame to exercise applyModeState properly)
+    // Gameplay mode timer — expiry calls changeGameplayMode with correct mode
+    // (resulting state is tested in PacmanGameTimerTest.applyModeState_*)
     // -----------------------------------------------------------------------
 
     @Test
     public void handleTimers_newgameStarting_expiresIntoNewgameStarted() {
-        StubGame s = newGame();
-        s.gameplayMode = GameplayMode.NEWGAME_STARTING;
-        s.gameplayModeTime = 1;
+        GameTimerManager tm = newManager();
+        mockGame.gameplayMode = GameplayMode.NEWGAME_STARTING;
+        mockGame.gameplayModeTime = 1;
 
-        s.handleTimers();
+        tm.handleTimers();
 
-        assertEquals(GameplayMode.NEWGAME_STARTED, s.getGameplayMode());
-        assertEquals(s.timing.newgameStarted, s.getGameplayModeTime(), 1e-9);
+        verify(mockGame).changeGameplayMode(GameplayMode.NEWGAME_STARTED);
     }
 
     @Test
     public void handleTimers_gameRestarting_expiresIntoGameRestarted() {
-        StubGame s = newGame();
-        s.gameplayMode = GameplayMode.GAME_RESTARTING;
-        s.gameplayModeTime = 1;
+        GameTimerManager tm = newManager();
+        mockGame.gameplayMode = GameplayMode.GAME_RESTARTING;
+        mockGame.gameplayModeTime = 1;
 
-        s.handleTimers();
+        tm.handleTimers();
 
-        assertEquals(GameplayMode.GAME_RESTARTED, s.getGameplayMode());
-        assertEquals(s.timing.gameRestarted, s.getGameplayModeTime(), 1e-9);
+        verify(mockGame).changeGameplayMode(GameplayMode.GAME_RESTARTED);
     }
 
     @Test
     public void handleTimers_levelBeingCompleted_expiresIntoLevelCompleted() {
-        StubGame s = newGame();
-        s.gameplayMode = GameplayMode.LEVEL_BEING_COMPLETED;
-        s.gameplayModeTime = 1;
+        GameTimerManager tm = newManager();
+        mockGame.gameplayMode = GameplayMode.LEVEL_BEING_COMPLETED;
+        mockGame.gameplayModeTime = 1;
 
-        s.handleTimers();
+        tm.handleTimers();
 
-        assertEquals(GameplayMode.LEVEL_COMPLETED, s.getGameplayMode());
-        assertEquals(s.timing.levelCompleted, s.getGameplayModeTime(), 1e-9);
+        verify(mockGame).changeGameplayMode(GameplayMode.LEVEL_COMPLETED);
     }
 
     @Test
     public void handleTimers_gameplayModeTime_decrementsEachTick() {
-        StubGame s = newGame();
-        s.gameplayMode = GameplayMode.GAME_RESTARTING;
-        s.gameplayModeTime = 5;
+        GameTimerManager tm = newManager();
+        mockGame.gameplayMode = GameplayMode.GAME_RESTARTING;
+        mockGame.gameplayModeTime = 5;
 
-        s.handleTimers();
+        tm.handleTimers();
 
-        assertEquals(4.0, s.getGameplayModeTime(), 1e-9);
-        assertEquals(GameplayMode.GAME_RESTARTING, s.getGameplayMode());
+        assertEquals(4.0, mockGame.gameplayModeTime, 1e-9);
     }
 
     @Test
     public void handleTimers_zeroTime_doesNotDecrementOrTransition() {
-        StubGame s = newGame();
-        s.gameplayMode = GameplayMode.GAME_RESTARTING;
-        s.gameplayModeTime = 0;
+        GameTimerManager tm = newManager();
+        mockGame.gameplayMode = GameplayMode.GAME_RESTARTING;
+        mockGame.gameplayModeTime = 0;
 
-        s.handleTimers();
+        tm.handleTimers();
 
-        assertEquals(GameplayMode.GAME_RESTARTING, s.getGameplayMode());
-        assertEquals(0.0, s.getGameplayModeTime(), 1e-9);
+        assertEquals(0.0, mockGame.gameplayModeTime, 1e-9);
+        verify(mockGame, never()).changeGameplayMode(any());
     }
 
     // -----------------------------------------------------------------------
-    // Fruit timer — direct GameTimerManager call
+    // Fruit timer
     // -----------------------------------------------------------------------
 
     @Test
@@ -141,7 +125,7 @@ public class GameTimerManagerTest {
     }
 
     // -----------------------------------------------------------------------
-    // Fright mode timer — direct GameTimerManager call
+    // Fright mode timer
     // -----------------------------------------------------------------------
 
     @Test
@@ -166,8 +150,7 @@ public class GameTimerManagerTest {
     }
 
     // -----------------------------------------------------------------------
-    // Ghost mode switch timer — direct GameTimerManager call
-    // frightModeTime must be 0 for this branch to activate
+    // Ghost mode switch timer (active when frightModeTime == 0)
     // -----------------------------------------------------------------------
 
     @Test
@@ -232,7 +215,7 @@ public class GameTimerManagerTest {
     }
 
     // -----------------------------------------------------------------------
-    // Force pen leave timer — direct GameTimerManager call
+    // Force pen leave timer
     // -----------------------------------------------------------------------
 
     @Test
