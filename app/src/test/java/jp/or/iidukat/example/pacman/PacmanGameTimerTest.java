@@ -5,21 +5,15 @@ import org.junit.Test;
 import static jp.or.iidukat.example.pacman.PacmanGame.GameplayMode;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.spy;
 
 public class PacmanGameTimerTest {
 
-    /**
-     * PacmanGame subclass with applyModeEffects as no-op.
-     * Avoids Mockito spy() which cannot instrument java.lang.Object on Java 25.
-     */
-    private static class TimerTestGame extends PacmanGame {
-        TimerTestGame() { super(null); }
-        @Override
-        void applyModeEffects(GameplayMode mode) {}
-    }
-
-    private TimerTestGame newGame() {
-        TimerTestGame g = new TimerTestGame();
+    private PacmanGame newGame() {
+        PacmanGame g = spy(new PacmanGame(null));
+        doNothing().when(g).applyModeEffects(any());
         g.timing = new Timing(false);
         return g;
     }
@@ -166,7 +160,7 @@ public class PacmanGameTimerTest {
 
     @Test
     public void handleTimers_newgameStarting_expiresIntoNewgameStarted() {
-        TimerTestGame s = newGame();
+        PacmanGame s = newGame();
         s.gameplayMode = GameplayMode.NEWGAME_STARTING;
         s.gameplayModeTime = 1;
 
@@ -178,7 +172,7 @@ public class PacmanGameTimerTest {
 
     @Test
     public void handleTimers_gameRestarting_expiresIntoGameRestarted() {
-        TimerTestGame s = newGame();
+        PacmanGame s = newGame();
         s.gameplayMode = GameplayMode.GAME_RESTARTING;
         s.gameplayModeTime = 1;
 
@@ -190,7 +184,7 @@ public class PacmanGameTimerTest {
 
     @Test
     public void handleTimers_levelBeingCompleted_expiresIntoLevelCompleted() {
-        TimerTestGame s = newGame();
+        PacmanGame s = newGame();
         s.gameplayMode = GameplayMode.LEVEL_BEING_COMPLETED;
         s.gameplayModeTime = 1;
 
@@ -202,7 +196,7 @@ public class PacmanGameTimerTest {
 
     @Test
     public void handleTimers_gameplayModeTime_decrementsEachTick() {
-        TimerTestGame s = newGame();
+        PacmanGame s = newGame();
         s.gameplayMode = GameplayMode.GAME_RESTARTING;
         s.gameplayModeTime = 5;
 
@@ -214,7 +208,7 @@ public class PacmanGameTimerTest {
 
     @Test
     public void handleTimers_zeroTime_doesNotDecrementOrTransition() {
-        TimerTestGame s = newGame();
+        PacmanGame s = newGame();
         s.gameplayMode = GameplayMode.GAME_RESTARTING;
         s.gameplayModeTime = 0;
 

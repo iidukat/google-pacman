@@ -1,7 +1,7 @@
 package jp.or.iidukat.example.pacman.entity;
 
 import java.util.ArrayList;
-import java.util.Comparator;
+import java.util.Collections;
 import java.util.List;
 
 import android.graphics.Bitmap;
@@ -87,7 +87,7 @@ abstract class BaseEntity implements Entity {
     public final boolean addChild(Entity child) {
         boolean added = children.add(child);
         if (added) {
-            children.sort(Comparator.comparingInt(e -> e.getAppearance().getOrder()));
+            Collections.sort(children);
         }
         return added;
     }
@@ -101,7 +101,20 @@ abstract class BaseEntity implements Entity {
     public final void clearChildren() {
         children.clear();
     }
-    
+
+    @Override
+    public final int compareTo(Entity another) {
+        int o = getAppearance().getOrder();
+        int ao = another.getAppearance().getOrder();
+        if (o < ao) {
+            return -1;
+        } else if (o > ao) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+
     private class AppearanceImpl implements Appearance {
         private int height;
         private int width;
@@ -312,7 +325,7 @@ abstract class BaseEntity implements Entity {
                 this.order = order;
                 BaseEntity parent = (BaseEntity) BaseEntity.this.parent;
                 if (parent != null && parent.children.contains(BaseEntity.this)) {
-                    parent.children.sort(Comparator.comparingInt(e -> e.getAppearance().getOrder()));
+                    Collections.sort(parent.children);
                 }
             }
         }
