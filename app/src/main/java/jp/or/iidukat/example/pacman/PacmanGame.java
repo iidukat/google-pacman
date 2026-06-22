@@ -111,7 +111,7 @@ public class PacmanGame {
 
     private long score;
     private boolean extraLifeAwarded;
-    private int lives = 3;
+    int lives = 3;
     private int level = 0;
     private int killScreenLevel = DEFAULT_KILL_SCREEN_LEVEL;
     private LevelConfig levelConfig;
@@ -119,7 +119,7 @@ public class PacmanGame {
 
     private int frightModeTime = 0;
     private int intervalTime = 0;
-    private double gameplayModeTime = 0;
+    double gameplayModeTime = 0;
     private int fruitTime = 0;
     private int forcePenLeaveTime;
     private int ghostModeSwitchPos = 0;
@@ -127,8 +127,8 @@ public class PacmanGame {
     private boolean ghostExitingPenNow = false;
     private int ghostEyesCount = 0;
     private boolean tilesChanged = false;
-    private GameplayMode gameplayMode;
-    private Timing timing;
+    GameplayMode gameplayMode;
+    Timing timing;
     private boolean alternatePenLeavingScheme;
     private int alternateDotCount;
     private boolean lostLifeOnThisLevel;
@@ -558,78 +558,109 @@ public class PacmanGame {
         changeGameplayMode(GameplayMode.LEVEL_BEING_COMPLETED);
     }
 
-    private void changeGameplayMode(GameplayMode mode) {
+    void applyModeState(GameplayMode mode) {
         gameplayMode = mode;
+        switch (mode) {
+        case PLAYER_DYING:
+            gameplayModeTime = timing.playerDying;
+            break;
+        case PLAYER_DIED:
+            gameplayModeTime = timing.playerDied;
+            break;
+        case GAME_RESTARTING:
+            gameplayModeTime = timing.gameRestarting;
+            break;
+        case GAME_RESTARTED:
+            gameplayModeTime = timing.gameRestarted;
+            break;
+        case NEWGAME_STARTING:
+            gameplayModeTime = timing.newgameStarting;
+            break;
+        case NEWGAME_STARTED:
+            lives--;
+            gameplayModeTime = timing.newgameStarted;
+            break;
+        case GAMEOVER:
+        case KILL_SCREEN:
+            gameplayModeTime = timing.gameover;
+            break;
+        case LEVEL_BEING_COMPLETED:
+            gameplayModeTime = timing.levelBeingCompleted;
+            break;
+        case LEVEL_COMPLETED:
+            gameplayModeTime = timing.levelCompleted;
+            break;
+        case TRANSITION_INTO_NEXT_SCENE:
+            gameplayModeTime = timing.transition;
+            break;
+        case GHOST_DIED:
+            gameplayModeTime = timing.ghostDied;
+            break;
+        }
+    }
+
+    void applyModeEffects(GameplayMode mode) {
         if (mode != GameplayMode.CUTSCENE) {
             getPacman().updateAppearance();
-
             Ghost[] ghosts = getGhosts();
             for (PlayfieldActor actor : ghosts) {
                 actor.updateAppearance();
             }
         }
-
         switch (mode) {
         case ORDINARY_PLAYING:
             playAmbientSound();
             break;
         case PLAYER_DYING:
             soundManager.stopAll();
-            gameplayModeTime = timing.playerDying;
             break;
         case PLAYER_DIED:
             soundManager.playTrack("death", 0);
-            gameplayModeTime = timing.playerDied;
             break;
         case GAME_RESTARTING:
             canvasEl.setVisibility(false);
-            gameplayModeTime = timing.gameRestarting;
             break;
         case GAME_RESTARTED:
             soundManager.stopAll();
             canvasEl.setVisibility(true);
             getDoorEl().setVisibility(true);
             createReadyElement();
-            gameplayModeTime = timing.gameRestarted;
             break;
         case NEWGAME_STARTING:
             getDoorEl().setVisibility(true);
             createReadyElement();
-            gameplayModeTime = timing.newgameStarting;
             soundManager.stopAll();
             soundManager.playTrack("start_music", 0, true);
             break;
         case NEWGAME_STARTED:
-            lives--;
             updateChromeLives();
-            gameplayModeTime = timing.newgameStarted;
             break;
         case GAMEOVER:
         case KILL_SCREEN:
             removeReadyElement();
             soundManager.stopAll();
             createGameOverElement();
-            gameplayModeTime = timing.gameover;
             break;
         case LEVEL_BEING_COMPLETED:
             soundManager.stopAll();
-            gameplayModeTime = timing.levelBeingCompleted;
             break;
         case LEVEL_COMPLETED:
             getDoorEl().setVisibility(false);
-            gameplayModeTime = timing.levelCompleted;
             break;
         case TRANSITION_INTO_NEXT_SCENE:
             canvasEl.setVisibility(false);
-            gameplayModeTime = timing.transition;
             break;
         case GHOST_DIED:
-            gameplayModeTime = timing.ghostDied;
             break;
         case CUTSCENE:
             startCutscene();
             break;
         }
+    }
+
+    private void changeGameplayMode(GameplayMode mode) {
+        applyModeState(mode);
+        applyModeEffects(mode);
     }
 
     void toggleSound() {
@@ -876,7 +907,7 @@ public class PacmanGame {
         }
     }
 
-    private void handleTimers() {
+    void handleTimers() {
         if (gameplayMode == GameplayMode.ORDINARY_PLAYING) {
             handleForcePenLeaveTimer();
             handleFruitTimer();
