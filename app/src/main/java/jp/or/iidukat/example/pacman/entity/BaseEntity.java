@@ -101,7 +101,7 @@ abstract class BaseEntity implements Entity {
     public final void clearChildren() {
         children.clear();
     }
-    
+
     @Override
     public final int compareTo(Entity another) {
         int o = getAppearance().getOrder();
@@ -114,7 +114,7 @@ abstract class BaseEntity implements Entity {
             return 0;
         }
     }
-    
+
     private class AppearanceImpl implements Appearance {
         private int height;
         private int width;
