@@ -32,7 +32,7 @@ class GameTimerManager {
     }
 
     void handleTimers() {
-        if (game.gameplayMode == GameplayMode.ORDINARY_PLAYING) {
+        if (game.getGameplayMode() == GameplayMode.ORDINARY_PLAYING) {
             handleForcePenLeaveTimer();
             handleFruitTimer();
             handleGhostModeTimer();
@@ -92,9 +92,9 @@ class GameTimerManager {
     }
 
     private void handleGameplayModeTimer() {
-        if (game.gameplayModeTime != 0) {
-            game.gameplayModeTime--;
-            switch (game.gameplayMode) {
+        if (game.getGameplayModeTime() != 0) {
+            game.decrementGameplayModeTime();
+            switch (game.getGameplayMode()) {
             case PLAYER_DYING:
             case PLAYER_DIED:
                 game.getPacman().updateAppearance();
@@ -104,14 +104,14 @@ class GameTimerManager {
                 }
                 break;
             case LEVEL_COMPLETED:
-                game.getPlayfieldEl().blink(game.gameplayModeTime, game.timing.levelCompleted);
+                game.getPlayfieldEl().blink(game.getGameplayModeTime(), game.getTiming().levelCompleted);
                 break;
             }
 
-            if (game.gameplayModeTime <= 0) {
-                game.gameplayModeTime = 0;
+            if (game.getGameplayModeTime() <= 0) {
+                game.resetGameplayModeTime();
                 Ghost[] ghosts = game.getGhosts();
-                switch (game.gameplayMode) {
+                switch (game.getGameplayMode()) {
                 case GHOST_DIED:
                     game.changeGameplayMode(GameplayMode.ORDINARY_PLAYING);
                     game.incrementGhostEyesCount();
@@ -161,11 +161,11 @@ class GameTimerManager {
                     break;
                 case TRANSITION_INTO_NEXT_SCENE:
                     if (game.getLevelConfig().getCutsceneId() != 0) {
-                        game.cutsceneId = game.getLevelConfig().getCutsceneId();
+                        game.setCutsceneId(game.getLevelConfig().getCutsceneId());
                         game.changeGameplayMode(GameplayMode.CUTSCENE);
                     } else {
                         // canvasEl.style.visibility = "";
-                        game.canvasEl.setVisibility(true);
+                        game.getCanvasEl().setVisibility(true);
                         game.newLevel(false);
                     }
                     break;

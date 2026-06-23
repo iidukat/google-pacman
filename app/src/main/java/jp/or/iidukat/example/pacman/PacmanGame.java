@@ -1097,6 +1097,14 @@ public class PacmanGame {
         return gameplayModeTime;
     }
 
+    void decrementGameplayModeTime() {
+        gameplayModeTime--;
+    }
+
+    void resetGameplayModeTime() {
+        gameplayModeTime = 0;
+    }
+
     Timing getTiming() {
         return timing;
     }
@@ -1159,6 +1167,10 @@ public class PacmanGame {
 
     public int getCutsceneId() {
         return cutsceneId;
+    }
+
+    void setCutsceneId(int cutsceneId) {
+        this.cutsceneId = cutsceneId;
     }
 
     public int getCutsceneSequenceId() {
