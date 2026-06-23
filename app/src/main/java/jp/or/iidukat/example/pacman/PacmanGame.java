@@ -9,12 +9,6 @@ import java.util.Map;
 
 import jp.or.iidukat.example.pacman.entity.PlayfieldActor;
 import jp.or.iidukat.example.pacman.entity.PlayfieldActor.CurrentSpeed;
-import jp.or.iidukat.example.pacman.entity.CutsceneActor;
-import jp.or.iidukat.example.pacman.entity.CutsceneBlinky;
-import jp.or.iidukat.example.pacman.entity.CutsceneField;
-import jp.or.iidukat.example.pacman.entity.CutscenePacman;
-import jp.or.iidukat.example.pacman.entity.CutsceneSteak;
-import jp.or.iidukat.example.pacman.entity.Entity;
 import jp.or.iidukat.example.pacman.entity.Fruit;
 import jp.or.iidukat.example.pacman.entity.Ghost;
 import jp.or.iidukat.example.pacman.entity.Ghost.GhostMode;
@@ -43,42 +37,6 @@ public class PacmanGame {
     // This is the thresholds of each ghost.
     private static final int[] PEN_LEAVING_FOOD_LIMITS = { 0, 7, 17, 32 };
 
-    // Cutscene Animation
-    private static class Cutscene {
-        private final Class<?>[] actors;
-        private final double[] sequenceTimes;
-
-        Cutscene(Class<?>[] actors, double[] sequenceTimes) {
-            this.actors = actors;
-            this.sequenceTimes = sequenceTimes;
-        }
-    }
-
-    private static final Map<Integer, Cutscene> CUTSCENES;
-    static {
-        Map<Integer, Cutscene> css = new HashMap<Integer, Cutscene>();
-        css.put(
-            Integer.valueOf(1),
-            new Cutscene(
-                new Class<?>[] { CutscenePacman.class, CutsceneBlinky.class },
-                new double[] { 5.5f, 0.1f, 9 }));
-        css.put(
-            Integer.valueOf(2),
-            new Cutscene(
-                new Class<?>[] {
-                    CutscenePacman.class,
-                    CutsceneBlinky.class,
-                    CutsceneSteak.class
-                },
-                new double[] { 2.7f, 1, 1.3f, 1, 2.5f }));
-        css.put(
-            Integer.valueOf(3),
-            new Cutscene(
-                new Class<?>[] { CutscenePacman.class, CutsceneBlinky.class },
-                new double[] { 5.3f, 5.3f }));
-        CUTSCENES = Collections.unmodifiableMap(css);
-    }
-    
     public static enum GameplayMode {
         ORDINARY_PLAYING(0), GHOST_DIED(1), PLAYER_DYING(2), PLAYER_DIED(3),
         NEWGAME_STARTING(4), NEWGAME_STARTED(5), GAME_RESTARTING(6), GAME_RESTARTED(7),
@@ -103,6 +61,7 @@ public class PacmanGame {
     SoundManager soundManager;
     private InputHandler inputHandler;
     GameTimerManager gameTimerManager;
+    CutsceneController cutsceneController;
 
     private boolean paused;
     private boolean started;
@@ -141,18 +100,12 @@ public class PacmanGame {
     private boolean fruitShown;
     private Ghost ghostBeingEaten;
 
-    private Cutscene cutscene;
-    int cutsceneId;
-    private int cutsceneSequenceId;
-    private double cutsceneTime;
-    private int debugCutsceneId;
-    private boolean debugCutsceneMode;
-    private Runnable onDebugCutsceneFinished;
     private TickClock tickClock;
 
     PacmanGame(Context context) {
         this.context = context;
         gameTimerManager = new GameTimerManager(this);
+        cutsceneController = new CutsceneController(this);
     }
 
     public double rand() {
@@ -236,9 +189,8 @@ public class PacmanGame {
         }
         soundManager.resetDotEatingSound();
 
-        if (newGame && debugCutsceneId != 0) {
-            cutsceneId = debugCutsceneId;
-            debugCutsceneId = 0;
+        if (newGame && cutsceneController.hasDebugCutscene()) {
+            cutsceneController.consumeDebugCutscene();
             changeGameplayMode(GameplayMode.CUTSCENE);
         } else if (newGame) {
             changeGameplayMode(GameplayMode.NEWGAME_STARTING);
@@ -319,7 +271,7 @@ public class PacmanGame {
             case FRIGHTENED:
                 currentPlayerSpeed = levelConfig.getPlayerFrightSpeed() * 0.8f;
                 currentDotEatingSpeed = levelConfig.getDotEatingFrightSpeed() * 0.8f;
-                gameTimerManager.frightModeTime = levelConfig.getFrightTotalTime();
+                gameTimerManager.setFrightModeTime(levelConfig.getFrightTotalTime());
                 modeScoreMultiplier = 1;
                 break;
             }
@@ -642,7 +594,7 @@ public class PacmanGame {
         case GHOST_DIED:
             break;
         case CUTSCENE:
-            startCutscene();
+            cutsceneController.start();
             break;
         }
     }
@@ -674,71 +626,6 @@ public class PacmanGame {
         } else {
             soundEl.setVisibility(false);
         }
-    }
-
-    private void startCutscene() {
-        getPlayfieldEl().setVisibility(false);
-        
-        canvasEl.setVisibility(true);
-        canvasEl.showChrome(false);
-        canvasEl.createCutsceneField();
-        
-        cutscene = CUTSCENES.get(Integer.valueOf(cutsceneId));
-        cutsceneSequenceId = -1;
-        gameTimerManager.frightModeTime = levelConfig.getFrightTotalTime();
-        createCutsceneActors();
-        
-        cutsceneNextSequence();
-        soundManager.stopAll();
-        soundManager.playCutsceneAmbient();
-    }
-    
-    private void createCutsceneActors() {
-        getCutsceneFieldEl().createActors(this, cutsceneId, cutscene.actors);
-    }
-
-    private void stopCutscene() {
-        soundManager.stopCutsceneAmbient();
-        getPlayfieldEl().setVisibility(true);
-        canvasEl.removeCutsceneField();
-        canvasEl.showChrome(true);
-        if (debugCutsceneMode) {
-            debugCutsceneMode = false;
-            if (onDebugCutsceneFinished != null) {
-                onDebugCutsceneFinished.run();
-            }
-        } else {
-            newLevel(false);
-        }
-    }
-
-    private void cutsceneNextSequence() {
-        cutsceneSequenceId++;
-        if (cutscene.sequenceTimes.length == cutsceneSequenceId) {
-            stopCutscene();
-        } else {
-            cutsceneTime = cutscene.sequenceTimes[cutsceneSequenceId] * GameConstants.DEFAULT_FPS;
-            CutsceneActor[] cutsceneActors = getCutsceneActors();
-            for (int i = 0; i < cutsceneActors.length; i++) {
-                CutsceneActor actor = cutsceneActors[i];
-                actor.setupSequence();
-                actor.updateAppearance();
-            }
-        }
-    }
-
-    private void checkCutscene() {
-        if (cutsceneTime <= 0) {
-            cutsceneNextSequence();
-        }
-    }
-
-    private void advanceCutscene() {
-        CutsceneActor[] cutsceneActors = getCutsceneActors();
-        for (CutsceneActor actor : cutsceneActors) {
-            actor.move();
-        }
-        cutsceneTime--;
     }
 
     private void updateActorPositions() {
@@ -776,11 +663,11 @@ public class PacmanGame {
         if (gameplayMode == GameplayMode.CUTSCENE) { // Cutscene
             for (int i = 0; i < tickClock.tickMultiplier + latencyMultiplyer; i++) {
                 // run multiple time depending on the tickMultiplier and latency
-                advanceCutscene();
+                cutsceneController.advance();
                 intervalTime = (intervalTime + 1) % GameConstants.DEFAULT_FPS;
                 globalTime++;
             }
-            checkCutscene();
+            cutsceneController.check();
             blinkScoreLabels();
         } else {
             updateSoundIcon();
@@ -901,14 +788,13 @@ public class PacmanGame {
     }
 
     void showCutscene(int id) {
-        debugCutsceneId = id;
-        debugCutsceneMode = true;
+        cutsceneController.setDebugCutsceneId(id);
         setDefaultKillScreenLevel();
         start();
     }
 
     void setOnDebugCutsceneFinished(Runnable callback) {
-        this.onDebugCutsceneFinished = callback;
+        cutsceneController.setOnFinished(callback);
     }
 
     private void setKillScreenLevel(int level) {
@@ -1051,22 +937,12 @@ public class PacmanGame {
         return playfieldEl.getDoor();
     }
 
-    private CutsceneField getCutsceneFieldEl() {
-        if (canvasEl == null) {
-            return null;
-        }
-        return canvasEl.getCutsceneField();
+    SoundManager getSoundManager() {
+        return soundManager;
     }
-    
-    private CutsceneActor[] getCutsceneActors() {
-        if (canvasEl == null) {
-            return null;
-        }
-        CutsceneField cutsceneFieldEl = canvasEl.getCutsceneField();
-        if (cutsceneFieldEl == null) {
-            return null;
-        }
-        return cutsceneFieldEl.getActors();
+
+    GameTimerManager getGameTimerManager() {
+        return gameTimerManager;
     }
 
     public boolean isPacManSound() {
@@ -1086,7 +962,7 @@ public class PacmanGame {
     }
 
     public int getFrightModeTime() {
-        return gameTimerManager.frightModeTime;
+        return gameTimerManager.getFrightModeTime();
     }
 
     public int getIntervalTime() {
@@ -1166,19 +1042,19 @@ public class PacmanGame {
     }
 
     public int getCutsceneId() {
-        return cutsceneId;
+        return cutsceneController.getCutsceneId();
     }
 
     void setCutsceneId(int cutsceneId) {
-        this.cutsceneId = cutsceneId;
+        cutsceneController.setCutsceneId(cutsceneId);
     }
 
     public int getCutsceneSequenceId() {
-        return cutsceneSequenceId;
+        return cutsceneController.getCutsceneSequenceId();
     }
 
     public double getCutsceneTime() {
-        return cutsceneTime;
+        return cutsceneController.getCutsceneTime();
     }
 
     public void setTilesChanged(boolean tilesChanged) {

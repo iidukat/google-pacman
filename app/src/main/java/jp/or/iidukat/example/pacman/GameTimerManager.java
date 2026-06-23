@@ -19,6 +19,14 @@ class GameTimerManager {
         this.game = game;
     }
 
+    int getFrightModeTime() {
+        return frightModeTime;
+    }
+
+    void setFrightModeTime(int time) {
+        frightModeTime = time;
+    }
+
     void restartAll(LevelConfig levelConfig) {
         frightModeTime = 0;
         fruitTime = 0;
