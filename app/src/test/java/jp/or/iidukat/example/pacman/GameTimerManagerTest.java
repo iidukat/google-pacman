@@ -7,7 +7,6 @@ import jp.or.iidukat.example.pacman.entity.Ghost.GhostMode;
 
 import static jp.or.iidukat.example.pacman.PacmanGame.GameplayMode;
 import static org.junit.Assert.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -28,41 +27,19 @@ public class GameTimerManagerTest {
     }
 
     // -----------------------------------------------------------------------
-    // Gameplay mode timer — expiry calls changeGameplayMode with correct mode
-    // (resulting state is tested in PacmanGameTimerTest.applyModeState_*)
+    // Gameplay mode timer — expiry delegates to PacmanGame.onGameplayModeTimerExpired()
+    // (transition behavior is tested in PacmanGameTimerTest.onGameplayModeTimerExpired_*)
     // -----------------------------------------------------------------------
 
     @Test
-    public void handleTimers_newgameStarting_expiresIntoNewgameStarted() {
+    public void handleTimers_expiresGameplayModeTime_callsOnGameplayModeTimerExpired() {
         GameTimerManager tm = newManager();
         when(mockGame.getGameplayMode()).thenReturn(GameplayMode.NEWGAME_STARTING);
         when(mockGame.getGameplayModeTime()).thenReturn(1.0, 0.0);
 
         tm.handleTimers();
 
-        verify(mockGame).changeGameplayMode(GameplayMode.NEWGAME_STARTED);
-    }
-
-    @Test
-    public void handleTimers_gameRestarting_expiresIntoGameRestarted() {
-        GameTimerManager tm = newManager();
-        when(mockGame.getGameplayMode()).thenReturn(GameplayMode.GAME_RESTARTING);
-        when(mockGame.getGameplayModeTime()).thenReturn(1.0, 0.0);
-
-        tm.handleTimers();
-
-        verify(mockGame).changeGameplayMode(GameplayMode.GAME_RESTARTED);
-    }
-
-    @Test
-    public void handleTimers_levelBeingCompleted_expiresIntoLevelCompleted() {
-        GameTimerManager tm = newManager();
-        when(mockGame.getGameplayMode()).thenReturn(GameplayMode.LEVEL_BEING_COMPLETED);
-        when(mockGame.getGameplayModeTime()).thenReturn(1.0, 0.0);
-
-        tm.handleTimers();
-
-        verify(mockGame).changeGameplayMode(GameplayMode.LEVEL_COMPLETED);
+        verify(mockGame).onGameplayModeTimerExpired();
     }
 
     @Test
@@ -85,7 +62,7 @@ public class GameTimerManagerTest {
         tm.handleTimers();
 
         verify(mockGame, never()).decrementGameplayModeTime();
-        verify(mockGame, never()).changeGameplayMode(any());
+        verify(mockGame, never()).onGameplayModeTimerExpired();
     }
 
     // -----------------------------------------------------------------------

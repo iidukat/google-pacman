@@ -118,66 +118,7 @@ class GameTimerManager {
 
             if (game.getGameplayModeTime() <= 0) {
                 game.resetGameplayModeTime();
-                Ghost[] ghosts = game.getGhosts();
-                switch (game.getGameplayMode()) {
-                case GHOST_DIED:
-                    game.changeGameplayMode(GameplayMode.ORDINARY_PLAYING);
-                    game.incrementGhostEyesCount();
-                    game.playAmbientSound();
-                    game.getGhostBeingEaten().resetDisplayOrder();
-                    game.getGhostBeingEaten().switchGhostMode(GhostMode.EATEN);
-                    // If there is no ghost frightened, finish fright mode.
-                    boolean frightenedGhostExists = false;
-                    for (Ghost ghost : ghosts) {
-                        if (ghost.getMode() == GhostMode.FRIGHTENED
-                            || (ghost.getMode() == GhostMode.IN_PEN
-                                    || ghost.getMode() == GhostMode.RE_LEAVING_FROM_PEN)
-                                && !ghost.isEatenInThisFrightMode()) {
-                            frightenedGhostExists = true;
-                            break;
-                        }
-                    }
-                    if (!frightenedGhostExists) {
-                        game.finishFrightMode();
-                    }
-                    break;
-                case PLAYER_DYING:
-                    game.changeGameplayMode(GameplayMode.PLAYER_DIED);
-                    break;
-                case PLAYER_DIED:
-                    game.newLife();
-                    break;
-                case NEWGAME_STARTING:
-                    game.changeGameplayMode(GameplayMode.NEWGAME_STARTED);
-                    break;
-                case GAME_RESTARTING:
-                    game.changeGameplayMode(GameplayMode.GAME_RESTARTED);
-                    break;
-                case GAME_RESTARTED:
-                case NEWGAME_STARTED:
-                    game.getPlayfieldEl().removeReady();
-                    game.changeGameplayMode(GameplayMode.ORDINARY_PLAYING);
-                    break;
-                case GAMEOVER:
-                    game.getPlayfieldEl().removeGameover();
-                    break;
-                case LEVEL_BEING_COMPLETED:
-                    game.changeGameplayMode(GameplayMode.LEVEL_COMPLETED);
-                    break;
-                case LEVEL_COMPLETED:
-                    game.changeGameplayMode(GameplayMode.TRANSITION_INTO_NEXT_SCENE);
-                    break;
-                case TRANSITION_INTO_NEXT_SCENE:
-                    if (game.getLevelConfig().getCutsceneId() != 0) {
-                        game.setCutsceneId(game.getLevelConfig().getCutsceneId());
-                        game.changeGameplayMode(GameplayMode.CUTSCENE);
-                    } else {
-                        // canvasEl.style.visibility = "";
-                        game.getCanvasEl().setVisibility(true);
-                        game.newLevel(false);
-                    }
-                    break;
-                }
+                game.onGameplayModeTimerExpired();
             }
         }
     }

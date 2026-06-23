@@ -539,6 +539,68 @@ public class PacmanGame {
         gameTimerManager.handleTimers();
     }
 
+    void onGameplayModeTimerExpired() {
+        Ghost[] ghosts = getGhosts();
+        switch (gameplayMode) {
+        case GHOST_DIED:
+            changeGameplayMode(GameplayMode.ORDINARY_PLAYING);
+            incrementGhostEyesCount();
+            playAmbientSound();
+            ghostBeingEaten.resetDisplayOrder();
+            ghostBeingEaten.switchGhostMode(GhostMode.EATEN);
+            // If there is no ghost frightened, finish fright mode.
+            boolean frightenedGhostExists = false;
+            for (Ghost ghost : ghosts) {
+                if (ghost.getMode() == GhostMode.FRIGHTENED
+                    || (ghost.getMode() == GhostMode.IN_PEN
+                            || ghost.getMode() == GhostMode.RE_LEAVING_FROM_PEN)
+                        && !ghost.isEatenInThisFrightMode()) {
+                    frightenedGhostExists = true;
+                    break;
+                }
+            }
+            if (!frightenedGhostExists) {
+                finishFrightMode();
+            }
+            break;
+        case PLAYER_DYING:
+            changeGameplayMode(GameplayMode.PLAYER_DIED);
+            break;
+        case PLAYER_DIED:
+            newLife();
+            break;
+        case NEWGAME_STARTING:
+            changeGameplayMode(GameplayMode.NEWGAME_STARTED);
+            break;
+        case GAME_RESTARTING:
+            changeGameplayMode(GameplayMode.GAME_RESTARTED);
+            break;
+        case GAME_RESTARTED:
+        case NEWGAME_STARTED:
+            getPlayfieldEl().removeReady();
+            changeGameplayMode(GameplayMode.ORDINARY_PLAYING);
+            break;
+        case GAMEOVER:
+            getPlayfieldEl().removeGameover();
+            break;
+        case LEVEL_BEING_COMPLETED:
+            changeGameplayMode(GameplayMode.LEVEL_COMPLETED);
+            break;
+        case LEVEL_COMPLETED:
+            changeGameplayMode(GameplayMode.TRANSITION_INTO_NEXT_SCENE);
+            break;
+        case TRANSITION_INTO_NEXT_SCENE:
+            if (levelConfig.getCutsceneId() != 0) {
+                cutsceneController.setCutsceneId(levelConfig.getCutsceneId());
+                changeGameplayMode(GameplayMode.CUTSCENE);
+            } else {
+                canvasEl.setVisibility(true);
+                newLevel(false);
+            }
+            break;
+        }
+    }
+
     void tick() {
         long now = new Date().getTime();
         if (paused) {
