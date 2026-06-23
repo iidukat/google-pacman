@@ -32,11 +32,6 @@ public class PacmanGame {
 
     private static final int DEFAULT_KILL_SCREEN_LEVEL = 256;
     
-    // After a level restart, when a number of dots eaten by the player has reached the threshold,
-    // each ghost leaves from the pen.
-    // This is the thresholds of each ghost.
-    private static final int[] PEN_LEAVING_FOOD_LIMITS = { 0, 7, 17, 32 };
-
     public static enum GameplayMode {
         ORDINARY_PLAYING(0), GHOST_DIED(1), PLAYER_DYING(2), PLAYER_DIED(3),
         NEWGAME_STARTING(4), NEWGAME_STARTED(5), GAME_RESTARTING(6), GAME_RESTARTED(7),
@@ -62,6 +57,7 @@ public class PacmanGame {
     private InputHandler inputHandler;
     GameTimerManager gameTimerManager;
     CutsceneController cutsceneController;
+    GhostModeController ghostModeController;
 
     private boolean paused;
     private boolean started;
@@ -84,15 +80,8 @@ public class PacmanGame {
     private boolean tilesChanged = false;
     GameplayMode gameplayMode;
     Timing timing;
-    private boolean alternatePenLeavingScheme;
-    private int alternateDotCount;
     private boolean lostLifeOnThisLevel;
 
-    private GhostMode lastMainGhostMode;
-    GhostMode mainGhostMode;
-
-    private double currentPlayerSpeed;
-    private double currentDotEatingSpeed;
     private double cruiseElroySpeed;
     private Map<Double, Boolean[]> speedIntervals;
 
@@ -106,6 +95,7 @@ public class PacmanGame {
         this.context = context;
         gameTimerManager = new GameTimerManager(this);
         cutsceneController = new CutsceneController(this);
+        ghostModeController = new GhostModeController(this);
     }
 
     public double rand() {
@@ -219,7 +209,7 @@ public class PacmanGame {
             level >= LevelConfig.LEVEL_CONFIGS.length
                 ? LevelConfig.LEVEL_CONFIGS[LevelConfig.LEVEL_CONFIGS.length - 1]
                 : LevelConfig.LEVEL_CONFIGS[level];
-        alternatePenLeavingScheme = false;
+        ghostModeController.restartPenLeavingForNewLevel();
         lostLifeOnThisLevel = false;
         updateChrome();
         resetPlayfield();
@@ -231,8 +221,7 @@ public class PacmanGame {
 
     void newLife() {
         lostLifeOnThisLevel = true;
-        alternatePenLeavingScheme = true;
-        alternateDotCount = 0;
+        ghostModeController.restartPenLeavingForNewLife();
         lives--;
         updateChromeLives();
 
@@ -243,110 +232,8 @@ public class PacmanGame {
         }
     }
 
-    void switchMainGhostMode(GhostMode ghostMode,
-                                    boolean justRestartGame) {
-        Ghost[] ghosts = getGhosts();
-        if (ghostMode == GhostMode.FRIGHTENED
-                && levelConfig.getFrightTime() == 0) {
-            for (Ghost ghost : ghosts) {
-                ghost.setReverseDirectionsNext(true); // If frightTime is 0, a frightened ghost only reverse its direction.
-            }
-        } else {
-            GhostMode oldMainGhostMode = mainGhostMode;
-            if (ghostMode == GhostMode.FRIGHTENED
-                    && mainGhostMode != GhostMode.FRIGHTENED) {
-                lastMainGhostMode = mainGhostMode;
-            }
-            mainGhostMode = ghostMode;
-            if (ghostMode == GhostMode.FRIGHTENED
-                || oldMainGhostMode == GhostMode.FRIGHTENED) {
-                playAmbientSound();
-            }
-            switch (ghostMode) {
-            case CHASE:
-            case SCATTER:
-                currentPlayerSpeed = levelConfig.getPlayerSpeed() * 0.8f;
-                currentDotEatingSpeed = levelConfig.getDotEatingSpeed() * 0.8f;
-                break;
-            case FRIGHTENED:
-                currentPlayerSpeed = levelConfig.getPlayerFrightSpeed() * 0.8f;
-                currentDotEatingSpeed = levelConfig.getDotEatingFrightSpeed() * 0.8f;
-                gameTimerManager.setFrightModeTime(levelConfig.getFrightTotalTime());
-                modeScoreMultiplier = 1;
-                break;
-            }
-            for (Ghost ghost : ghosts) {
-                if (ghostMode != GhostMode.ENTERING_PEN && !justRestartGame) {
-                    ghost.setModeChangedWhileInPen(true);
-                }
-                if (ghostMode == GhostMode.FRIGHTENED) {
-                    ghost.setEatenInThisFrightMode(false);
-                }
-                if (ghost.getMode() != GhostMode.EATEN
-                        && ghost.getMode() != GhostMode.IN_PEN
-                        && ghost.getMode() != GhostMode.LEAVING_PEN
-                        && ghost.getMode() != GhostMode.RE_LEAVING_FROM_PEN
-                        && ghost.getMode() != GhostMode.ENTERING_PEN || justRestartGame) {
-
-                    // If it is not immediately after restart the game (justRestartGmae:false),
-                    // a ghost reverse its direction 
-                    // when its mode change from other than FRIGHTENED (CHASE or SCATTER) to another mode.
-                    if (!justRestartGame && ghost.getMode() != GhostMode.FRIGHTENED
-                            && ghost.getMode() != ghostMode) {
-                        ghost.setReverseDirectionsNext(true);
-                    }
-
-                    // If it is not immediately after restart the game
-                    // and a mode of each ghost is any of EATEN, IN_PEN, LEAVING_PEN, RE_LEAVING_FROM_PEN, or ENTERING_PEN,
-                    // it is not updated.
-                    ghost.switchGhostMode(ghostMode);
-                }
-            }
-
-            Pacman pacman = getPacman();
-            pacman.setFullSpeed(currentPlayerSpeed);
-            pacman.setDotEatingSpeed(currentDotEatingSpeed);
-            pacman.setTunnelSpeed(currentPlayerSpeed);
-            pacman.changeSpeed();
-        }
-    }
-
-    private void figureOutPenLeaving() {
-        Ghost pinky = getPinky();
-        Ghost inky = getInky();
-        Ghost clyde = getClyde();
-        if (alternatePenLeavingScheme) {
-            // By using a number of dots eaten after a level restart,
-            // manage the timing of the ghosts leaving from the pen.
-            alternateDotCount++;
-            if (alternateDotCount == PEN_LEAVING_FOOD_LIMITS[1]) {
-                pinky.setFreeToLeavePen(true);
-            } else if (alternateDotCount == PEN_LEAVING_FOOD_LIMITS[2]) {
-                inky.setFreeToLeavePen(true);
-            } else if (alternateDotCount == PEN_LEAVING_FOOD_LIMITS[3]) {
-                if (clyde.getMode() == GhostMode.IN_PEN) {
-                    alternatePenLeavingScheme = false;
-                }
-            }
-        } else if (pinky.getMode() == GhostMode.IN_PEN
-                || pinky.getMode() == GhostMode.EATEN) {
-            pinky.incrementDotCount();
-            if (pinky.getDotCount() >= levelConfig.getPenLeavingLimits()[1]) {
-                pinky.setFreeToLeavePen(true);
-            }
-        } else if (inky.getMode() == GhostMode.IN_PEN
-                || inky.getMode() == GhostMode.EATEN) {
-            inky.incrementDotCount();
-            if (inky.getDotCount() >= levelConfig.getPenLeavingLimits()[2]) {
-                inky.setFreeToLeavePen(true);
-            }
-        } else if (clyde.getMode() == GhostMode.IN_PEN
-                || clyde.getMode() == GhostMode.EATEN) {
-            clyde.incrementDotCount();
-            if (clyde.getDotCount() >= levelConfig.getPenLeavingLimits()[3]) {
-                clyde.setFreeToLeavePen(true);
-            }
-        }
+    void switchMainGhostMode(GhostMode ghostMode, boolean justRestartGame) {
+        ghostModeController.switchMainGhostMode(ghostMode, justRestartGame);
     }
 
     public void dotEaten(int[] dotPos) {
@@ -364,7 +251,7 @@ public class PacmanGame {
         getPlayfieldEl().clearDot(dotPos[1], dotPos[0]);
         updateCruiseElroySpeed();
         gameTimerManager.resetForcePenLeaveTime();
-        figureOutPenLeaving();
+        ghostModeController.figureOutPenLeaving();
         if (getPlayfieldEl().getDotsEaten() == 70
                 || getPlayfieldEl().getDotsEaten() == 170) {
             showFruit();
@@ -645,7 +532,7 @@ public class PacmanGame {
     }
 
     void finishFrightMode() {
-        switchMainGhostMode(lastMainGhostMode, false);
+        ghostModeController.finishFrightMode();
     }
 
     void handleTimers() {
@@ -746,7 +633,7 @@ public class PacmanGame {
             Playfield playfieldEl = getPlayfieldEl();
             ambient = ghostEyesCount != 0
                     ? "ambient_eyes"
-                    : mainGhostMode == GhostMode.FRIGHTENED
+                    : ghostModeController.getMainGhostMode() == GhostMode.FRIGHTENED
                         ? "ambient_fright"
                         : playfieldEl.getDotsEaten() > 241
                             ? "ambient_4"
@@ -998,11 +885,15 @@ public class PacmanGame {
     }
 
     public GhostMode getMainGhostMode() {
-        return mainGhostMode;
+        return ghostModeController.getMainGhostMode();
     }
 
     public GhostMode getLastMainGhostMode() {
-        return lastMainGhostMode;
+        return ghostModeController.getLastMainGhostMode();
+    }
+
+    void resetModeScoreMultiplier() {
+        modeScoreMultiplier = 1;
     }
 
     public Ghost getGhostBeingEaten() {
