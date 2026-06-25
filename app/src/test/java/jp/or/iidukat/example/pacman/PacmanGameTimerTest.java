@@ -142,4 +142,62 @@ public class PacmanGameTimerTest {
         assertEquals(42.0, g.getGameplayModeTime(), 1e-9);
     }
 
+    // -----------------------------------------------------------------------
+    // onGameplayModeTimerExpired — pure mode transitions (no side-effects beyond changeGameplayMode)
+    // -----------------------------------------------------------------------
+
+    /**
+     * Suppresses applyModeEffects so onGameplayModeTimerExpired can be tested
+     * without a fully initialised canvasEl.
+     */
+    private static class NoEffectsGame extends PacmanGame {
+        NoEffectsGame() { super(null); }
+        @Override void applyModeEffects(GameplayMode mode) {}
+    }
+
+    @Test
+    public void onGameplayModeTimerExpired_playerDying_transitionsToPlayerDied() {
+        NoEffectsGame g = new NoEffectsGame();
+        g.timing = new Timing(false);
+        g.gameplayMode = GameplayMode.PLAYER_DYING;
+        g.onGameplayModeTimerExpired();
+        assertEquals(GameplayMode.PLAYER_DIED, g.getGameplayMode());
+    }
+
+    @Test
+    public void onGameplayModeTimerExpired_newgameStarting_transitionsToNewgameStarted() {
+        NoEffectsGame g = new NoEffectsGame();
+        g.timing = new Timing(false);
+        g.gameplayMode = GameplayMode.NEWGAME_STARTING;
+        g.onGameplayModeTimerExpired();
+        assertEquals(GameplayMode.NEWGAME_STARTED, g.getGameplayMode());
+    }
+
+    @Test
+    public void onGameplayModeTimerExpired_gameRestarting_transitionsToGameRestarted() {
+        NoEffectsGame g = new NoEffectsGame();
+        g.timing = new Timing(false);
+        g.gameplayMode = GameplayMode.GAME_RESTARTING;
+        g.onGameplayModeTimerExpired();
+        assertEquals(GameplayMode.GAME_RESTARTED, g.getGameplayMode());
+    }
+
+    @Test
+    public void onGameplayModeTimerExpired_levelBeingCompleted_transitionsToLevelCompleted() {
+        NoEffectsGame g = new NoEffectsGame();
+        g.timing = new Timing(false);
+        g.gameplayMode = GameplayMode.LEVEL_BEING_COMPLETED;
+        g.onGameplayModeTimerExpired();
+        assertEquals(GameplayMode.LEVEL_COMPLETED, g.getGameplayMode());
+    }
+
+    @Test
+    public void onGameplayModeTimerExpired_levelCompleted_transitionsToTransitionIntoNextScene() {
+        NoEffectsGame g = new NoEffectsGame();
+        g.timing = new Timing(false);
+        g.gameplayMode = GameplayMode.LEVEL_COMPLETED;
+        g.onGameplayModeTimerExpired();
+        assertEquals(GameplayMode.TRANSITION_INTO_NEXT_SCENE, g.getGameplayMode());
+    }
+
 }
