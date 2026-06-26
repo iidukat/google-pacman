@@ -1,8 +1,11 @@
 package jp.or.iidukat.example.pacman;
 
 import android.content.Context;
+import android.util.Log;
 
 class SoundManager {
+
+    private static final PacmanLogger LOG = new PacmanLogger("PacmanSound");
 
     private final Context context;
     private SoundPlayer soundPlayer;
@@ -54,11 +57,13 @@ class SoundManager {
     }
 
     void stopAmbient() {
+        LOG.d(() -> "stopAmbient: oldAmbient=" + oldAmbient);
         if (soundPlayer != null) soundPlayer.stopAmbient();
         oldAmbient = null;
     }
 
     void stopAll() {
+        LOG.d(() -> "stopAll: oldAmbient=" + oldAmbient + "\n" + Log.getStackTraceString(new Throwable()));
         stopAmbient();
         for (int i = 0; i < 5; i++) {
             stopChannel(i);
@@ -66,14 +71,26 @@ class SoundManager {
     }
 
     void playAmbient(String track) {
-        if (!pacManSound || soundPlayer == null || track == null) return;
-        if (track.equals(oldAmbient)) return;
+        if (track == null) {
+            LOG.d(() -> "playAmbient: skip (track=null) oldAmbient=" + oldAmbient);
+            return;
+        }
+        if (!pacManSound || soundPlayer == null) {
+            LOG.d(() -> "playAmbient: skip (pacManSound=" + pacManSound + " soundPlayerNull=" + (soundPlayer == null) + ") track=" + track);
+            return;
+        }
+        if (track.equals(oldAmbient)) {
+            LOG.d(() -> "playAmbient: skip (dedup) track=" + track);
+            return;
+        }
+        LOG.d(() -> "playAmbient: PLAY track=" + track + " (was " + oldAmbient + ")");
         soundPlayer.playAmbient(track);
         oldAmbient = track;
     }
 
     // Resume the last ambient track after an Activity pause without dedup check.
     void resumeAmbient() {
+        LOG.d(() -> "resumeAmbient: oldAmbient=" + oldAmbient);
         if (pacManSound && soundPlayer != null && oldAmbient != null) {
             soundPlayer.playAmbient(oldAmbient);
         }

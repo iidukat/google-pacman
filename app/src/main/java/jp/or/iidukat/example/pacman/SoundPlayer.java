@@ -13,6 +13,8 @@ import android.util.Log;
 class SoundPlayer {
 
     private static final String TAG = "SoundPlayer";
+    private static final PacmanLogger LOG = new PacmanLogger(TAG);
+
     private static final int[] SOUND_RESOURCES = {
         R.raw.death,
         R.raw.eating_dot_1,
@@ -33,7 +35,7 @@ class SoundPlayer {
     };
     private static final int AMBIENT_CHANNEL_COUNT = 1;
     private static final int CUTSCENE_RESOURCE_ID = R.raw.cutscene;
-    
+
     private final Context context;
     private SoundPoolManager soundManager;
     private boolean soundAvailable;
@@ -42,7 +44,7 @@ class SoundPlayer {
     private AudioClip cutsceneAudioClip;
     private boolean cutsceneAmbientAvailable;
     private String queuedAmbient;
-    
+
     SoundPlayer(Context context) {
         this.context = context;
     }
@@ -97,24 +99,30 @@ class SoundPlayer {
 
     void playAmbient(String track) {
         if (isAvailable()) {
+            LOG.d(() -> "playAmbient: play track=" + track);
             ambientManager.playTrack(track, 0, true);
             queuedAmbient = null;
         } else {
+            LOG.d(() -> "playAmbient: not available, queue track=" + track);
             queuedAmbient = track;
         }
     }
-    
+
     private void playQueuedAmbient() {
         if (queuedAmbient != null) {
+            LOG.d(() -> "playQueuedAmbient: play track=" + queuedAmbient);
             ambientManager.playTrack(queuedAmbient, 0, true);
             queuedAmbient = null;
         }
     }
 
     void stopAmbient() {
-       queuedAmbient = null;
+        LOG.d(() -> "stopAmbient: isAvailable=" + isAvailable() + " queuedAmbient=" + queuedAmbient);
+        queuedAmbient = null;
         if (isAvailable()) {
             ambientManager.stopChannel(0);
+        } else {
+            LOG.w(() -> "stopAmbient: NOT AVAILABLE — ambient channel not stopped!");
         }
     }
 
@@ -153,7 +161,7 @@ class SoundPlayer {
     }
 
     private static class SoundPoolManager {
-        
+
         private static interface AvailabilityNotifier {
             void notifyAvailability();
         }
@@ -209,7 +217,7 @@ class SoundPlayer {
                 soundPool.release();
                 soundPool = null;
             }
-            
+
             soundIds.clear();
             for (int i = 0; i < channels.length; i++) {
                 channels[i] = 0;
@@ -220,7 +228,7 @@ class SoundPlayer {
             if (soundPool == null) {
                 return;
             }
-            
+
             Integer id = soundIds.get(track);
             if (id == null) {
                 throw new IllegalArgumentException(
@@ -245,7 +253,7 @@ class SoundPlayer {
             if (soundPool == null) {
                 return;
             }
-            
+
             if (channel >= channels.length) {
                 throw new IllegalArgumentException(
                                 "channel is too large. : " + channel);
