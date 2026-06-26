@@ -50,6 +50,8 @@ public class PacmanGame {
 
     }
 
+    private static final PacmanLogger LOG = new PacmanLogger("PacmanSound");
+
     private final Context context;
     GameView view;
     private Bitmap sourceImage;
@@ -440,6 +442,7 @@ public class PacmanGame {
             playAmbientSound();
             break;
         case PLAYER_DYING:
+            LOG.d(() -> "applyModeEffects: PLAYER_DYING -> stopAll()");
             soundManager.stopAll();
             break;
         case PLAYER_DIED:
@@ -689,7 +692,7 @@ public class PacmanGame {
     }
 
     public void playAmbientSound() {
-        String ambient = null;
+        final String ambient;
         if (gameplayMode == GameplayMode.ORDINARY_PLAYING
                 || gameplayMode == GameplayMode.GHOST_DIED) {
             Playfield playfieldEl = getPlayfieldEl();
@@ -703,7 +706,10 @@ public class PacmanGame {
                                 ? "ambient_3"
                                 : playfieldEl.getDotsEaten() > 138
                                     ? "ambient_2" : "ambient_1";
+        } else {
+            ambient = null;
         }
+        LOG.d(() -> "playAmbientSound: mode=" + gameplayMode + " ambient=" + ambient);
         soundManager.playAmbient(ambient);
     }
 
