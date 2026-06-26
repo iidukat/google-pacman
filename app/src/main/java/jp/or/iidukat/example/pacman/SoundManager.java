@@ -76,7 +76,7 @@ class SoundManager {
             return;
         }
         if (!pacManSound || soundPlayer == null) {
-            LOG.d(() -> "playAmbient: skip (pacManSound=" + pacManSound + " soundPlayer=null) track=" + track);
+            LOG.d(() -> "playAmbient: skip (pacManSound=" + pacManSound + " soundPlayerNull=" + (soundPlayer == null) + ") track=" + track);
             return;
         }
         if (track.equals(oldAmbient)) {
